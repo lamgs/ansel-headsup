@@ -75,6 +75,7 @@ function reducer(s, a) {
   switch (a.type) {
     case 'TICK': return processTriggers({ ...s, clock: s.clock + 1 })
     case 'SET_CLOCK': return processTriggers({ ...s, clock: a.sec })
+    case 'AT_LEAST_CLOCK': return s.clock >= a.sec ? s : processTriggers({ ...s, clock: a.sec })
     case 'ADD_CLOCK': return processTriggers({ ...s, clock: s.clock + a.sec })
     case 'RESET': return initialState(s.theme)
     case 'SET_PERSONA': return { ...s, persona: a.id, join: null }
@@ -143,6 +144,18 @@ export function StoreProvider({ children }) {
   useEffect(() => {
     const t = setInterval(() => dispatch({ type: 'TICK' }), 1000)
     return () => clearInterval(t)
+  }, [])
+  // Deep links from the Slack app: #ansel/<instanceId>/<tab>/<mm:ss>/<itemId>
+  useEffect(() => {
+    const open = () => {
+      const [root, instanceId, tab = 'summary', t, panelItem] = decodeURIComponent(location.hash.slice(1)).split('/')
+      if (root !== 'ansel' || !SEED.instances.some((i) => i.id === instanceId)) return
+      dispatch({ type: 'AT_LEAST_CLOCK', sec: 13.5 * 3600 })
+      dispatch({ type: 'OPEN_ANSEL', nav: { instanceId, tab, highlight: t ? { t, n: Date.now() } : null, panelItem: panelItem || null } })
+    }
+    open()
+    window.addEventListener('hashchange', open)
+    return () => window.removeEventListener('hashchange', open)
   }, [])
   useEffect(() => {
     document.documentElement.classList.toggle('dark', state.theme === 'dark')

@@ -1,0 +1,16 @@
+{
+  "name": "ansel-headsup-slack-app",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "start": "node --env-file-if-exists=.env src/index.js",
+    "trigger": "node --env-file-if-exists=.env src/trigger.js",
+    "test": "node test/check.mjs"
+  },
+  "dependencies": {
+    "@slack/bolt": "^5.1.0",
+    "@slack/web-api": "^8.3.0",
+    "node-ical": "^0.27.6"
+  }
+}

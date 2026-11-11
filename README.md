@@ -34,3 +34,7 @@ npm test         # checks buildHeadsUp against the per-persona table + transcrip
 | `src/state/store.jsx` | Reducer, simulated clock, trigger processing, event log |
 | `src/screens/*` | Slack (mock), Heads-Up card, Ansel app, join flow, Setup & governance, Pilot log |
 | `src/components/*` | Demo bar, behind-the-scenes drawer, UI primitives |
+
+## Slack app (real integration)
+
+[`slack-app/`](slack-app/README.md) is a working Slack app (Socket Mode) that posts the same card from a Google or Outlook calendar ICS feed (30 minutes before a recurring meeting) or from a manual `/headsup demo` trigger. Its ▶ buttons deep-link into the hosted prototype (`#ansel/<instance>/<tab>/<mm:ss>/<item>`).

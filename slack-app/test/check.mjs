@@ -1,0 +1,115 @@
+// Offline checks: card blocks, ICS parsing (Google + Outlook style), scheduler firing, card actions.
+// Uses a fake Slack client, so no tokens or network. Run: npm test
+import assert from 'node:assert/strict'
+import { buildCard } from '../src/card.js'
+import { loadOccurrences, seriesMatcher } from '../src/calendar.js'
+import { createHeadsUp } from '../src/headsup.js'
+import { createScheduler } from '../src/scheduler.js'
+
+const calls = []
+const client = {
+  users: { lookupByEmail: async ({ email }) => ({ user: { id: 'U_' + email.split('@')[0].toUpperCase() } }) },
+  conversations: { open: async ({ users }) => ({ channel: { id: 'D_' + users } }) },
+  chat: {
+    postMessage: async (m) => { calls.push(['post', m]); return { ts: String(calls.length) } },
+    update: async (m) => { calls.push(['update', m]); return {} },
+  },
+}
+const config = { prototypeUrl: 'https://demo.example/headsup/', demoJoinUrl: 'https://meet.google.com/abc-defg-hij', reminderMinutes: 30, seriesMap: 'Weekly Product Sync=wps,Design Review=dr' }
+const logs = []
+const log = (...a) => logs.push(a)
+const hu = createHeadsUp({ client, config, log })
+
+// 1. Card for Maya
+const start = Date.now() + 30 * 60000
+let r = await hu.post({ persona: 'maya', sid: 'wps', slackUser: 'maya@acme.example', startMs: start })
+assert.equal(r.posted, true)
+const msg = calls[0][1]
+const texts = msg.blocks.map((b) => b.text?.text ?? b.elements?.map((e) => e.text?.text ?? e.text).join(' | '))
+console.log(texts.join('\n'))
+assert.match(texts[1], /YOU OWN\*\n• Forecast update — due Thu \(may already be done\)/)
+assert.match(texts[2], /STILL OPEN\*\n• Launch date: Mar 3 or Mar 10\?/)
+assert.match(texts[3], /DECIDED\*\n• Pricing page ships with v2  `Edited`/)
+assert.equal(msg.blocks[0].accessory.text.text, 'Join · starts in 30 min')
+assert.equal(msg.blocks[1].accessory.url, 'https://demo.example/headsup/#ansel/wps-1106/transcript/14:32/a2')
+assert.match(texts.at(-1), /Private to you · from meetings you attended · Nov 6/)
+assert.equal(msg.channel, 'D_U_MAYA')
+for (const b of msg.blocks) { if (b.accessory) assert.ok(b.accessory.text.text.length <= 75) }
+console.log('ok  card blocks')
+
+// 2. Skips match the prototype
+for (const [p, reason] of [['riley', 'No meetings attended in this series'], ['sam', 'Holdout (measured, no card)'], ['jordan', 'Nothing for you from recent meetings'], ['leo', 'External guest']]) {
+  r = await hu.post({ persona: p, sid: 'wps', slackUser: 'U12345678', startMs: start })
+  assert.deepEqual([r.posted, r.result.reason], [false, reason])
+}
+console.log('ok  skips')
+
+// 3. Mute → muted body → Undo restores; next post for Maya is skipped while muted
+const body = { channel: { id: 'D_U_MAYA' }, message: { ts: '1' }, actions: [msg.blocks.at(-2).elements[1]] }
+await hu.setFlag(body, 'muted', true)
+assert.match(calls.at(-1)[1].blocks[1].text.text, /^Muted Weekly Product Sync/)
+assert.equal((await hu.post({ persona: 'maya', sid: 'wps', slackUser: 'U12345678', startMs: start })).result.reason, 'Series muted')
+await hu.setFlag(body, 'muted', false)
+assert.match(calls.at(-1)[1].blocks[1].text.text, /YOU OWN/)
+console.log('ok  mute / undo')
+
+// 4. Button state survives an app restart (rebuilt from the button value)
+const hu2 = createHeadsUp({ client, config, log })
+await hu2.setFlag(body, 'notUseful', true)
+assert.match(calls.at(-1)[1].blocks[1].text.text, /^Thanks/)
+console.log('ok  restart-safe actions')
+
+// 5. ICS: Google-style weekly event with TZID + Outlook-style Teams link; one-off ignored by scheduler
+const now = Date.now()
+const z = (ms) => new Date(ms).toISOString().replace(/[-:]/g, '').replace(/\.\d+/, '')
+const ics = `BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Google Inc//Google Calendar 70.9054//EN
+BEGIN:VEVENT
+UID:wps-series@google.com
+DTSTART:${z(now + 20 * 60000 - 7 * 86400000)}
+DTEND:${z(now + 70 * 60000 - 7 * 86400000)}
+RRULE:FREQ=WEEKLY
+SUMMARY:Weekly Product Sync
+LOCATION:https://meet.google.com/abc-defg-hij
+END:VEVENT
+BEGIN:VEVENT
+UID:dr-series@outlook.com
+DTSTART;TZID=America/Chicago:20261030T160000
+DTEND;TZID=America/Chicago:20261030T170000
+RRULE:FREQ=WEEKLY;INTERVAL=2
+SUMMARY:Design Review
+DESCRIPTION:Join Microsoft Teams Meeting <https://teams.microsoft.com/l/meetup-join/19%3ameeting_x>
+END:VEVENT
+BEGIN:VEVENT
+UID:oneoff@google.com
+DTSTART:${z(now + 10 * 60000)}
+DTEND:${z(now + 40 * 60000)}
+SUMMARY:Weekly Product Sync (extra)
+END:VEVENT
+END:VCALENDAR`
+const occ = await loadOccurrences({ text: ics, from: new Date(now - 60000), to: new Date(now + 30 * 86400000) })
+const wps = occ.find((o) => o.uid === 'wps-series@google.com')
+assert.ok(wps.recurring && Math.abs(wps.startMs - (now + 20 * 60000)) < 2000)
+assert.equal(wps.joinUrl, 'https://meet.google.com/abc-defg-hij')
+const dr = occ.find((o) => o.uid === 'dr-series@outlook.com')
+assert.equal(dr.joinUrl, 'https://teams.microsoft.com/l/meetup-join/19%3ameeting_x')
+assert.equal(new Date(dr.startMs).toLocaleString('en-US', { timeZone: 'America/Chicago', weekday: 'short', hour: 'numeric' }), 'Fri 4 PM')
+assert.equal(seriesMatcher(config.seriesMap)('Weekly Product Sync'), 'wps')
+console.log('ok  ICS parsing:', occ.length, 'occurrences')
+
+// 6. Scheduler fires once per (occurrence, persona) inside the reminder window
+calls.length = 0; logs.length = 0
+const sched = createScheduler({
+  headsUp: createHeadsUp({ client, config, log }), config, log,
+  users: { maya: 'U_MAYA0001', riley: 'U_RILEY001' },
+  load: (o) => loadOccurrences({ ...o, text: ics }),
+})
+config.icsUrl = 'fake://ics'
+await sched.tick(); await sched.tick()
+const events = logs.map(([e, p, d]) => `${e} ${p} ${d}`)
+console.log(events.join('\n'))
+assert.equal(calls.filter(([k]) => k === 'post').length, 1, 'Maya gets exactly one card')
+assert.ok(events.some((e) => e.startsWith('card_skipped riley Weekly Product Sync: No meetings attended')))
+assert.ok(events.some((e) => e.includes('not a recurring meeting')))
+console.log('ok  scheduler')
