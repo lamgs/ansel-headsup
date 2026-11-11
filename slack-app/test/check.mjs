@@ -113,3 +113,10 @@ assert.equal(calls.filter(([k]) => k === 'post').length, 1, 'Maya gets exactly o
 assert.ok(events.some((e) => e.startsWith('card_skipped riley Weekly Product Sync: No meetings attended')))
 assert.ok(events.some((e) => e.includes('not a recurring meeting')))
 console.log('ok  scheduler')
+
+// 7. Regression: an action on a card this process didn't post must not unmute the series
+const hu3 = createHeadsUp({ client, config, log })
+await hu3.setFlag({ channel: { id: 'D1' }, message: { ts: 'a' }, actions: [{ value: JSON.stringify({ sid: 'wps', persona: 'maya', startMs: start }) }] }, 'muted', true)
+hu3.entryFor({ channel: { id: 'D2' }, message: { ts: 'b' }, actions: [{ value: JSON.stringify({ sid: 'wps', persona: 'maya', startMs: start }) }] })
+assert.equal(hu3.evaluate('maya', 'wps').result.reason, 'Series muted')
+console.log('ok  rebuild keeps mutes')

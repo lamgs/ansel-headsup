@@ -26,7 +26,12 @@ export function createScheduler({ headsUp, config, users, log = pilotLog, load =
           fired.add(key)
           if (!o.recurring) { log('card_skipped', persona, `${o.title}: not a recurring meeting`); continue }
           if (!o.sid) { log('card_skipped', persona, `${o.title}: no Ansel series matches this title`); continue }
-          await headsUp.post({ persona, sid: o.sid, slackUser, startMs: o.startMs, joinUrl: o.joinUrl })
+          try {
+            await headsUp.post({ persona, sid: o.sid, slackUser, startMs: o.startMs, joinUrl: o.joinUrl })
+          } catch (e) {
+            fired.delete(key) // retry on the next poll
+            console.error(`post failed for ${persona}:`, e.data?.error ?? e.message)
+          }
         }
       }
       await headsUp.refreshCountdowns()

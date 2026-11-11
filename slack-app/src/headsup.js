@@ -22,8 +22,10 @@ export function createHeadsUp({ client, config, log = pilotLog }) {
 
   const seriesById = (sid) => SEED.series.find((s) => s.id === sid)
 
-  function evaluate(persona, sid) {
-    const world = buildWorld({ muted })
+  function evaluate(persona, sid, { ignoreMute = false } = {}) {
+    const m = { ...muted }
+    if (ignoreMute) delete m[`${persona}:${sid}`]
+    const world = buildWorld({ muted: m })
     const user = world.person(persona)
     const series = seriesById(sid)
     if (!user || !series) throw new Error(`Unknown persona "${persona}" or series "${sid}"`)
@@ -70,8 +72,7 @@ export function createHeadsUp({ client, config, log = pilotLog }) {
     const key = `${body.channel.id}:${body.message.ts}`
     if (live.has(key)) return live.get(key)
     const meta = JSON.parse(body.actions[0].value)
-    delete muted[`${meta.persona}:${meta.sid}`]
-    const { series, result } = evaluate(meta.persona, meta.sid)
+    const { series, result } = evaluate(meta.persona, meta.sid, { ignoreMute: true })
     const entry = { channel: body.channel.id, ts: body.message.ts, ctx: { series, result, startMs: meta.startMs, joinUrl: meta.joinUrl, prototypeUrl: config.prototypeUrl, persona: meta.persona }, muted: false, notUseful: false }
     live.set(key, entry)
     return entry

@@ -1,4 +1,9 @@
+import { existsSync } from 'node:fs'
 import { parseUserMap } from './headsup.js'
+
+// Load slack-app/.env if present (Node 20.12+). Real environment variables win.
+const envPath = new URL('../.env', import.meta.url)
+if (existsSync(envPath)) process.loadEnvFile(envPath)
 
 export function loadConfig(env = process.env) {
   return {

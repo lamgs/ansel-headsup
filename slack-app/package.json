@@ -4,8 +4,8 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "start": "node --env-file-if-exists=.env src/index.js",
-    "trigger": "node --env-file-if-exists=.env src/trigger.js",
+    "start": "node src/index.js",
+    "trigger": "node src/trigger.js",
     "test": "node test/check.mjs"
   },
   "dependencies": {

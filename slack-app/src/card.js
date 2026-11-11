@@ -64,7 +64,7 @@ export function buildCard(ctx) {
     }
     const editedItems = result.items.filter((i) => i.edited)
     if (editedItems.length) {
-      blocks.push({ type: 'context', elements: [{ type: 'mrkdwn', text: `\`Edited\`: changed by ${personName(series.organizer).split(' ')[0]} (organizer) after the meeting. ▶ shows the original.` }] })
+      blocks.push({ type: 'context', elements: [{ type: 'mrkdwn', text: `\`Edited\`: changed by ${personName(series.organizer).split(' ')[0]} (organizer) after the meeting. Open last meeting shows the original.` }] })
     }
     const lastUrl = sourceInst ? deepLink(prototypeUrl, { instanceId: sourceInst.id, tab: 'summary' }) : null
     blocks.push({

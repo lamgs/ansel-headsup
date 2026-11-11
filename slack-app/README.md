@@ -17,7 +17,7 @@ Card content comes from the same pure `buildHeadsUp()` and seed data as the prot
    cp .env.example .env
    ```
    At minimum, set the two tokens and `SLACK_USERS=maya=<your Slack email>`.
-5. Install and run (needs Node 20.6+):
+5. Install and run (needs Node 20.12+):
    ```bash
    npm install
    npm start
