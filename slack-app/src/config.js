@@ -6,6 +6,17 @@ import { parseAllowedUsers } from './access.js'
 const envPath = new URL('../.env', import.meta.url)
 if (existsSync(envPath)) process.loadEnvFile(envPath)
 
+// The hosted Ansel prototype (GitHub Pages, published from main). The card's ▶ and
+// "Open last meeting" buttons link here. PROTOTYPE_URL overrides it; PROTOTYPE_URL=off
+// turns links off, so the buttons reply in Slack with the quoted line instead.
+export const DEFAULT_PROTOTYPE_URL = 'https://lamgs.github.io/ansel-headsup/'
+
+export function prototypeUrlFrom(value) {
+  const v = (value ?? '').trim()
+  if (!v) return DEFAULT_PROTOTYPE_URL
+  return v.toLowerCase() === 'off' ? '' : v
+}
+
 export function loadConfig(env = process.env) {
   return {
     botToken: env.SLACK_BOT_TOKEN,
@@ -18,7 +29,7 @@ export function loadConfig(env = process.env) {
     seriesMap: env.SERIES_MAP || 'Weekly Product Sync=wps,Design Review=dr',
     reminderMinutes: Number(env.REMINDER_MINUTES || 30),
     pollSeconds: Number(env.POLL_SECONDS || 60),
-    prototypeUrl: env.PROTOTYPE_URL || '',
+    prototypeUrl: prototypeUrlFrom(env.PROTOTYPE_URL),
     demoJoinUrl: env.DEMO_JOIN_URL || 'https://meet.google.com/',
   }
 }

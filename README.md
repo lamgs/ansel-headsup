@@ -23,7 +23,7 @@ Every push to `main` runs both test suites (prototype and `slack-app/`), builds,
 
 One-time setup by a repo admin: **Settings → Pages → Build and deployment → Source: GitHub Actions**. Then re-run the workflow (Actions → Deploy prototype to GitHub Pages → Run workflow) or push to `main`.
 
-To make the real Slack card's ▶ and **Open last meeting** buttons open it, set `PROTOTYPE_URL=https://lamgs.github.io/ansel-headsup/` in the Slack service's `.env` (on the VM: `/opt/ansel-headsup/slack-app/.env`, then `sudo systemctl restart ansel-headsup`).
+The real Slack card's ▶ and **Open last meeting** buttons link here by default (built into `slack-app/src/config.js`; override with `PROTOTYPE_URL`). After a change to the Slack app is merged, update the VM with `sudo /opt/ansel-headsup/slack-app/deploy/setup-vm.sh`.
 
 ## Demo script
 
