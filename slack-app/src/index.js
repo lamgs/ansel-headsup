@@ -22,7 +22,7 @@ const HELP = [
   '`/headsup demo [persona]`: post a Heads-Up to you now, for a Weekly Product Sync starting in ' + config.reminderMinutes + ' min (default persona: ' + config.demoPersona + ')',
   '`/headsup check [persona]`: why a persona gets a card or is skipped (the behind-the-scenes drawer)',
   '`/headsup next`: your upcoming recurring meetings from your calendar feed and when Heads-Up fires',
-  '`/headsup ping`: show the *Ping everyone* button, which sends each mapped teammate their own Heads-Up now (people with no card get nothing)',
+  '`/headsup ping`: demo buttons. *Ping me* sends the demo card to you; *Ping everyone* sends each mapped teammate their own Heads-Up (people with no card get nothing)',
   '`/headsup reset`: clear mutes and fired triggers',
   `Personas: ${personas.join(', ')}`,
 ].join('\n')
@@ -71,13 +71,33 @@ const demoStartMs = () => Math.ceil((Date.now() + config.reminderMinutes * 60000
 
 function pingBlocks() {
   const mapped = Object.keys(config.users)
+  const buttons = [{ type: 'button', action_id: 'ping_me', text: { type: 'plain_text', text: 'Ping me' }, value: config.demoPersona }]
+  if (mapped.length) buttons.push({ type: 'button', action_id: 'ping_everyone', style: 'primary', text: { type: 'plain_text', text: 'Ping everyone' }, value: 'wps' })
   return [
-    { type: 'section', text: { type: 'mrkdwn', text: mapped.length
-      ? `*Ping everyone*: send a Heads-Up for a Weekly Product Sync starting in ${config.reminderMinutes} min to ${mapped.map(nameOf).join(', ')}. People with nothing to show get no message.`
-      : 'No teammates are mapped in `SLACK_USERS`, so there is no one to ping.' } },
-    ...(mapped.length ? [{ type: 'actions', elements: [{ type: 'button', action_id: 'ping_everyone', style: 'primary', text: { type: 'plain_text', text: 'Ping everyone' }, value: 'wps' }] }] : []),
+    { type: 'section', text: { type: 'mrkdwn', text: [
+      `*Demo ping*: a Heads-Up for a Weekly Product Sync starting in ${config.reminderMinutes} min.`,
+      `• *Ping me*: sends ${nameOf(config.demoPersona)}'s card to you only.`,
+      mapped.length
+        ? `• *Ping everyone*: sends each of ${mapped.map(nameOf).join(', ')} their own Heads-Up. People with nothing to show get no message.`
+        : '• *Ping everyone* is unavailable: no teammates are mapped in `SLACK_USERS`.',
+    ].join('\n') } },
+    { type: 'actions', elements: buttons },
   ]
 }
+
+app.action('ping_me', async ({ ack, body, respond }) => {
+  await ack()
+  if (!await allowAction(body, respond)) return
+  const persona = config.demoPersona
+  pilotLog('manual_trigger', persona, `ping me by ${body.user.id}`)
+  try {
+    const r = await headsUp.post({ persona, sid: 'wps', slackUser: body.user.id, startMs: demoStartMs(), joinUrl: config.demoJoinUrl })
+    await respond({ response_type: 'ephemeral', replace_original: false, text: r.posted ? `Sent ${nameOf(persona)}'s Heads-Up to your DMs with Ansel.` : `No card for ${nameOf(persona)}: *${r.result.reason}*.` })
+  } catch (e) {
+    console.error('ping me failed:', e.data?.error ?? e.message)
+    await respond({ response_type: 'ephemeral', replace_original: false, text: `Something went wrong: ${e.data?.error ?? e.message}` })
+  }
+})
 
 let pinging = false
 app.action('ping_everyone', async ({ ack, body, respond }) => {
