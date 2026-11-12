@@ -67,6 +67,8 @@ for (const inst of SEED.instances) {
     }
   }
   for (const it of items) assert.ok(times.has(it.t), `${inst.id} item ${it.id} cites ${it.t}, which has no transcript line`)
+  const linked = new Set(inst.themes.flatMap((th) => th.items))
+  for (const it of items) assert.ok(linked.has(it.id), `${inst.id} item ${it.id} isn't linked to any theme`)
   console.log(`ok  themes ${inst.id}: ${inst.themes.length}`)
 }
 for (const key of Object.keys(SEED_COMMENTS)) {
