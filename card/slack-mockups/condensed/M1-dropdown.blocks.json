@@ -1,0 +1,82 @@
+{
+  "blocks": [
+    {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": "*30 min · Weekly Product Sync*\nYou own 3 items · 4 more from the team last week"
+      }
+    },
+    {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": "• *<https://lamgs.github.io/ansel-headsup/#ansel/wps-1106/transcript/14:32/a2|Forecast update>*\n• *<https://lamgs.github.io/ansel-headsup/#ansel/wps-1106/transcript/22:15/a8|Customer interview notes>*\n• ~<https://lamgs.github.io/ansel-headsup/#ansel/wps-1106/transcript/09:40/a9|Dashboard link>~  _Done_"
+      }
+    },
+    {
+      "type": "actions",
+      "elements": [
+        {
+          "type": "static_select",
+          "action_id": "hu_done_pick",
+          "placeholder": {
+            "type": "plain_text",
+            "text": "Mark done"
+          },
+          "options": [
+            {
+              "text": {
+                "type": "plain_text",
+                "text": "Forecast update"
+              },
+              "value": "a2"
+            },
+            {
+              "text": {
+                "type": "plain_text",
+                "text": "Customer interview notes"
+              },
+              "value": "a8"
+            }
+          ]
+        },
+        {
+          "type": "button",
+          "action_id": "hu_join",
+          "text": {
+            "type": "plain_text",
+            "text": "Join Zoom"
+          },
+          "style": "primary",
+          "url": "https://zoom.us/j/0000000000"
+        },
+        {
+          "type": "button",
+          "action_id": "hu_open_last",
+          "text": {
+            "type": "plain_text",
+            "text": "Open in Ansel"
+          },
+          "url": "https://lamgs.github.io/ansel-headsup/#ansel/wps-1106/summary/"
+        },
+        {
+          "type": "button",
+          "action_id": "hu_mute",
+          "text": {
+            "type": "plain_text",
+            "text": "Mute series"
+          }
+        },
+        {
+          "type": "button",
+          "action_id": "hu_nu",
+          "text": {
+            "type": "plain_text",
+            "text": "Not useful"
+          }
+        }
+      ]
+    }
+  ]
+}
