@@ -10,7 +10,7 @@ import { NipSwitch, useNip } from './shared.jsx'
 
 const Page = ({ title, sub, children }) => (
   <div className="h-full overflow-y-auto">
-    <div className="mx-auto max-w-3xl px-8 py-8">
+    <div className="max-w-3xl px-6 py-8">
       <h1 className="text-xl font-semibold">{title}</h1>
       {sub && <p className="mt-1 text-sm text-slate-500">{sub}</p>}
       <div className="mt-6">{children}</div>
