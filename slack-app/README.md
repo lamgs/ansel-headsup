@@ -62,7 +62,7 @@ git check-ignore slack-app/.env
 
 [`deploy/setup-vm.sh`](deploy/setup-vm.sh) installs Node 22, the service's dependencies and a `systemd` service (starts on boot, restarts on crash) on a Debian/Ubuntu VM. Re-run it to update.
 
-1. In Google Cloud, create a VM: **e2-micro**, region `us-central1`, `us-east1` or `us-west1` (free tier), **standard persistent disk** up to 30 GB, Debian 12. No firewall rules or external ports are needed.
+1. In Google Cloud, create a VM: **e2-micro**, region `us-central1`, `us-east1` or `us-west1` (free tier), **standard persistent disk** up to 30 GB, **Debian 13 (trixie), x86/64**. No firewall rules or external ports are needed.
 2. Set a billing budget alert (e.g. $1) so any charge is noticed immediately.
 3. SSH in (the **SSH** button in the console) and run:
    ```bash
