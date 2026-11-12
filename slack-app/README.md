@@ -66,6 +66,7 @@ git check-ignore slack-app/.env
 2. Set a billing budget alert (e.g. $1) so any charge is noticed immediately.
 3. SSH in (the **SSH** button in the console) and run:
    ```bash
+   sudo apt-get update && sudo apt-get install -y git   # Debian images don't include Git
    sudo git clone https://github.com/lamgs/ansel-headsup.git /opt/ansel-headsup
    sudo nano /opt/ansel-headsup/slack-app/.env   # paste your slack-app/.env, save
    sudo /opt/ansel-headsup/slack-app/deploy/setup-vm.sh

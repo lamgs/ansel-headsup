@@ -2,6 +2,7 @@
 # Install or update the Ansel Heads-Up Slack service on a Debian/Ubuntu VM (e.g. Google Cloud e2-micro).
 # Safe to re-run: use it for first install and for every update.
 #
+#   sudo apt-get update && sudo apt-get install -y git
 #   sudo git clone https://github.com/lamgs/ansel-headsup.git /opt/ansel-headsup
 #   sudo /opt/ansel-headsup/slack-app/deploy/setup-vm.sh
 #
