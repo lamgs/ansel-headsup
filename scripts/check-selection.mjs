@@ -3,6 +3,7 @@
 import assert from 'node:assert/strict'
 import { SEED, SEED_COMMENTS } from '../src/data/seed.js'
 import { TRANSCRIPTS } from '../src/data/transcripts.js'
+import { SUMMARIES } from '../src/data/summaries.js'
 import { buildHeadsUp } from '../src/logic/buildHeadsUp.js'
 import { buildWorld } from '../src/logic/world.js'
 
@@ -71,6 +72,16 @@ for (const inst of SEED.instances) {
   for (const it of items) assert.ok(linked.has(it.id), `${inst.id} item ${it.id} isn't linked to any theme`)
   console.log(`ok  themes ${inst.id}: ${inst.themes.length}`)
 }
+// Summary text: every recorded meeting has an overview, every decision and question has a
+// context line, and no context refers to an item that isn't in that meeting.
+for (const inst of SEED.instances.filter((i) => i.recorded)) {
+  const text = SUMMARIES[inst.id]
+  assert.ok(text?.overview?.trim(), `${inst.id} has no summary overview`)
+  const ids = [...inst.decisions, ...inst.openQuestions].map((x) => x.id)
+  for (const id of ids) assert.ok(text.context?.[id]?.trim(), `${inst.id} ${id} has no context line`)
+  for (const id of Object.keys(text.context || {})) assert.ok(ids.includes(id), `${inst.id} context for unknown item ${id}`)
+}
+console.log('ok  summary overview + context lines')
 for (const key of Object.keys(SEED_COMMENTS)) {
   const [, instId, ...t] = key.split(':')
   assert.ok(TRANSCRIPTS[instId].some((s) => s.t === t.join(':')), `seed comment ${key} has no line`)

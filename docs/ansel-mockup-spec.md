@@ -84,6 +84,14 @@ Layout sketch (the player is audio only):
 - Answers only appear where the person can open the Nov 6 record (Aryan without the direct share sees none). "What do I owe" is offered to Gabriel only. The thread resets when the persona changes.
 - Transcript: the speaker's avatar and name sit on the same line as their first line of dialogue, in a fixed column; consecutive lines from the same speaker leave it blank.
 
+**Summary redesign (branch `rishabh/ansel-work`)**
+- Order: overview card (2 sentences plus live counts) → "For you, <name>" (items you own with due status and Update, questions you're tagged on) → decision and open-question cards → action item table → themes timeline. Attendees list sits under "For you" on wide screens.
+- Two columns when the Summary is at least 768 px wide; one column below that (overview, For you, decisions; attendees hidden).
+- Decision and question cards: bold statement, one context line, ▶ link under the text. Edit history is "Edited by <name> · View original" instead of inline strikethrough. Open questions have an amber outline; resolved ones show a "Resolved" tag. Organizer edit and attendee comments are kept.
+- Action items: Owner · Item · Due · status/▶, the viewer's row first and tinted, then by due date. Dates are relative to the demo day (Nov 13): "Due yesterday", or the date in amber when overdue. Only Done / On track / changed items get a tag.
+- Themes: one bar split by duration; clicking a section opens the transcript on that theme. Themes holding the viewer's items are outlined.
+- Overview and context text live in `src/data/summaries.js`; `npm test` checks every recorded meeting has an overview and every decision and question has a context line.
+
 **Summary tab (Granola-style)**
 - Single readable column (~680 px), generous spacing, section headings: Decisions, Open questions, Action items, Themes.
 - Short bullets with a quiet ▶ timestamp on the right; `Edited` shown inline with the original struck through.
