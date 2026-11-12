@@ -58,12 +58,12 @@ export const SEED = {
       ],
       openQuestions: [{ id: 'q2', text: 'Launch date: Mar 3 or Mar 10?', t: '27:05', stakeholders: ['gabriel', 'rishabh'], status: 'open' }],
       actionItems: [
-        { id: 'a2', text: 'Update Q1 forecast with new conversion numbers', short: 'Forecast update', owner: 'gabriel', due: '2026-11-12', t: '14:32', status: 'open' },
-        { id: 'a3', text: 'Send final pricing page copy to Rishabh', owner: 'alex', due: '2026-11-11', t: '41:52', status: 'open' },
-        { id: 'a4', text: 'Estimate QA time for payment flow', short: 'QA estimate', owner: 'rishabh', due: '2026-11-12', t: '28:30', status: 'open' },
-        { id: 'a5', text: 'Send the updated launch checklist before next sync', short: 'Launch checklist', owner: 'alicia', due: '2026-11-11', t: '47:20', status: 'open' },
-        { id: 'a6', text: 'Update the pricing model with the final tiers', short: 'Pricing model update', owner: 'varun', due: '2026-11-11', t: '34:30', status: 'open' },
-        { id: 'a7', text: 'Write the payment flow test plan', short: 'Payment flow test plan', owner: 'aryan', due: '2026-11-12', t: '28:50', status: 'open' },
+        { id: 'a2', text: 'Update Q1 forecast with new conversion numbers', short: 'Forecast update', summary: 'Rerun the Q1 forecast with the new conversion numbers and add it to the shared deck.', owner: 'gabriel', due: '2026-11-12', t: '14:32', status: 'open' },
+        { id: 'a3', text: 'Send final pricing page copy to Rishabh', short: 'Pricing page copy', summary: 'Send Rishabh the final pricing page copy so it ships with v2.', owner: 'alex', due: '2026-11-11', t: '41:52', status: 'open' },
+        { id: 'a4', text: 'Estimate QA time for payment flow', short: 'QA estimate', summary: 'Estimate QA time for the payment flow so the launch date can be set.', owner: 'rishabh', due: '2026-11-12', t: '28:30', status: 'open' },
+        { id: 'a5', text: 'Send the updated launch checklist before next sync', short: 'Launch checklist', summary: "Send the updated launch checklist before next week's sync.", owner: 'alicia', due: '2026-11-11', t: '47:20', status: 'open' },
+        { id: 'a6', text: 'Update the pricing model with the final tiers', short: 'Pricing model update', summary: 'Update the pricing model with the final tiers now that legal is clear.', owner: 'varun', due: '2026-11-11', t: '34:30', status: 'open' },
+        { id: 'a7', text: 'Write the payment flow test plan', short: 'Payment flow test plan', summary: 'Write the payment flow test plan the QA estimate will build on.', owner: 'aryan', due: '2026-11-12', t: '28:50', status: 'open' },
       ],
       // Discussion themes: contiguous transcript ranges, in meeting order.
       themes: [

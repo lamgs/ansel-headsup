@@ -125,7 +125,6 @@ app.action('ping_everyone', async ({ ack, body, respond }) => {
   }
 })
 
-const meta = (body) => JSON.parse(body.actions[0].value)
 
 // Buttons on the Home tab have no response_url, so their feedback is shown on the Home tab itself.
 const fromHome = (body) => body.view?.type === 'home'
@@ -177,36 +176,18 @@ async function allowAction(body, respond) {
   return false
 }
 
-app.action('join', async ({ ack, body, respond }) => {
+// Every card button: action_id "hu_<act>[:<item>][:<reason>]" (see headsup.js handleAction)
+app.action(/^hu_/, async ({ ack, body, action, respond }) => {
   await ack()
   if (!await allowAction(body, respond)) return
-  const m = meta(body)
-  const d = Math.round((m.startMs - Date.now()) / 60000)
-  pilotLog('meeting_joined', m.persona, Math.abs(d) < 1 ? 'on time' : d > 0 ? `joined ${d} min before start` : `late, ${-d} min after start`)
+  try {
+    const reply = await headsUp.handleAction(body, action)
+    if (reply) await respond({ response_type: 'ephemeral', replace_original: false, text: reply })
+  } catch (e) {
+    console.error('card action failed:', e.data?.error ?? e.message)
+    await respond({ response_type: 'ephemeral', replace_original: false, text: `Something went wrong: ${e.data?.error ?? e.message}` })
+  }
 })
-
-app.action(/^ts_/, async ({ ack, body, action, respond }) => {
-  await ack()
-  if (!await allowAction(body, respond)) return
-  const v = JSON.parse(action.value)
-  const entry = headsUp.entryFor(body)
-  pilotLog('timestamp_tapped', entry.ctx.persona, `▶ ${v.t} (${v.section})`)
-  if (!action.url) await respond({ response_type: 'ephemeral', replace_original: false, text: headsUp.transcriptQuote(v.instanceId, v.t) })
-})
-
-app.action('open_last_meeting', async ({ ack, body, action, respond }) => {
-  await ack()
-  if (!await allowAction(body, respond)) return
-  const entry = headsUp.entryFor(body)
-  const inst = entry.ctx.result.items[0]?.instanceId
-  pilotLog('open_last_meeting', entry.ctx.persona, inst)
-  if (!action.url && inst) await respond({ response_type: 'ephemeral', replace_original: false, text: headsUp.summaryText(inst) })
-})
-
-app.action('mute_series', async ({ ack, body, respond }) => { await ack(); if (await allowAction(body, respond)) await headsUp.setFlag(body, 'muted', true) })
-app.action('undo_mute', async ({ ack, body, respond }) => { await ack(); if (await allowAction(body, respond)) await headsUp.setFlag(body, 'muted', false) })
-app.action('not_useful', async ({ ack, body, respond }) => { await ack(); if (await allowAction(body, respond)) await headsUp.setFlag(body, 'notUseful', true) })
-app.action('undo_not_useful', async ({ ack, body, respond }) => { await ack(); if (await allowAction(body, respond)) await headsUp.setFlag(body, 'notUseful', false) })
 
 await app.start()
 scheduler.start()

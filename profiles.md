@@ -6,6 +6,10 @@ Who plays which role in the Heads-Up demo. The team's real names are used, but *
 
 ## How a card is built (so edits stay realistic)
 
+**Slack card (current, follows the design in [`card/`](card/README.md)):** everyone on the Weekly Product Sync invite gets a card listing **every action item from the last meeting (Nov 6), each with its owner**. Your own items come first, marked YOURS, with Mark done; everyone else's show the owner's name. No card for the holdout (Sam), people without Slack (Alex) or external guests (Leo). So the personal part of each card is the YOURS row below, and every card also shows the other five items.
+
+**Prototype card (the React app's own Heads-Up screen):** unchanged, built by `src/logic/buildHeadsUp.js` with the rules below.
+
 For Weekly Product Sync, a person gets a card if they attended a recent recorded meeting **and** own an open action item or are a stakeholder on an open question. The card then shows up to one item per section:
 
 - **You own:** their open action item from the most recent meeting (earliest due date wins).
@@ -24,7 +28,7 @@ So with the items below, everyone shares *Still open: Launch date: Mar 3 or Mar 
 | `varun` | Varun | he/him | Finance Partner | Pricing model update, due Wed *(34:30)* | Launch date (latest meeting) | Pricing page ships with v2 `Edited` |
 | `aryan` | Aryan | he/him | QA Engineer | Payment flow test plan, due Thu *(28:50)* | Launch date (latest meeting) | Pricing page ships with v2 `Edited` |
 | `sam` | Sam Ortiz *(synthetic)* | n/a | Engineer | No card: *Holdout (measured, no card)* | | |
-| `riley` | Riley Park *(synthetic)* | n/a | Support Lead, new to the series | No card: *No meetings attended in this series* | | |
+| `riley` | Riley Park *(synthetic)* | n/a | Support Lead, new to the series | Prototype: no card (*No meetings attended*). Slack: a card with everyone's items and no YOURS row | | |
 | `alex` | Alex Kim *(synthetic)* | n/a | Content Designer | No card: *Slack not connected* | | |
 | `leo` | Leo Grant *(synthetic)* | n/a | Agency partner | No card: *External guest* | | |
 
@@ -73,7 +77,7 @@ Times in *(mm:ss)* are where the item is said in the Nov 6 transcript; the card'
 - Attends all three meetings but is in the randomized holdout group, so never gets a card. Shown on the Pilot Log screen.
 
 ### Riley Park (`riley`, synthetic): new to the series
-- Newly invited, no recorded meetings attended, so no card until after a first meeting. Used on the Governance screen, where Alicia adds Riley and can share the Nov 6 notes.
+- Newly invited, no recorded meetings attended. In the prototype, no card until after a first meeting (used on the Governance screen, where Alicia adds Riley and can share the Nov 6 notes). In Slack, Riley is on the invite, so gets a card showing everyone else's items with no YOURS row.
 
 ### Alex Kim and Leo Grant (synthetic)
 Unchanged: no Slack account, and external agency guest.

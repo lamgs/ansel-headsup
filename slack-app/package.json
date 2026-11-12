@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node src/index.js",
     "trigger": "node src/trigger.js",
-    "test": "node test/check.mjs"
+    "test": "node test/card.mjs && node test/check.mjs"
   },
   "dependencies": {
     "@slack/bolt": "^5.1.0",

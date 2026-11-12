@@ -14,6 +14,8 @@ This is not yet an always-on or production deployment. The current process runs 
 
 ## Completed
 
+- **Slack card redesigned to match `card/` (contract 2.0)**: countdown with Join, every action item from last meeting with owners (yours first, `YOURS`), Mark done, Not right with reasons, Not useful with reasons, Mute with Undo, "Why am I seeing this?" and the trust footer; the same event names as `card/CONTRACT.md`. Card tests: `slack-app/test/card.mjs`.
+
 - The React prototype builds and its selection tests pass.
 - The Slack app manifest is applied to the workspace with `/headsup`, interactivity, Socket Mode, and the required bot scopes.
 - The app has one active bot token and one active app-level Socket Mode token; the superseded app-level token was revoked.

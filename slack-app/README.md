@@ -5,7 +5,7 @@ A real Slack app that posts the Heads-Up card as a DM from "Ansel". It can be tr
 1. **Calendar trigger:** polls a Google or Outlook calendar ICS feed and posts at *meeting start − 30 min* for **recurring** meetings whose title matches a seeded Ansel series.
 2. **Manual demo trigger:** `/headsup demo` in Slack (or `npm run trigger` from a terminal) posts the card right away, for a meeting "starting in 30 min".
 
-Personas (who gets which card and why) are described in [`../profiles.md`](../profiles.md). Card content comes from the same pure `buildHeadsUp()` and seed data as the prototype (`../src/logic`, `../src/data`), so the copy and the skip rules match. The calendar supplies the trigger time, the meeting title (matched to a series) and the join link. Socket Mode means no public URL is needed: it runs on a laptop.
+Personas (who gets which card and why) are described in [`../profiles.md`](../profiles.md). The Slack card follows the Heads-Up card design in [`../card/`](../card/README.md) (contract 2.0, [`../card/CONTRACT.md`](../card/CONTRACT.md)): a countdown with Join, every action item from last meeting with its owner (yours first, marked `YOURS`), Mark done and Not right on rows, and the trust footer. The card data is built from the shared seed by [`../src/logic/buildCardData.js`](../src/logic/buildCardData.js). The calendar supplies the trigger time, the meeting title (matched to a series) and the join link. Socket Mode means no public URL is needed.
 
 ## Token and ownership model
 
@@ -167,12 +167,21 @@ Create a recurring event titled **Weekly Product Sync**, with a Meet, Teams or Z
 
 ## Card actions
 
-| Button | Behavior | Pilot event (logged to the console) |
+The card matches [`../card/heads-up-card.js`](../card/heads-up-card.js) and logs the same event names as [`../card/CONTRACT.md`](../card/CONTRACT.md) §4 (to the console, as `[pilot]` lines; ★ marks value actions). Every change updates the card in place and has an Undo.
+
+| Button | Behavior | Event |
 |---|---|---|
-| Join | Opens the meeting link | `meeting_joined` (before start, on time or late) |
-| ▶ mm:ss | Opens the prototype at that transcript line if `PROTOTYPE_URL` is set, otherwise replies with the quoted line | `timestamp_tapped` |
-| Open last meeting | Prototype Summary view, or a summary reply | `open_last_meeting` |
-| Mute series / Not useful | Replaces the card body, with Undo | `series_muted` / `not_useful` |
+| Join Teams / Join now | Opens the meeting link; the only green button; removed after the meeting ends | `join_tap` (with `joinedPrepared`: true if ▶ or Mark done came first) |
+| ▶ mm:ss | Opens the prototype at that transcript line if `PROTOTYPE_URL` is set, otherwise replies privately with the quoted line | `timestamp_tap` ★ |
+| Mark done / ✓ Done | Only on your own rows: marks the row done, tap again to undo | `mark_done` ★ / `mark_done_undone` |
+| Not right → reason / Flagged | On any row: asks "What's wrong?" (Wrong owner, Not a real item, Already done); Flagged undoes | `item_flagged`, `item_flag_reason`, `item_flag_undone` |
+| +N more in Ansel | Shown when there are more than 6 items | `more_tap` |
+| Open last meeting | Prototype Summary view, or a private summary reply | `open_last_meeting` |
+| Mute series / Undo | Collapses the card to one line (Join stays) and stops future cards for the series | `mute_series` / `mute_undone` |
+| Not useful → reason / Undo | Asks "What was off?" (Already knew this, Wrong meeting, Bad timing) | `not_useful`, `not_useful_reason`, `not_useful_undone` |
+| Why am I seeing this? | Shows the explanation under the footer; tap again to hide | `why_opened` |
+
+Also logged: `card_shown`, `card_suppressed` (holdout), `card_skipped` (with the reason) and `state_changed` (posted → starting-soon → started → ended). The countdown and time bar update every poll. Slack can't draw the web card's large timer, colored time bar, row stripes or green done rows, so they are shown as text: `*30 min*`, `▰▰▰▱▱▱▱▱▱▱`, `YOURS`, `✓ Done`.
 
 To get the deep links, host the prototype: run `npm run build` in the repo root, deploy `dist/` (Netlify drop, Vercel or GitHub Pages), and set `PROTOTYPE_URL`. Links look like `…/#ansel/wps-1106/transcript/14:32/a2`.
 

@@ -1,7 +1,7 @@
-// Offline checks: card blocks, ICS parsing (Google + Outlook style), scheduler firing, card actions.
+// Offline checks: allowlist, ICS parsing (Google + Outlook style), scheduler, per-person calendars, ping, App Home.
+// Card layout and buttons: test/card.mjs.
 // Uses a fake Slack client, so no tokens or network. Run: npm test
 import assert from 'node:assert/strict'
-import { buildCard } from '../src/card.js'
 import { loadOccurrences, seriesMatcher } from '../src/calendar.js'
 import { createHeadsUp } from '../src/headsup.js'
 import { createScheduler, redactUrls } from '../src/scheduler.js'
@@ -31,44 +31,8 @@ assert.equal((await hu.post({ persona: 'gabriel', sid: 'wps', slackUser: 'U_INTR
 assert.equal(calls.length, 0)
 console.log('ok  user allowlist')
 
-// 1. Card for Gabriel
+// Card layout and card buttons are covered in test/card.mjs (no calendar library needed).
 const start = Date.now() + 30 * 60000
-let r = await hu.post({ persona: 'gabriel', sid: 'wps', slackUser: 'gabriel@acme.example', startMs: start })
-assert.equal(r.posted, true)
-const msg = calls[0][1]
-const texts = msg.blocks.map((b) => b.text?.text ?? b.elements?.map((e) => e.text?.text ?? e.text).join(' | '))
-console.log(texts.join('\n'))
-assert.match(texts[1], /YOU OWN\*\n• Forecast update — due Thu \(may already be done\)/)
-assert.match(texts[2], /STILL OPEN\*\n• Launch date: Mar 3 or Mar 10\?/)
-assert.match(texts[3], /DECIDED\*\n• Pricing page ships with v2  `Edited`/)
-assert.equal(msg.blocks[0].accessory.text.text, 'Join · starts in 30 min')
-assert.equal(msg.blocks[1].accessory.url, 'https://demo.example/headsup/#ansel/wps-1106/transcript/14:32/a2')
-assert.match(texts.at(-1), /Private to you · from meetings you attended · Nov 6/)
-assert.equal(msg.channel, 'D_U_GABRIEL')
-for (const b of msg.blocks) { if (b.accessory) assert.ok(b.accessory.text.text.length <= 75) }
-console.log('ok  card blocks')
-
-// 2. Skips match the prototype
-for (const [p, reason] of [['riley', 'No meetings attended in this series'], ['sam', 'Holdout (measured, no card)'], ['alex', 'Slack not connected'], ['leo', 'External guest']]) {
-  r = await hu.post({ persona: p, sid: 'wps', slackUser: 'U12345678', startMs: start })
-  assert.deepEqual([r.posted, r.result.reason], [false, reason])
-}
-console.log('ok  skips')
-
-// 3. Mute → muted body → Undo restores; next post for Gabriel is skipped while muted
-const body = { channel: { id: 'D_U_GABRIEL' }, message: { ts: '1' }, actions: [msg.blocks.at(-2).elements[1]] }
-await hu.setFlag(body, 'muted', true)
-assert.match(calls.at(-1)[1].blocks[1].text.text, /^Muted Weekly Product Sync/)
-assert.equal((await hu.post({ persona: 'gabriel', sid: 'wps', slackUser: 'U12345678', startMs: start })).result.reason, 'Series muted')
-await hu.setFlag(body, 'muted', false)
-assert.match(calls.at(-1)[1].blocks[1].text.text, /YOU OWN/)
-console.log('ok  mute / undo')
-
-// 4. Button state survives an app restart (rebuilt from the button value)
-const hu2 = createHeadsUp({ client, config, access, log })
-await hu2.setFlag(body, 'notUseful', true)
-assert.match(calls.at(-1)[1].blocks[1].text.text, /^Thanks/)
-console.log('ok  restart-safe actions')
 
 // 5. ICS: Google-style weekly event with TZID + Outlook-style Teams link; one-off ignored by scheduler
 const now = Date.now()
@@ -113,7 +77,7 @@ console.log('ok  ICS parsing:', occ.length, 'occurrences')
 calls.length = 0; logs.length = 0
 const sched = createScheduler({
   headsUp: createHeadsUp({ client, config, access, log }), config, log,
-  users: { gabriel: 'UGABRIEL01', riley: 'URILEY001' },
+  users: { gabriel: 'UGABRIEL01', sam: 'U12345678' },
   load: (o) => loadOccurrences({ ...o, text: ics }),
 })
 config.icsUrl = 'fake://ics'
@@ -121,7 +85,7 @@ await sched.tick(); await sched.tick()
 const events = logs.map(([e, p, d]) => `${e} ${p} ${d}`)
 console.log(events.join('\n'))
 assert.equal(calls.filter(([k]) => k === 'post').length, 1, 'Gabriel gets exactly one card')
-assert.ok(events.some((e) => e.startsWith('card_skipped riley Weekly Product Sync: No meetings attended')))
+assert.ok(events.some((e) => e.startsWith('card_suppressed sam Weekly Product Sync: Holdout')))
 assert.ok(events.some((e) => e.includes('not a recurring meeting')))
 console.log('ok  scheduler')
 
@@ -174,10 +138,3 @@ const denied = buildHome({ allowed: false, demoName: 'Gabriel', mappedNames: [],
 assert.ok(!JSON.stringify(denied).includes('ping_me') && JSON.stringify(denied).includes('not enabled'))
 assert.ok(home.blocks.length <= 100)
 console.log('ok  app home')
-
-// 7. Regression: an action on a card this process didn't post must not unmute the series
-const hu3 = createHeadsUp({ client, config, access, log })
-await hu3.setFlag({ channel: { id: 'D1' }, message: { ts: 'a' }, actions: [{ value: JSON.stringify({ sid: 'wps', persona: 'gabriel', startMs: start }) }] }, 'muted', true)
-hu3.entryFor({ channel: { id: 'D2' }, message: { ts: 'b' }, actions: [{ value: JSON.stringify({ sid: 'wps', persona: 'gabriel', startMs: start }) }] })
-assert.equal(hu3.evaluate('gabriel', 'wps').result.reason, 'Series muted')
-console.log('ok  rebuild keeps mutes')

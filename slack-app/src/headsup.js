@@ -1,9 +1,10 @@
-// Heads-Up service: evaluate with the same pure buildHeadsUp() the prototype uses, post to Slack, handle card actions.
-import { SEED } from '../../src/data/seed.js'
+// Heads-Up service: build card data (contract 2.0, card/CONTRACT.md), post it to Slack, handle every card action.
+import { SEED, RETENTION_DAYS } from '../../src/data/seed.js'
 import { TRANSCRIPTS } from '../../src/data/transcripts.js'
-import { buildHeadsUp, shortDate } from '../../src/logic/buildHeadsUp.js'
+import { shortDate } from '../../src/logic/buildHeadsUp.js'
+import { buildCardData } from '../../src/logic/buildCardData.js'
 import { buildWorld } from '../../src/logic/world.js'
-import { buildCard } from './card.js'
+import { buildCard, cardState, FLAG_REASONS } from './card.js'
 
 export function pilotLog(event, persona, detail = '') {
   const t = new Date().toLocaleTimeString('en-US', { hour12: false })
@@ -17,20 +18,22 @@ export function parseUserMap(s = '') {
 
 export function createHeadsUp({ client, config, access, log = pilotLog }) {
   const muted = {} // `${persona}:${sid}` → true
-  const live = new Map() // `${channel}:${ts}` → { ctx, muted, notUseful }
+  const live = new Map() // `${channel}:${ts}` → card entry
   const userIds = {}
 
   const seriesById = (sid) => SEED.series.find((s) => s.id === sid)
+  const nameOf = (id) => SEED.people.find((p) => p.id === id)?.name ?? id
 
-  function evaluate(persona, sid, { ignoreMute = false } = {}) {
+  /** → { series, result: { eligible, reason, suppressed?, data? } } */
+  function evaluate(persona, sid, { ignoreMute = false, startMs, joinUrl } = {}) {
     const m = { ...muted }
     if (ignoreMute) delete m[`${persona}:${sid}`]
     const world = buildWorld({ muted: m })
     const user = world.person(persona)
     const series = seriesById(sid)
     if (!user || !series) throw new Error(`Unknown persona "${persona}" or series "${sid}"`)
-    if (!series.invitees.includes(persona)) return { series, result: { eligible: false, reason: 'Not invited to this series', items: [], considered: [], cost: '' } }
-    return { series, result: buildHeadsUp(user, series, { date: series.nextInstance.date, sec: 0 }, world) }
+    const result = buildCardData(user, series, world, { startMs, joinUrl: joinUrl || config.demoJoinUrl, reminderMinutes: config.reminderMinutes, retentionDays: RETENTION_DAYS })
+    return { series, result }
   }
 
   async function resolveUser(ref) {
@@ -39,30 +42,34 @@ export function createHeadsUp({ client, config, access, log = pilotLog }) {
     return userIds[ref]
   }
 
-  /** Evaluate and, if eligible, post the card as a DM. Returns { posted, result }. */
+  const freshUi = () => ({ muted: false, notUseful: null, done: {}, flags: {}, whyOpen: false, tapped: false })
+  const render = (entry) => buildCard(entry, { nowMs: Date.now(), prototypeUrl: config.prototypeUrl })
+  const update = (entry) => client.chat.update({ channel: entry.channel, ts: entry.ts, ...render(entry) })
+
+  /** Evaluate and, if eligible, post the card as a DM. Returns { posted, series, result }. */
   async function post({ persona, sid, slackUser, startMs, joinUrl }) {
     if (!access || !await access.isAllowed(slackUser)) {
-      const series = seriesById(sid)
-      const result = { eligible: false, reason: 'Not authorized for this app', items: [], considered: [], cost: '' }
+      const result = { eligible: false, reason: 'Not authorized for this app' }
       log('access_denied', persona, `Slack user ${slackUser || '(missing)'}`)
-      return { posted: false, series, result }
+      return { posted: false, series: seriesById(sid), result }
     }
-    const { series, result } = evaluate(persona, sid)
+    const { series, result } = evaluate(persona, sid, { startMs, joinUrl })
     if (!result.eligible) {
-      log('card_skipped', persona, `${series.title}: ${result.reason}`)
+      log(result.suppressed ? 'card_suppressed' : 'card_skipped', persona, `${series.title}: ${result.reason}`)
       return { posted: false, series, result }
     }
-    log('card_eligible', persona, `${series.title}: ${result.items.length} items`)
-    const ctx = { series, result, startMs, joinUrl: joinUrl || config.demoJoinUrl, prototypeUrl: config.prototypeUrl, persona }
     const userId = await resolveUser(slackUser)
     const { channel } = await client.conversations.open({ users: userId })
-    const res = await client.chat.postMessage({ channel: channel.id, ...buildCard({ ...ctx, nowMs: Date.now() }) })
-    live.set(`${channel.id}:${res.ts}`, { channel: channel.id, ts: res.ts, ctx, muted: false, notUseful: false })
-    log('card_posted', persona, `${series.title} · Slack DM ${userId}`)
+    const entry = { channel: channel.id, persona, sid, startMs, joinUrl: result.data.meeting.joinUrl, postMs: Date.now(), data: result.data, ui: freshUi() }
+    entry.lastState = cardState(Date.now(), startMs, result.data.meeting.durationMinutes)
+    const res = await client.chat.postMessage({ channel: channel.id, ...render(entry) })
+    entry.ts = res.ts
+    live.set(`${channel.id}:${res.ts}`, entry)
+    log('card_shown', persona, `${series.title} · ${result.data.actionItems.items.length} action items · Slack DM ${userId}`)
     return { posted: true, series, result }
   }
 
-  /** "Ping everyone": post each mapped person their own persona's card. Skipped people get nothing. */
+  /** "Ping everyone": post each mapped person their own card. People with no card get nothing. */
   async function pingAll(users, { sid = 'wps', startMs, joinUrl } = {}) {
     const sent = [], skipped = [], failed = []
     for (const [persona, slackUser] of Object.entries(users)) {
@@ -77,14 +84,14 @@ export function createHeadsUp({ client, config, access, log = pilotLog }) {
     return { sent, skipped, failed }
   }
 
-  const render = (entry) => buildCard({ ...entry.ctx, nowMs: Date.now(), muted: entry.muted, notUseful: entry.notUseful })
-
-  /** Keep the Join countdown current. Called by the scheduler every poll. */
+  /** Keep the countdown current and log state changes. Called by the scheduler every poll. */
   async function refreshCountdowns() {
     const now = Date.now()
     for (const [key, entry] of live) {
-      if (now > entry.ctx.startMs + 15 * 60000) { live.delete(key); continue }
-      await client.chat.update({ channel: entry.channel, ts: entry.ts, ...render(entry) }).catch((e) => console.warn('update failed', e.data?.error ?? e.message))
+      const state = cardState(now, entry.startMs, entry.data.meeting.durationMinutes)
+      if (state !== entry.lastState) { log('state_changed', entry.persona, `${entry.lastState} → ${state}`); entry.lastState = state }
+      await update(entry).catch((e) => console.warn('update failed', e.data?.error ?? e.message))
+      if (state === 'ended') live.delete(key)
     }
   }
 
@@ -93,31 +100,64 @@ export function createHeadsUp({ client, config, access, log = pilotLog }) {
     const key = `${body.channel.id}:${body.message.ts}`
     if (live.has(key)) return live.get(key)
     const meta = JSON.parse(body.actions[0].value)
-    const { series, result } = evaluate(meta.persona, meta.sid, { ignoreMute: true })
-    const entry = { channel: body.channel.id, ts: body.message.ts, ctx: { series, result, startMs: meta.startMs, joinUrl: meta.joinUrl, prototypeUrl: config.prototypeUrl, persona: meta.persona }, muted: false, notUseful: false }
+    const { result } = evaluate(meta.p, meta.s, { ignoreMute: true, startMs: meta.st, joinUrl: meta.j })
+    if (!result.data) throw new Error(`Card can't be rebuilt: ${result.reason}`)
+    const entry = { channel: body.channel.id, ts: body.message.ts, persona: meta.p, sid: meta.s, startMs: meta.st, joinUrl: meta.j, data: result.data, ui: freshUi() }
+    entry.lastState = cardState(Date.now(), entry.startMs, entry.data.meeting.durationMinutes)
     live.set(key, entry)
     return entry
   }
 
-  async function setFlag(body, flag, on) {
+  const itemById = (entry, id) => entry.data.actionItems.items.find((i) => i.id === id)
+
+  /**
+   * Handle a card button (action_id "hu_<act>[:<item>][:<reason>]"). Updates the card, logs the
+   * contract event and returns a private reply to show the user, if any.
+   */
+  async function handleAction(body, action) {
+    const [act, a1, a2] = action.action_id.replace(/^hu_/, '').split(':')
     const entry = entryFor(body)
-    const { persona, series } = entry.ctx
-    entry[flag] = on
-    if (flag === 'muted') {
-      if (on) muted[`${persona}:${series.id}`] = true
-      else delete muted[`${persona}:${series.id}`]
+    const { ui, persona } = entry
+    const title = entry.data.meeting.title
+    const it = a1 ? itemById(entry, a1) : null
+    const ev = (name, detail = '') => log(name, persona, detail)
+    switch (act) {
+      case 'join':
+        ev('join_tap', `${entry.data.meeting.platform} · joinedPrepared=${ui.tapped}`)
+        return null
+      case 'play':
+        ui.tapped = true
+        ev('timestamp_tap', `★ ▶ ${it?.t} · ${it?.text}`)
+        return action.url || !it ? null : transcriptQuote(entry.data.lastMeeting.meetingId, it.t)
+      case 'done': ui.done[a1] = true; ui.tapped = true; ev('mark_done', `★ ${it?.text}`); break
+      case 'done_undo': ui.done[a1] = false; ev('mark_done_undone', it?.text); break
+      case 'flag': ui.flags[a1] = { reason: null }; ev('item_flagged', `${it?.text} · owner ${it?.owner.id}`); break
+      case 'flag_reason': ui.flags[a1] = { reason: a2 }; ev('item_flag_reason', `${it?.text} · ${FLAG_REASONS.find(([r]) => r === a2)?.[1] ?? a2}`); break
+      case 'flag_undo': delete ui.flags[a1]; ev('item_flag_undone', it?.text); break
+      case 'more':
+        ev('more_tap', `+${entry.data.actionItems.moreCount}`)
+        return action.url ? null : summaryText(entry.data.lastMeeting.meetingId)
+      case 'open_last':
+        ev('open_last_meeting', entry.data.lastMeeting.meetingId)
+        return action.url ? null : summaryText(entry.data.lastMeeting.meetingId)
+      case 'mute': ui.muted = true; muted[`${persona}:${entry.sid}`] = true; ev('mute_series', title); break
+      case 'mute_undo': ui.muted = false; delete muted[`${persona}:${entry.sid}`]; ev('mute_undone', title); break
+      case 'nu': ui.notUseful = { reason: null }; ev('not_useful', title); break
+      case 'nu_reason': ui.notUseful = { reason: a1 }; ev('not_useful_reason', a1); break
+      case 'nu_undo': ui.notUseful = null; ev('not_useful_undone', title); break
+      case 'why': ui.whyOpen = !ui.whyOpen; if (ui.whyOpen) ev('why_opened', title); break
+      default: return null
     }
-    log(flag === 'muted' ? 'series_muted' : 'not_useful', persona, `${series.title}${on ? '' : ' (undone)'}`)
-    await client.chat.update({ channel: entry.channel, ts: entry.ts, ...render(entry) })
+    await update(entry)
+    return null
   }
 
   function transcriptQuote(instanceId, t) {
     const segs = TRANSCRIPTS[instanceId] || []
     const i = segs.findIndex((s) => s.t === t)
     if (i < 0) return `No transcript line at ${t}.`
-    const name = (id) => SEED.people.find((p) => p.id === id).name.split(' ')[0]
     const inst = SEED.instances.find((x) => x.id === instanceId)
-    return [`*Weekly Product Sync · ${shortDate(inst.date)} · transcript*`, ...segs.slice(i, i + 2).map((s) => `>\`${s.t}\` *${name(s.speaker)}*  ${s.text}`)].join('\n')
+    return [`*Weekly Product Sync · ${shortDate(inst.date)} · transcript*`, ...segs.slice(i, i + 2).map((s) => `>\`${s.t}\` *${nameOf(s.speaker)}*  ${s.text}`)].join('\n')
   }
 
   function summaryText(instanceId) {
@@ -127,22 +167,24 @@ export function createHeadsUp({ client, config, access, log = pilotLog }) {
     lines.push('*Open questions*')
     for (const q of inst.openQuestions) lines.push(`• ${q.text}  \`${q.t}\``)
     lines.push('*Action items*')
-    for (const a of inst.actionItems) lines.push(`• ${a.text} · ${SEED.people.find((p) => p.id === a.owner).name}  \`${a.t}\``)
+    for (const a of inst.actionItems) lines.push(`• ${a.text} · ${nameOf(a.owner)}  \`${a.t}\``)
     return lines.join('\n')
   }
 
   function explain(persona) {
-    const lines = [`*Heads-Up decisions for ${SEED.people.find((p) => p.id === persona)?.name ?? persona}*`]
+    const lines = [`*Heads-Up for ${nameOf(persona)}*`]
     for (const s of SEED.series.filter((x) => x.invitees.includes(persona))) {
       const { result } = evaluate(persona, s.id)
-      lines.push(`\n*${s.title}*: ${result.eligible ? 'Eligible' : 'Skip'} · ${result.reason}`)
-      for (const c of result.considered) lines.push(`${c.picked ? '✓' : '–'} ${c.section} · ${c.text}: _${c.why}_`)
-      if (result.cost) lines.push(`\`${result.cost}\``)
+      lines.push(`\n*${s.title}*: ${result.eligible ? 'Card' : 'No card'} · ${result.reason}`)
+      if (result.data) {
+        for (const i of result.data.actionItems.items) lines.push(`${i.owner.id === persona ? '• *YOURS*' : '•'} ${i.text} · ${i.owner.name}  \`▶ ${i.t}\``)
+        lines.push('`Built from last week\'s recording · no new AI processing · only you see it`')
+      }
     }
     return lines.join('\n')
   }
 
   const reset = () => { for (const k of Object.keys(muted)) delete muted[k]; live.clear() }
 
-  return { evaluate, post, pingAll, resolveUser, refreshCountdowns, entryFor, setFlag, transcriptQuote, summaryText, explain, reset, live }
+  return { evaluate, post, pingAll, resolveUser, refreshCountdowns, entryFor, handleAction, transcriptQuote, summaryText, explain, reset, live }
 }
