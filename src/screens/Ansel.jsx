@@ -69,7 +69,7 @@ function MeetingList() {
   )
 }
 
-const canSee = (state, inst) => inst.attendees.includes(state.persona) || (state.persona === 'riley' && state.share && inst.id === 'wps-1106')
+const canSee = (state, inst) => inst.attendees.includes(state.persona) || (state.persona === 'aryan' && state.share && inst.id === 'wps-1106')
 
 function MeetingDetail() {
   const { state, dispatch, world } = useStore()
@@ -279,7 +279,7 @@ function ActionItems({ inst }) {
 function AskAnsel() {
   const qa = [
     ['What did we decide about the pricing page?', 'The pricing page ships with v2, not before (41:18).'],
-    ['Who is bringing the launch date recommendation?', 'Maya and Sam, at next week’s sync (27:40).'],
+    ['Who is bringing the launch date recommendation?', 'Gabriel and Rishabh, at next week’s sync (27:40).'],
   ]
   return (
     <div className="max-w-2xl space-y-4 p-6">

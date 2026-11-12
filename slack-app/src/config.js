@@ -12,7 +12,7 @@ export function loadConfig(env = process.env) {
     appToken: env.SLACK_APP_TOKEN,
     allowedUsers: parseAllowedUsers(env.ALLOWED_SLACK_USERS),
     users: parseUserMap(env.SLACK_USERS),
-    demoPersona: env.DEMO_PERSONA || 'maya',
+    demoPersona: env.DEMO_PERSONA || 'gabriel',
     icsUrl: env.CALENDAR_ICS_URL || '',
     calendars: parseCalendarFeeds(env),
     seriesMap: env.SERIES_MAP || 'Weekly Product Sync=wps,Design Review=dr',
@@ -23,7 +23,7 @@ export function loadConfig(env = process.env) {
   }
 }
 
-/** CALENDAR_ICS_URL_MAYA=https://… → { maya: 'https://…' }. One variable per person keeps each link a separate secret. */
+/** CALENDAR_ICS_URL_MAYA=https://… → { gabriel: 'https://…' }. One variable per person keeps each link a separate secret. */
 export function parseCalendarFeeds(env = process.env) {
   const prefix = 'CALENDAR_ICS_URL_'
   return Object.fromEntries(Object.entries(env)

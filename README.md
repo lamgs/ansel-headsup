@@ -19,12 +19,12 @@ npm test         # checks buildHeadsUp against the per-persona table + transcrip
 
 ## Demo script
 
-1. Persona **Maya** (default). Clock starts at 1:25 PM, Fri Nov 13. Click **Jump to 1:30 PM**. A toast appears and the **Ansel** DM gets an unread badge.
-2. Open the Ansel DM and scan the card. Tap **▶ 14:32**: the Ansel transcript opens on Jordan's line (highlighted for 3 s) with the item panel.
+1. Persona **Gabriel** (default). Clock starts at 1:25 PM, Fri Nov 13. Click **Jump to 1:30 PM**. A toast appears and the **Ansel** DM gets an unread badge.
+2. Open the Ansel DM and scan the card. Tap **▶ 14:32**: the Ansel transcript opens on Alicia's line (highlighted for 3 s) with the item panel.
 3. **Mark done** (or On track / New date / Reassign). Back in Slack, the line reads "✓ Forecast update — marked done".
 4. **Join** shows the unchanged recording notice, then the call with the Ansel Notetaker tile.
-5. Open **Behind the scenes** and switch personas (Jordan, Sam, Dana, Alex, Riley, Leo) to see each skip reason, the items considered and the cost line.
-6. As **Jordan**, edit a Decision or Open question in Ansel → Summary (✎). It becomes a tracked change, and Maya's card shows **Edited** on that line.
+5. Open **Behind the scenes** and switch personas (Alicia, Rishabh, Varun, Alex, Aryan, Leo) to see each skip reason, the items considered and the cost line.
+6. As **Alicia**, edit a Decision or Open question in Ansel → Summary (✎). It becomes a tracked change, and Gabriel's card shows **Edited** on that line.
 7. **Setup & governance**: G1–G4. Ticking the G3 share checkbox adds a direct-share row to the G4 audit log.
 8. End on the **Pilot log**.
 
@@ -52,3 +52,5 @@ The Slack app uses **central service credentials**, not one token per teammate:
 - `ALLOWED_SLACK_USERS` is a deny-by-default list of the pilot users who may invoke commands, receive cards, or use card actions.
 
 For installation, secret handling, and the live verification checklist, see the [Slack app runbook](slack-app/README.md).
+
+Demo personas and their roles: [`profiles.md`](profiles.md).

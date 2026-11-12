@@ -2,6 +2,8 @@
 
 _Last updated: 2026-11-12_
 
+Personas now use the team's names (Gabriel, Alicia, Rishabh, Varun, Aryan); see [`profiles.md`](profiles.md) for each role.
+
 ## Stage
 
 **Working local pilot / manual Slack demo.** The prototype builds, the Slack app is installed in the Chicago Booth workspace, Socket Mode connects successfully, and an authorized end-to-end demo card has been posted as a private Slack DM.
@@ -15,9 +17,9 @@ This is not yet an always-on or production deployment. The current process runs 
 - The app has one active bot token and one active app-level Socket Mode token; the superseded app-level token was revoked.
 - Tokens are stored only in the Git-ignored `slack-app/.env` file on the current machine.
 - The service starts successfully over Socket Mode with no connection errors.
-- A live manual trigger posted Maya's Heads-Up card to an authorized user's Slack DM.
+- A live manual trigger posted Gabriel's Heads-Up card to an authorized user's Slack DM.
 - Access is deny-by-default. Commands, scheduled/manual DMs, and card actions are restricted by `ALLOWED_SLACK_USERS`.
-- The current local allowlist contains 10 approved email aliases. Only the Maya persona is mapped for scheduled delivery.
+- The current local allowlist contains 10 approved email aliases. Only the Gabriel persona is mapped for scheduled delivery.
 - Offline Slack tests cover the allowlist, card blocks, skip rules, mute/undo, restart-safe actions, ICS parsing, and scheduler behavior.
 
 ## Credential and runtime model
@@ -58,7 +60,7 @@ This pilot is acceptable for a demo, not for real user data. Say so explicitly w
 
 ## Next stage
 
-1. Deploy one `slack-app/` worker to an always-on host and move the central tokens and allowlist into its encrypted environment variables.
+1. Deploy the `slack-app/` service to Railway using the steps in [`slack-app/README.md`](slack-app/README.md#deploy-to-railway-always-on) (`railway.json` + `slack-app/Dockerfile` are in the repo; not yet test-built) and move the central tokens, allowlist and calendar links into its variables.
 2. Run the team verification checklist in [`slack-app/README.md`](slack-app/README.md), including an allowlisted and a non-allowlisted user.
 3. Add and validate the recurring calendar feed.
 4. Host the prototype and set `PROTOTYPE_URL` if transcript deep links are needed for the demo.

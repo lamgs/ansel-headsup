@@ -20,19 +20,19 @@ const client = {
 const config = { prototypeUrl: 'https://demo.example/headsup/', demoJoinUrl: 'https://meet.google.com/abc-defg-hij', reminderMinutes: 30, seriesMap: 'Weekly Product Sync=wps,Design Review=dr' }
 const logs = []
 const log = (...a) => logs.push(a)
-const access = createAccessControl({ client, allowedUsers: ['maya@acme.example', 'U12345678', 'UMAYA0001', 'URILEY001'], log })
+const access = createAccessControl({ client, allowedUsers: ['gabriel@acme.example', 'U12345678', 'UGABRIEL01', 'UARYAN001'], log })
 const hu = createHeadsUp({ client, config, access, log })
 
-assert.equal(await access.isAllowed('maya@acme.example'), true)
-assert.equal(await access.isAllowed('U_MAYA'), true)
+assert.equal(await access.isAllowed('gabriel@acme.example'), true)
+assert.equal(await access.isAllowed('U_GABRIEL'), true)
 assert.equal(await access.isAllowed('intruder@acme.example'), false)
-assert.equal((await hu.post({ persona: 'maya', sid: 'wps', slackUser: 'U_INTRUDER', startMs: Date.now() })).result.reason, 'Not authorized for this app')
+assert.equal((await hu.post({ persona: 'gabriel', sid: 'wps', slackUser: 'U_INTRUDER', startMs: Date.now() })).result.reason, 'Not authorized for this app')
 assert.equal(calls.length, 0)
 console.log('ok  user allowlist')
 
-// 1. Card for Maya
+// 1. Card for Gabriel
 const start = Date.now() + 30 * 60000
-let r = await hu.post({ persona: 'maya', sid: 'wps', slackUser: 'maya@acme.example', startMs: start })
+let r = await hu.post({ persona: 'gabriel', sid: 'wps', slackUser: 'gabriel@acme.example', startMs: start })
 assert.equal(r.posted, true)
 const msg = calls[0][1]
 const texts = msg.blocks.map((b) => b.text?.text ?? b.elements?.map((e) => e.text?.text ?? e.text).join(' | '))
@@ -43,22 +43,22 @@ assert.match(texts[3], /DECIDED\*\n• Pricing page ships with v2  `Edited`/)
 assert.equal(msg.blocks[0].accessory.text.text, 'Join · starts in 30 min')
 assert.equal(msg.blocks[1].accessory.url, 'https://demo.example/headsup/#ansel/wps-1106/transcript/14:32/a2')
 assert.match(texts.at(-1), /Private to you · from meetings you attended · Nov 6/)
-assert.equal(msg.channel, 'D_U_MAYA')
+assert.equal(msg.channel, 'D_U_GABRIEL')
 for (const b of msg.blocks) { if (b.accessory) assert.ok(b.accessory.text.text.length <= 75) }
 console.log('ok  card blocks')
 
 // 2. Skips match the prototype
-for (const [p, reason] of [['riley', 'No meetings attended in this series'], ['sam', 'Holdout (measured, no card)'], ['jordan', 'Nothing for you from recent meetings'], ['leo', 'External guest']]) {
+for (const [p, reason] of [['aryan', 'No meetings attended in this series'], ['rishabh', 'Holdout (measured, no card)'], ['alicia', 'Nothing for you from recent meetings'], ['leo', 'External guest']]) {
   r = await hu.post({ persona: p, sid: 'wps', slackUser: 'U12345678', startMs: start })
   assert.deepEqual([r.posted, r.result.reason], [false, reason])
 }
 console.log('ok  skips')
 
-// 3. Mute → muted body → Undo restores; next post for Maya is skipped while muted
-const body = { channel: { id: 'D_U_MAYA' }, message: { ts: '1' }, actions: [msg.blocks.at(-2).elements[1]] }
+// 3. Mute → muted body → Undo restores; next post for Gabriel is skipped while muted
+const body = { channel: { id: 'D_U_GABRIEL' }, message: { ts: '1' }, actions: [msg.blocks.at(-2).elements[1]] }
 await hu.setFlag(body, 'muted', true)
 assert.match(calls.at(-1)[1].blocks[1].text.text, /^Muted Weekly Product Sync/)
-assert.equal((await hu.post({ persona: 'maya', sid: 'wps', slackUser: 'U12345678', startMs: start })).result.reason, 'Series muted')
+assert.equal((await hu.post({ persona: 'gabriel', sid: 'wps', slackUser: 'U12345678', startMs: start })).result.reason, 'Series muted')
 await hu.setFlag(body, 'muted', false)
 assert.match(calls.at(-1)[1].blocks[1].text.text, /YOU OWN/)
 console.log('ok  mute / undo')
@@ -112,20 +112,20 @@ console.log('ok  ICS parsing:', occ.length, 'occurrences')
 calls.length = 0; logs.length = 0
 const sched = createScheduler({
   headsUp: createHeadsUp({ client, config, access, log }), config, log,
-  users: { maya: 'UMAYA0001', riley: 'URILEY001' },
+  users: { gabriel: 'UGABRIEL01', aryan: 'UARYAN001' },
   load: (o) => loadOccurrences({ ...o, text: ics }),
 })
 config.icsUrl = 'fake://ics'
 await sched.tick(); await sched.tick()
 const events = logs.map(([e, p, d]) => `${e} ${p} ${d}`)
 console.log(events.join('\n'))
-assert.equal(calls.filter(([k]) => k === 'post').length, 1, 'Maya gets exactly one card')
-assert.ok(events.some((e) => e.startsWith('card_skipped riley Weekly Product Sync: No meetings attended')))
+assert.equal(calls.filter(([k]) => k === 'post').length, 1, 'Gabriel gets exactly one card')
+assert.ok(events.some((e) => e.startsWith('card_skipped aryan Weekly Product Sync: No meetings attended')))
 assert.ok(events.some((e) => e.includes('not a recurring meeting')))
 console.log('ok  scheduler')
 
 // 6b. Per-person calendars: each feed only triggers its owner; a broken feed is logged without its URL
-assert.deepEqual(parseCalendarFeeds({ CALENDAR_ICS_URL_MAYA: ' https://a.example/m.ics ', CALENDAR_ICS_URL_: 'x', CALENDAR_ICS_URL_RILEY: '', OTHER: 'y' }), { maya: 'https://a.example/m.ics' })
+assert.deepEqual(parseCalendarFeeds({ CALENDAR_ICS_URL_MAYA: ' https://a.example/m.ics ', CALENDAR_ICS_URL_: 'x', CALENDAR_ICS_URL_RILEY: '', OTHER: 'y' }), { gabriel: 'https://a.example/m.ics' })
 assert.equal(redactUrls('GET https://outlook.office365.com/owa/calendar/abc/secret/calendar.ics 404'), 'GET [calendar URL hidden] 404')
 calls.length = 0; logs.length = 0
 const empty = 'BEGIN:VCALENDAR\r\nVERSION:2.0\r\nEND:VCALENDAR\r\n'
@@ -135,29 +135,29 @@ const origError = console.error
 console.error = (...a) => errors.push(a.join(' '))
 const perPerson = createScheduler({
   headsUp: createHeadsUp({ client, config, access, log }),
-  config: { ...config, icsUrl: '', calendars: { maya: 'fake://maya', riley: 'fake://riley', sam: 'https://secret.example/sam.ics' } },
+  config: { ...config, icsUrl: '', calendars: { gabriel: 'fake://gabriel', aryan: 'fake://aryan', rishabh: 'https://secret.example/rishabh.ics' } },
   log,
-  users: { maya: 'UMAYA0001', riley: 'URILEY001', sam: 'U12345678' },
+  users: { gabriel: 'UGABRIEL01', aryan: 'UARYAN001', rishabh: 'U12345678' },
   load: async (o) => {
     loaded.push(o.url)
-    if (o.url.includes('sam')) throw new Error(`fetch failed for ${o.url}`)
-    return loadOccurrences({ ...o, text: o.url === 'fake://maya' ? ics : empty })
+    if (o.url.includes('rishabh')) throw new Error(`fetch failed for ${o.url}`)
+    return loadOccurrences({ ...o, text: o.url === 'fake://gabriel' ? ics : empty })
   },
 })
 await perPerson.tick()
 console.error = origError
-assert.deepEqual(loaded.sort(), ['fake://maya', 'fake://riley', 'https://secret.example/sam.ics'])
-assert.equal(calls.filter(([k]) => k === 'post').length, 1, 'only Maya (whose calendar has the meeting) gets a card')
-assert.ok(!logs.some(([, p]) => p === 'riley'), 'Riley is not evaluated for a meeting on Maya\'s calendar')
-assert.ok(errors.some((e) => e.includes('calendar feed for sam failed') && e.includes('[calendar URL hidden]')))
+assert.deepEqual(loaded.sort(), ['fake://gabriel', 'fake://aryan', 'https://secret.example/rishabh.ics'])
+assert.equal(calls.filter(([k]) => k === 'post').length, 1, 'only Gabriel (whose calendar has the meeting) gets a card')
+assert.ok(!logs.some(([, p]) => p === 'aryan'), 'Aryan is not evaluated for a meeting on Gabriel\'s calendar')
+assert.ok(errors.some((e) => e.includes('calendar feed for rishabh failed') && e.includes('[calendar URL hidden]')))
 assert.ok(!errors.some((e) => e.includes('secret.example')), 'calendar URL never logged')
-assert.deepEqual((await perPerson.upcoming(24, ['riley'])).length, 0, 'upcoming() can be limited to one person')
-assert.deepEqual(perPerson.calendarPersonas().sort(), ['maya', 'riley', 'sam'])
+assert.deepEqual((await perPerson.upcoming(24, ['aryan'])).length, 0, 'upcoming() can be limited to one person')
+assert.deepEqual(perPerson.calendarPersonas().sort(), ['gabriel', 'aryan', 'rishabh'])
 console.log('ok  per-person calendars')
 
 // 7. Regression: an action on a card this process didn't post must not unmute the series
 const hu3 = createHeadsUp({ client, config, access, log })
-await hu3.setFlag({ channel: { id: 'D1' }, message: { ts: 'a' }, actions: [{ value: JSON.stringify({ sid: 'wps', persona: 'maya', startMs: start }) }] }, 'muted', true)
-hu3.entryFor({ channel: { id: 'D2' }, message: { ts: 'b' }, actions: [{ value: JSON.stringify({ sid: 'wps', persona: 'maya', startMs: start }) }] })
-assert.equal(hu3.evaluate('maya', 'wps').result.reason, 'Series muted')
+await hu3.setFlag({ channel: { id: 'D1' }, message: { ts: 'a' }, actions: [{ value: JSON.stringify({ sid: 'wps', persona: 'gabriel', startMs: start }) }] }, 'muted', true)
+hu3.entryFor({ channel: { id: 'D2' }, message: { ts: 'b' }, actions: [{ value: JSON.stringify({ sid: 'wps', persona: 'gabriel', startMs: start }) }] })
+assert.equal(hu3.evaluate('gabriel', 'wps').result.reason, 'Series muted')
 console.log('ok  rebuild keeps mutes')

@@ -24,7 +24,7 @@ export default function JoinFlow() {
     )
   }
 
-  const people = ['jordan', 'sam', 'dana', state.persona === 'maya' ? 'maya' : state.persona].filter((v, i, a) => a.indexOf(v) === i)
+  const people = ['alicia', 'rishabh', 'varun', state.persona === 'gabriel' ? 'gabriel' : state.persona].filter((v, i, a) => a.indexOf(v) === i)
   return (
     <div className="fixed inset-0 z-50 flex flex-col bg-slate-950 text-white">
       <div className="flex items-center justify-between px-5 py-3 text-sm">

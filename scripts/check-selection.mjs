@@ -11,8 +11,8 @@ const now = { date: '2026-11-13', sec: 13.5 * 3600 }
 const run = (pid, sid) => buildHeadsUp(world.person(pid), SEED.series.find((s) => s.id === sid), now, world)
 
 const expected = {
-  wps: { maya: true, jordan: 'Nothing for you from recent meetings', sam: 'Holdout (measured, no card)', dana: 'Nothing for you from recent meetings', alex: 'Slack not connected', riley: 'No meetings attended in this series', leo: 'External guest' },
-  dr: { maya: 'No record of last meeting', jordan: 'No record of last meeting' },
+  wps: { gabriel: true, alicia: 'Nothing for you from recent meetings', rishabh: 'Holdout (measured, no card)', varun: 'Nothing for you from recent meetings', alex: 'Slack not connected', aryan: 'No meetings attended in this series', leo: 'External guest' },
+  dr: { gabriel: 'No record of last meeting', alicia: 'No record of last meeting' },
 }
 for (const [sid, rows] of Object.entries(expected)) {
   for (const [pid, exp] of Object.entries(rows)) {
@@ -23,20 +23,20 @@ for (const [sid, rows] of Object.entries(expected)) {
   }
 }
 
-const maya = run('maya', 'wps')
-assert.deepEqual(maya.items.map((i) => [i.section, i.id, i.t]), [['own', 'a2', '14:32'], ['open', 'q2', '27:05'], ['decided', 'd3', '41:18']])
-assert.equal(maya.items[0].text, 'Forecast update')
-assert.equal(maya.items[0].dueLabel, 'due Thu')
-assert.equal(maya.items[0].hedge, true)
-assert.equal(maya.items[2].edited, true)
-assert.equal(maya.recordsRead, 3)
-console.log('ok  maya card items + cost:', maya.cost)
+const gabriel = run('gabriel', 'wps')
+assert.deepEqual(gabriel.items.map((i) => [i.section, i.id, i.t]), [['own', 'a2', '14:32'], ['open', 'q2', '27:05'], ['decided', 'd3', '41:18']])
+assert.equal(gabriel.items[0].text, 'Forecast update')
+assert.equal(gabriel.items[0].dueLabel, 'due Thu')
+assert.equal(gabriel.items[0].hedge, true)
+assert.equal(gabriel.items[2].edited, true)
+assert.equal(gabriel.recordsRead, 3)
+console.log('ok  gabriel card items + cost:', gabriel.cost)
 
 // Muted series and done item
-const w2 = buildWorld({ muted: { 'maya:wps': true } })
-assert.equal(buildHeadsUp(w2.person('maya'), SEED.series[0], now, w2).reason, 'Series muted')
+const w2 = buildWorld({ muted: { 'gabriel:wps': true } })
+assert.equal(buildHeadsUp(w2.person('gabriel'), SEED.series[0], now, w2).reason, 'Series muted')
 const w3 = buildWorld({ itemUpdates: { a2: { kind: 'done' } } })
-const r3 = buildHeadsUp(w3.person('maya'), SEED.series[0], now, w3)
+const r3 = buildHeadsUp(w3.person('gabriel'), SEED.series[0], now, w3)
 assert.ok(r3.items.length <= 3 && !r3.items.some((i) => i.id === 'a2'))
 console.log('ok  mute + done exclusion')
 
