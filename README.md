@@ -14,7 +14,7 @@ See [`current_status.md`](current_status.md) for the current pilot stage and rem
 npm ci
 npm run dev      # local dev server
 npm run build    # static build in dist/ (relative paths, can be hosted anywhere)
-npm test         # checks buildHeadsUp against the per-persona table + transcript spacing
+npm test         # checks buildHeadsUp against the per-persona table, transcript spacing, themes
 ```
 
 ## Demo script
@@ -38,6 +38,7 @@ npm test         # checks buildHeadsUp against the per-persona table + transcrip
 | `src/logic/world.js` | Merges in-memory edits, status updates, mutes and settings over the seed |
 | `src/state/store.jsx` | Reducer, simulated clock, trigger processing, event log |
 | `src/screens/*` | Slack (mock), Heads-Up card, Ansel app, join flow, Setup & governance, Pilot log |
+| `src/screens/ansel/*` | Ansel app mockup: meeting record (Transcript, Summary, Action items, Ask Ansel), side panel, inactive pages. Spec: [`docs/ansel-mockup-spec.md`](docs/ansel-mockup-spec.md) |
 | `src/components/*` | Demo bar, behind-the-scenes drawer, UI primitives |
 
 ## Slack app (real integration)

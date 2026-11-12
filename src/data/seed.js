@@ -29,12 +29,20 @@ export const SEED = {
       decisions: [{ id: 'd1', text: 'Q1 launch scope locked: payments + pricing page', t: '08:10', priority: 2 }],
       openQuestions: [],
       actionItems: [],
+      themes: [
+        { id: 'th-1023-1', title: 'Status round-up', start: '00:04', end: '05:02', items: [] },
+        { id: 'th-1023-2', title: 'Q1 scope & pricing sketches', start: '08:10', end: '29:50', items: ['d1'] },
+      ],
     },
     {
       id: 'wps-1030', series: 'wps', date: '2026-10-30', recorded: true, attendees: ['jordan', 'maya', 'sam', 'alex'],
       decisions: [{ id: 'd2', text: 'Beta waitlist closes Nov 15', t: '05:40', priority: 2 }],
       openQuestions: [{ id: 'q1', text: 'Do we need legal review for new pricing?', t: '19:22', stakeholders: ['jordan', 'dana'], status: 'resolved', resolvedIn: 'wps-1106' }],
       actionItems: [{ id: 'a1', text: 'Pull conversion data from dashboard', owner: 'maya', due: '2026-11-03', t: '22:15', status: 'done' }],
+      themes: [
+        { id: 'th-1030-1', title: 'Status & beta waitlist', start: '00:06', end: '09:30', items: ['d2'] },
+        { id: 'th-1030-2', title: 'Pricing legal & conversion data', start: '14:45', end: '31:40', items: ['q1', 'a1'] },
+      ],
     },
     {
       id: 'wps-1106', series: 'wps', date: '2026-11-06', recorded: true, durationMin: 48, attendees: ['jordan', 'maya', 'sam', 'dana', 'alex'],
@@ -51,8 +59,24 @@ export const SEED = {
         { id: 'a3', text: 'Send final pricing page copy to Sam', owner: 'alex', due: '2026-11-11', t: '41:52', status: 'open' },
         { id: 'a4', text: 'Estimate QA time for payment flow', owner: 'sam', due: '2026-11-12', t: '28:30', status: 'open' },
       ],
+      // Discussion themes: contiguous transcript ranges, in meeting order.
+      themes: [
+        { id: 'th-1106-1', title: 'Status round-up', start: '00:05', end: '05:25', items: [] },
+        { id: 'th-1106-2', title: 'Q1 roadmap review', start: '06:05', end: '13:25', items: [] },
+        { id: 'th-1106-3', title: 'Forecast & conversion', start: '14:05', end: '21:25', items: ['a2'] },
+        { id: 'th-1106-4', title: 'QA & launch date', start: '22:05', end: '27:40', items: ['q2'] },
+        { id: 'th-1106-5', title: 'Launch checklist & legal', start: '28:05', end: '34:20', items: ['a4', 'd4'] },
+        { id: 'th-1106-6', title: 'Pricing page', start: '34:45', end: '41:52', items: ['d3', 'a3'] },
+        { id: 'th-1106-7', title: 'Wrap-up & owners', start: '42:30', end: '47:40', items: [] },
+      ],
     },
   ],
+}
+
+// Comments already on the record when the demo starts. Keyed like state.comments:
+// `line:<instanceId>:<t>` for transcript lines, or a summary item id.
+export const SEED_COMMENTS = {
+  'line:wps-1106:16:05': [{ by: 'dana', text: 'March revenue line is updated in the budget view.', on: '2026-11-07' }],
 }
 
 // Demo constants

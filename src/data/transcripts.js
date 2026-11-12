@@ -1,119 +1,95 @@
-// Transcripts. Key lines are verbatim from the PRD; filler is deterministic and
-// generated so consecutive segments are never more than 60 seconds apart.
+// Transcripts. Key lines are verbatim from the PRD.
 
 const toSec = (t) => { const [m, s] = t.split(':').map(Number); return m * 60 + s }
-const toT = (sec) => `${String(Math.floor(sec / 60)).padStart(2, '0')}:${String(sec % 60).padStart(2, '0')}`
 
-const NOV6_KEY = [
-  ['00:05', 'jordan', "Okay, let's start. Quick round, then launch planning."],
-  ['14:32', 'jordan', "Maya, can you update the Q1 forecast with the new conversion numbers? Ideally before next week's sync."],
-  ['14:51', 'maya', "Yep. I'll have it in the shared deck by Thursday."],
-  ['27:05', 'sam', 'Launch date. Are we holding March 3 or moving to March 10? QA wants a full week on the payment flow.'],
-  ['27:40', 'jordan', "Let's not lock it without the new forecast. Maya, Sam, bring a recommendation next week."],
-  ['28:30', 'sam', "I'll get a QA estimate on the payment flow by Thursday."],
-  ['33:10', 'dana', 'Legal came back. No separate review needed for the new pricing tiers.'],
-  ['41:18', 'jordan', 'Decided, then. The pricing page ships with v2, not before.'],
-  ['41:52', 'alex', "I'll send Sam final copy for the pricing page by Wednesday."],
-  ['47:40', 'jordan', 'Thanks all. Same time next week.'],
+// Nov 6 is written out in full. Lines that a summary item cites are marked key and
+// stay verbatim; consecutive lines are never more than 60 seconds apart.
+const NOV6 = [
+  // Status round-up
+  ['00:05', 'jordan', "Okay, let's start. Quick round, then launch planning.", true],
+  ['00:45', 'sam', 'Payments service is green in staging. Two flaky tests left, nothing blocking.'],
+  ['01:25', 'jordan', 'Good. Dana, anything from finance this week?'],
+  ['02:05', 'dana', 'Budget close is on track. I sent the October numbers to the channel.'],
+  ['02:45', 'alex', 'Design side, the checkout screens are in review. I shared the file this morning.'],
+  ['03:25', 'maya', 'Dashboard refresh went out Tuesday. Conversion is up a bit week over week.'],
+  ['04:05', 'jordan', 'Nice. Can you drop the link in the doc after this?'],
+  ['04:45', 'maya', 'Sure, I will.'],
+  ['05:25', 'sam', 'One heads-up: the on-call rotation changes next week.'],
+  // Q1 roadmap review
+  ['06:05', 'jordan', 'Noted. Let me share my screen for the roadmap.'],
+  ['06:45', 'alex', 'Can everyone see it? It looks a little small on my end.'],
+  ['07:25', 'jordan', 'Zooming in. Better?'],
+  ['08:05', 'dana', 'Yes, that works.'],
+  ['08:45', 'jordan', 'So this is where we are against the Q1 plan.'],
+  ['09:25', 'sam', 'The payments line still shows amber. That should be green now.'],
+  ['10:05', 'jordan', 'I will update it after the call.'],
+  ['10:45', 'alex', 'Is the pricing page on this view too?'],
+  ['11:25', 'jordan', 'Second row. We will come back to it.'],
+  ['12:05', 'dana', 'Quick question on the headcount line, is that still current?'],
+  ['12:45', 'jordan', 'It is, as of Monday.'],
+  ['13:25', 'sam', 'The support docs row is new. I added it yesterday.'],
+  // Forecast & conversion
+  ['14:05', 'jordan', 'Thanks. The forecast is the big dependency for launch, so let us start there.'],
+  ['14:32', 'jordan', "Maya, can you update the Q1 forecast with the new conversion numbers? Ideally before next week's sync.", true],
+  ['14:51', 'maya', "Yep. I'll have it in the shared deck by Thursday.", true],
+  ['15:25', 'maya', 'The new conversion numbers are about two points higher than what the forecast assumes.'],
+  ['16:05', 'dana', 'That changes the revenue line for March, right?'],
+  ['16:45', 'maya', 'It does, mostly in the second half of the quarter.'],
+  ['17:25', 'jordan', 'Okay. That matters for the launch date conversation.'],
+  ['18:05', 'sam', 'Are we including the beta cohort in those numbers?'],
+  ['18:45', 'maya', 'Not yet. That is a separate tab.'],
+  ['19:25', 'dana', 'I would keep them separate until the waitlist closes.'],
+  ['20:05', 'jordan', 'Agreed. Let us keep moving.'],
+  ['20:45', 'alex', 'Sorry, my audio dropped for a second. Back now.'],
+  ['21:25', 'jordan', 'No problem. We were on the forecast. Maya has it.'],
+  // QA & launch date
+  ['22:05', 'sam', 'Can I share the QA board quickly?'],
+  ['22:45', 'jordan', 'Go ahead.'],
+  ['23:25', 'sam', 'Here is the payment flow test plan. About forty cases.'],
+  ['24:05', 'alex', 'Do those cover the new pricing tiers?'],
+  ['24:45', 'sam', 'Most of them. A few are still being written.'],
+  ['25:25', 'dana', 'When would those be ready?'],
+  ['26:05', 'sam', 'Early next week, probably.'],
+  ['26:45', 'jordan', 'Then the timeline is the real question.'],
+  ['27:05', 'sam', 'Launch date. Are we holding March 3 or moving to March 10? QA wants a full week on the payment flow.', true],
+  ['27:25', 'maya', 'If the conversion lift holds, March 10 costs us less than it looks.'],
+  ['27:40', 'jordan', "Let's not lock it without the new forecast. Maya, Sam, bring a recommendation next week.", true],
+  // Launch checklist & legal
+  ['28:05', 'jordan', 'Let us talk through the launch checklist.'],
+  ['28:30', 'sam', "I'll get a QA estimate on the payment flow by Thursday.", true],
+  ['29:05', 'alex', 'Marketing copy is drafted. It needs the final pricing page language.'],
+  ['29:45', 'sam', 'Support docs are in progress.'],
+  ['30:25', 'dana', 'Billing setup in the finance system is done.'],
+  ['31:05', 'jordan', 'Good. What about the announcement email?'],
+  ['31:45', 'alex', 'Draft is in the shared folder.'],
+  ['32:25', 'jordan', 'I will take a look this afternoon. We should also check the rollback plan.'],
+  ['33:10', 'dana', 'Legal came back. No separate review needed for the new pricing tiers.', true],
+  ['33:45', 'jordan', "Great, that closes last week's legal question."],
+  ['34:20', 'dana', 'Nothing needed from procurement either.'],
+  // Pricing page
+  ['34:45', 'alex', 'Pulling up the pricing page mock now.'],
+  ['35:25', 'jordan', 'Thanks. Walk us through it.'],
+  ['36:05', 'alex', 'Three tiers, monthly and annual toggle, FAQ at the bottom.'],
+  ['36:45', 'dana', 'The annual discount matches what finance approved.'],
+  ['37:25', 'sam', 'Is the page behind a flag?'],
+  ['38:05', 'alex', 'Yes, same flag as v2.'],
+  ['38:45', 'jordan', 'Okay, so the question is whether it goes out early or with v2.'],
+  ['39:25', 'sam', 'Shipping early means a second QA pass on checkout.'],
+  ['40:05', 'dana', 'And finance would rather announce pricing once.'],
+  ['40:45', 'alex', 'Copy-wise I am fine either way, as long as I know this week.'],
+  ['41:18', 'jordan', 'Decided, then. The pricing page ships with v2, not before.', true],
+  ['41:52', 'alex', "I'll send Sam final copy for the pricing page by Wednesday.", true],
+  // Wrap-up & owners
+  ['42:30', 'jordan', 'Let us do a quick recap of owners.'],
+  ['43:10', 'maya', 'Forecast update is mine, in the deck by Thursday.'],
+  ['43:50', 'sam', 'QA estimate on the payment flow, also Thursday.'],
+  ['44:30', 'dana', 'I can share the updated budget view next week.'],
+  ['45:10', 'alex', 'Final pricing copy to Sam by Wednesday.'],
+  ['45:50', 'maya', 'I will post the dashboard link in the channel.'],
+  ['46:30', 'jordan', 'Any other business?'],
+  ['47:05', 'dana', 'Nothing from me.'],
+  ['47:40', 'jordan', 'Thanks all. Same time next week.', true],
 ]
-
-// Filler by phase of the meeting so it reads plausibly.
-const FILLER = {
-  round: [
-    ['sam', 'Payments service is green in staging. Two flaky tests left, nothing blocking.'],
-    ['jordan', 'Good. Dana, anything from finance this week?'],
-    ['dana', 'Budget close is on track. I sent the October numbers to the channel.'],
-    ['alex', 'Design side, the checkout screens are in review. I shared the file this morning.'],
-    ['maya', 'Dashboard refresh went out Tuesday. Conversion is up a bit week over week.'],
-    ['jordan', 'Nice. Can you drop the link in the doc after this?'],
-    ['maya', 'Sure, I will.'],
-    ['sam', 'One heads-up: the on-call rotation changes next week.'],
-    ['jordan', 'Noted. Let me share my screen for the roadmap.'],
-    ['alex', 'Can everyone see it? It looks a little small on my end.'],
-    ['jordan', 'Zooming in. Better?'],
-    ['dana', 'Yes, that works.'],
-    ['jordan', 'So this is where we are against the Q1 plan.'],
-    ['sam', 'The payments line still shows amber. That should be green now.'],
-    ['jordan', 'I will update it after the call.'],
-    ['alex', 'Is the pricing page on this view too?'],
-    ['jordan', 'Second row. We will come back to it.'],
-    ['dana', 'Quick question on the headcount line, is that still current?'],
-    ['jordan', 'It is, as of Monday.'],
-  ],
-  forecast: [
-    ['maya', 'The new conversion numbers are about two points higher than what the forecast assumes.'],
-    ['dana', 'That changes the revenue line for March, right?'],
-    ['maya', 'It does, mostly in the second half of the quarter.'],
-    ['jordan', 'Okay. That matters for the launch date conversation.'],
-    ['sam', 'Are we including the beta cohort in those numbers?'],
-    ['maya', 'Not yet. That is a separate tab.'],
-    ['dana', 'I would keep them separate until the waitlist closes.'],
-    ['jordan', 'Agreed. Let us keep moving.'],
-    ['alex', 'Sorry, my audio dropped for a second. Back now.'],
-    ['jordan', 'No problem. We were on the forecast.'],
-    ['sam', 'Can I share the QA board quickly?'],
-    ['jordan', 'Go ahead.'],
-    ['sam', 'Here is the payment flow test plan. About forty cases.'],
-    ['alex', 'Do those cover the new pricing tiers?'],
-    ['sam', 'Most of them. A few are still being written.'],
-    ['dana', 'When would those be ready?'],
-    ['sam', 'Early next week, probably.'],
-  ],
-  launch: [
-    ['jordan', 'Let us talk through the launch checklist.'],
-    ['alex', 'Marketing copy is drafted. It needs the final pricing page language.'],
-    ['sam', 'Support docs are in progress.'],
-    ['dana', 'Billing setup in the finance system is done.'],
-    ['jordan', 'Good. What about the announcement email?'],
-    ['alex', 'Draft is in the shared folder.'],
-    ['jordan', 'I will take a look this afternoon.'],
-    ['sam', 'We should check the rollback plan before launch.'],
-    ['jordan', 'Yes, let us add it to the checklist.'],
-    ['dana', 'Do we need anything from procurement?'],
-    ['jordan', 'Not for this one.'],
-    ['alex', 'Pulling up the pricing page mock now.'],
-    ['jordan', 'Thanks. Walk us through it.'],
-    ['alex', 'Three tiers, monthly and annual toggle, FAQ at the bottom.'],
-    ['dana', 'The annual discount matches what finance approved.'],
-    ['sam', 'Is the page behind a flag?'],
-    ['alex', 'Yes, same flag as v2.'],
-    ['jordan', 'Okay, so the question is whether it goes out early or with v2.'],
-  ],
-  wrap: [
-    ['jordan', 'Let us do a quick recap of owners.'],
-    ['dana', 'I can share the updated budget view next week.'],
-    ['sam', 'I will update the QA board once the estimate is in.'],
-    ['alex', 'Anything else on design before we wrap?'],
-    ['jordan', 'I think we are good.'],
-    ['maya', 'I will post the dashboard link in the channel.'],
-    ['jordan', 'Any other business?'],
-    ['dana', 'Nothing from me.'],
-    ['sam', 'All good here.'],
-  ],
-}
-
-function phaseFor(sec) {
-  if (sec < toSec('14:20')) return 'round'
-  if (sec < toSec('27:00')) return 'forecast'
-  if (sec < toSec('42:30')) return 'launch'
-  return 'wrap'
-}
-
-function buildNov6() {
-  const keys = NOV6_KEY.map(([t, speaker, text]) => ({ t, sec: toSec(t), speaker, text, key: true }))
-  const end = 48 * 60
-  const step = 40
-  const out = [...keys]
-  const counters = { round: 0, forecast: 0, launch: 0, wrap: 0 }
-  for (let sec = 45; sec < end; sec += step) {
-    if (keys.some((k) => Math.abs(k.sec - sec) < 12)) continue
-    const phase = phaseFor(sec)
-    const list = FILLER[phase]
-    const [speaker, text] = list[counters[phase]++ % list.length]
-    out.push({ t: toT(sec), sec, speaker, text, key: false })
-  }
-  return out.sort((a, b) => a.sec - b.sec)
-}
 
 const OCT23 = [
   ['00:04', 'jordan', 'Morning, everyone. Let us get started.'],
@@ -139,12 +115,12 @@ const OCT30 = [
   ['31:40', 'jordan', 'Thanks everyone.'],
 ]
 
-const mk = (rows) => rows.map(([t, speaker, text]) => ({ t, sec: toSec(t), speaker, text }))
+const mk = (rows) => rows.map(([t, speaker, text, key = false]) => ({ t, sec: toSec(t), speaker, text, key }))
 
 export const TRANSCRIPTS = {
   'wps-1023': mk(OCT23),
   'wps-1030': mk(OCT30),
-  'wps-1106': buildNov6(),
+  'wps-1106': mk(NOV6),
 }
 
 export { toSec }
