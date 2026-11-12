@@ -1,7 +1,7 @@
 // Checks buildHeadsUp against the expected per-persona table (PRD Section 5)
 // and the transcript spacing rule (Section 6). Run: npm test
 import assert from 'node:assert/strict'
-import { SEED } from '../src/data/seed.js'
+import { SEED, SEED_COMMENTS } from '../src/data/seed.js'
 import { TRANSCRIPTS } from '../src/data/transcripts.js'
 import { buildHeadsUp } from '../src/logic/buildHeadsUp.js'
 import { buildWorld } from '../src/logic/world.js'
@@ -39,6 +39,35 @@ const w3 = buildWorld({ itemUpdates: { a2: { kind: 'done' } } })
 const r3 = buildHeadsUp(w3.person('gabriel'), SEED.series[0], now, w3)
 assert.ok(r3.items.length <= 3 && !r3.items.some((i) => i.id === 'a2'))
 console.log('ok  mute + done exclusion')
+
+// Themes: start/end are real transcript lines, ranges are in order and don't overlap,
+// and every linked item is cited inside its theme's range.
+for (const inst of SEED.instances) {
+  const segs = TRANSCRIPTS[inst.id]
+  const times = new Set(segs.map((s) => s.t))
+  const sec = (t) => segs.find((s) => s.t === t).sec
+  const items = [...inst.decisions, ...inst.openQuestions, ...inst.actionItems]
+  let prevEnd = -1
+  for (const th of inst.themes) {
+    assert.ok(times.has(th.start) && times.has(th.end), `${inst.id} ${th.id} range must start/end on transcript lines`)
+    assert.ok(sec(th.start) > prevEnd && sec(th.end) >= sec(th.start), `${inst.id} ${th.id} out of order`)
+    prevEnd = sec(th.end)
+    for (const id of th.items) {
+      const it = items.find((x) => x.id === id)
+      assert.ok(it, `${th.id} links unknown item ${id}`)
+      assert.ok(times.has(it.t) && sec(it.t) >= sec(th.start) && sec(it.t) <= sec(th.end), `${id} (${it.t}) outside ${th.id}`)
+    }
+  }
+  for (const it of items) assert.ok(times.has(it.t), `${inst.id} item ${it.id} cites ${it.t}, which has no transcript line`)
+  console.log(`ok  themes ${inst.id}: ${inst.themes.length}`)
+}
+for (const key of Object.keys(SEED_COMMENTS)) {
+  const [, instId, ...t] = key.split(':')
+  assert.ok(TRANSCRIPTS[instId].some((s) => s.t === t.join(':')), `seed comment ${key} has no line`)
+}
+const nov6Text = TRANSCRIPTS['wps-1106'].map((s) => s.text)
+assert.equal(new Set(nov6Text).size, nov6Text.length, 'wps-1106 transcript repeats a line')
+console.log('ok  seed comments + no repeated transcript lines')
 
 for (const [id, segs] of Object.entries(TRANSCRIPTS)) {
   if (id === 'wps-1106') {

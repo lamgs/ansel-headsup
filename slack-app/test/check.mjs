@@ -125,7 +125,7 @@ assert.ok(events.some((e) => e.includes('not a recurring meeting')))
 console.log('ok  scheduler')
 
 // 6b. Per-person calendars: each feed only triggers its owner; a broken feed is logged without its URL
-assert.deepEqual(parseCalendarFeeds({ CALENDAR_ICS_URL_MAYA: ' https://a.example/m.ics ', CALENDAR_ICS_URL_: 'x', CALENDAR_ICS_URL_RILEY: '', OTHER: 'y' }), { gabriel: 'https://a.example/m.ics' })
+assert.deepEqual(parseCalendarFeeds({ CALENDAR_ICS_URL_GABRIEL: ' https://a.example/m.ics ', CALENDAR_ICS_URL_: 'x', CALENDAR_ICS_URL_ARYAN: '', OTHER: 'y' }), { gabriel: 'https://a.example/m.ics' })
 assert.equal(redactUrls('GET https://outlook.office365.com/owa/calendar/abc/secret/calendar.ics 404'), 'GET [calendar URL hidden] 404')
 calls.length = 0; logs.length = 0
 const empty = 'BEGIN:VCALENDAR\r\nVERSION:2.0\r\nEND:VCALENDAR\r\n'
@@ -146,13 +146,13 @@ const perPerson = createScheduler({
 })
 await perPerson.tick()
 console.error = origError
-assert.deepEqual(loaded.sort(), ['fake://gabriel', 'fake://aryan', 'https://secret.example/rishabh.ics'])
+assert.deepEqual(loaded.sort(), ['fake://aryan', 'fake://gabriel', 'https://secret.example/rishabh.ics'])
 assert.equal(calls.filter(([k]) => k === 'post').length, 1, 'only Gabriel (whose calendar has the meeting) gets a card')
 assert.ok(!logs.some(([, p]) => p === 'aryan'), 'Aryan is not evaluated for a meeting on Gabriel\'s calendar')
 assert.ok(errors.some((e) => e.includes('calendar feed for rishabh failed') && e.includes('[calendar URL hidden]')))
 assert.ok(!errors.some((e) => e.includes('secret.example')), 'calendar URL never logged')
 assert.deepEqual((await perPerson.upcoming(24, ['aryan'])).length, 0, 'upcoming() can be limited to one person')
-assert.deepEqual(perPerson.calendarPersonas().sort(), ['gabriel', 'aryan', 'rishabh'])
+assert.deepEqual(perPerson.calendarPersonas().sort(), ['aryan', 'gabriel', 'rishabh'])
 console.log('ok  per-person calendars')
 
 // 7. Regression: an action on a card this process didn't post must not unmute the series

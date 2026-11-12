@@ -23,7 +23,7 @@ export function loadConfig(env = process.env) {
   }
 }
 
-/** CALENDAR_ICS_URL_MAYA=https://… → { gabriel: 'https://…' }. One variable per person keeps each link a separate secret. */
+/** CALENDAR_ICS_URL_GABRIEL=https://… → { gabriel: 'https://…' }. One variable per person keeps each link a separate secret. */
 export function parseCalendarFeeds(env = process.env) {
   const prefix = 'CALENDAR_ICS_URL_'
   return Object.fromEntries(Object.entries(env)

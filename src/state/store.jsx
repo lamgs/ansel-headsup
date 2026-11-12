@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useMemo, useReducer } from 'react'
-import { SEED, DEMO_DATE, CLOCK_START } from '../data/seed.js'
+import { SEED, SEED_COMMENTS, DEMO_DATE, CLOCK_START } from '../data/seed.js'
 import { buildHeadsUp, triggerSec, hhmmToSec } from '../logic/buildHeadsUp.js'
 import { buildWorld } from '../logic/world.js'
 
@@ -14,7 +14,7 @@ export function initialState(theme = prefersDark ? 'dark' : 'light') {
     drawerOpen: false,
     itemUpdates: {},
     edits: {},
-    comments: {},
+    comments: SEED_COMMENTS,
     muted: {},
     notUseful: {},
     reminder: {},
@@ -25,7 +25,7 @@ export function initialState(theme = prefersDark ? 'dark' : 'light') {
     toasts: [],
     share: null, // { sec } when the G3 direct share is ticked
     slackChannel: 'product',
-    ansel: { page: 'meetings', view: 'detail', instanceId: 'wps-1106', tab: 'summary', highlight: null, panelItem: null, focusId: null },
+    ansel: { page: 'meetings', view: 'detail', instanceId: 'wps-1106', tab: 'summary', highlight: null, panelItem: null, focusId: null, selectedItem: null, themeId: null, sideTab: 'summary', sideOpen: true, shareOpen: false },
     join: null, // null | { step: 'notice' | 'call', keptOut, joinedAt }
   }
 }
@@ -78,6 +78,9 @@ function reducer(s, a) {
     case 'AT_LEAST_CLOCK': return s.clock >= a.sec ? s : processTriggers({ ...s, clock: a.sec })
     case 'ADD_CLOCK': return processTriggers({ ...s, clock: s.clock + a.sec })
     case 'RESET': return initialState(s.theme)
+    case 'NOT_IN_PROTOTYPE':
+      // One toast at a time for inactive controls: a new click replaces the old toast.
+      return addToast({ ...s, toasts: s.toasts.filter((t) => t.kind !== 'nip') },a.what ? `${a.what} · not in this prototype` : 'Not in this prototype', { kind: 'nip' })
     case 'SET_PERSONA': return { ...s, persona: a.id, join: null }
     case 'SET_TAB': return { ...s, tab: a.tab }
     case 'TOGGLE_DRAWER': return { ...s, drawerOpen: !s.drawerOpen }
@@ -87,7 +90,7 @@ function reducer(s, a) {
     case 'DISMISS_TOAST': return { ...s, toasts: s.toasts.filter((t) => t.id !== a.id) }
     case 'SLACK_CHANNEL': return { ...s, slackChannel: a.id, tab: 'slack' }
     case 'OPEN_ANSEL':
-      return { ...s, tab: 'ansel', ansel: { ...s.ansel, page: 'meetings', view: 'detail', panelItem: null, focusId: null, highlight: null, ...a.nav } }
+      return { ...s, tab: 'ansel', ansel: { ...s.ansel, page: 'meetings', view: 'detail', panelItem: null, focusId: null, highlight: null, selectedItem: null, themeId: null, sideOpen: true, ...a.nav } }
     case 'ANSEL_NAV': return { ...s, ansel: { ...s.ansel, ...a.nav } }
     case 'CARD_OPENED': {
       if (s.opened[a.key]) return s
@@ -105,7 +108,8 @@ function reducer(s, a) {
     }
     case 'COMMENT': {
       const list = s.comments[a.id] || []
-      return { ...s, comments: { ...s.comments, [a.id]: [...list, { by: s.persona, text: a.text, sec: s.clock }] } }
+      const n = { ...s, comments: { ...s.comments, [a.id]: [...list, { by: s.persona, text: a.text, sec: s.clock }] } }
+      return addLog(n, s.persona, 'comment_added', a.id)
     }
     case 'MUTE': {
       const key = `${s.persona}:${a.sid}`

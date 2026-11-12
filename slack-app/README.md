@@ -134,8 +134,8 @@ Each person can connect their own Outlook (or Google) calendar. Set one variable
 
 ```dotenv
 SLACK_USERS=gabriel=gabriel@uchicago.edu,alicia=alicia@uchicago.edu
-CALENDAR_ICS_URL_MAYA=https://outlook.office365.com/owa/calendar/.../calendar.ics
-CALENDAR_ICS_URL_JORDAN=https://outlook.office365.com/owa/calendar/.../calendar.ics
+CALENDAR_ICS_URL_GABRIEL=https://outlook.office365.com/owa/calendar/.../calendar.ics
+CALENDAR_ICS_URL_ALICIA=https://outlook.office365.com/owa/calendar/.../calendar.ics
 ```
 
 A persona's feed only triggers that persona's card. `CALENDAR_ICS_URL` (no suffix) is an optional shared fallback for any mapped persona without its own feed; if several personas share it, each of them is triggered by every matching meeting on it. Personas with no feed get no scheduled cards (manual `/headsup demo` still works).
