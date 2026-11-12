@@ -11,10 +11,10 @@
         "action_id": "hu_join",
         "text": {
           "type": "plain_text",
-          "text": "Join Teams"
+          "text": "Join Zoom"
         },
         "style": "primary",
-        "url": "https://teams.microsoft.com/"
+        "url": "https://zoom.us/j/0000000000"
       }
     },
     {
@@ -22,7 +22,7 @@
       "elements": [
         {
           "type": "mrkdwn",
-          "text": "Starts at <!date^1794600000^{time}|2:00 PM> on Teams · 6 action items from last week"
+          "text": "Starts at <!date^1794600000^{time}|2:00 PM> on Zoom · 6 action items from last week"
         }
       ]
     },
@@ -36,15 +36,6 @@
     {
       "type": "actions",
       "elements": [
-        {
-          "type": "button",
-          "action_id": "hu_open_last",
-          "text": {
-            "type": "plain_text",
-            "text": "Open in Ansel"
-          },
-          "url": "https://lamgs.github.io/ansel-headsup/#ansel/wps-1106/summary/"
-        },
         {
           "type": "button",
           "action_id": "hu_done:a2",
@@ -79,6 +70,20 @@
               "value": "Not useful"
             }
           ]
+        }
+      ]
+    },
+    {
+      "type": "actions",
+      "elements": [
+        {
+          "type": "button",
+          "action_id": "hu_open_last",
+          "text": {
+            "type": "plain_text",
+            "text": "Open in Ansel"
+          },
+          "url": "https://lamgs.github.io/ansel-headsup/#ansel/wps-1106/summary/"
         }
       ]
     },

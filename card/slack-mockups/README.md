@@ -16,4 +16,4 @@ The images are approximations drawn outside Slack (stand-in font; spacing and bu
 
 ## Condensed previews (not built)
 
-`condensed/` has three shorter directions, previews only: **A · Condensed** (your item + a one-line team list, one row of buttons), **B · Minimal** (two lines, Open in Ansel / ✓ / ⋮), **C · Glance** (one section + links; everything else in Ansel). Each has a `.blocks.json` for Block Kit Builder.
+`condensed/` has three shorter directions, previews only: **A · Condensed** (your item + a one-line team list; ✓ and ⋮, then Open in Ansel on its own row), **B · Minimal** (two lines; ✓ and ⋮, then Open in Ansel), **C · Glance** (two lines and a link; only Join and Open in Ansel are buttons). All use Zoom. Each has a `.blocks.json` for Block Kit Builder.
