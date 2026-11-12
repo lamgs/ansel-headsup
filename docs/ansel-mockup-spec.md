@@ -71,6 +71,13 @@ Layout sketch (the player is audio only):
 - Right panel with tabs: Summary · Action items · Comments. Collapsible; every row has ▶.
 - Search box in the toolbar (inactive).
 
+**Polish pass (branch `rishabh/ansel-polish`)**
+- Two-row meeting header: back, title, "Fri Nov 6 ▾" meeting menu (switches meetings), Recorded, access badge, attendees, Share / Export / Send to; tabs and cadence on the second row. Labels collapse to icons when narrow.
+- Player: static waveform with playhead and item markers, plus a speaker strip; clicking the waveform jumps to the line said at that point. Skip, speed and total time hide when narrow.
+- Line hover toolbar: **Copy link to this moment** (copies the same `#ansel/…/transcript/<t>` link the Slack card uses), Comment, Highlight (inactive).
+- Jumps place the line a third of the way down below the player, so its speaker and theme label stay visible.
+- Transcript labels and status tags use the same small rectangle as the card's `Edited` badge.
+
 **Summary tab (Granola-style)**
 - Single readable column (~680 px), generous spacing, section headings: Decisions, Open questions, Action items, Themes.
 - Short bullets with a quiet ▶ timestamp on the right; `Edited` shown inline with the original struck through.

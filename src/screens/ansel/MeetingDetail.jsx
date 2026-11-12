@@ -1,10 +1,10 @@
-import React from 'react'
+import React, { useState } from 'react'
 import {
-  ArrowLeft, Download, FileText, ListChecks, Lock, MessageSquare, Radio, Send, Share2, Sparkles, Users, X,
+  ArrowLeft, Check, ChevronDown, Download, FileText, ListChecks, Lock, MessageSquare, Radio, Send, Share2, Sparkles, Users, X,
 } from 'lucide-react'
 import { useStore } from '../../state/store.jsx'
 import { SEED } from '../../data/seed.js'
-import { shortDate } from '../../logic/buildHeadsUp.js'
+import { longDate, shortDate } from '../../logic/buildHeadsUp.js'
 import { Avatar, Btn, Modal, personName } from '../../components/ui.jsx'
 import { NipMenu, NipSwitch, canSee, useNip } from './shared.jsx'
 import TranscriptTab from './TranscriptTab.jsx'
@@ -33,50 +33,35 @@ export default function MeetingDetail() {
 
   return (
     <div className="flex h-full min-h-0 flex-col">
-      <header className="border-b border-slate-200 px-6 pt-4 dark:border-slate-800">
-        <button onClick={() => nav({ view: 'list' })} className="inline-flex items-center gap-1 text-xs text-slate-500 hover:underline">
-          <ArrowLeft size={12} aria-hidden />Meetings
-        </button>
-        <div className="mt-1 flex flex-wrap items-start justify-between gap-3">
-          <div className="min-w-0">
-            <div className="flex flex-wrap items-center gap-2">
-              <h1 className="text-xl font-semibold">{series.title}{inst && <> · {shortDate(inst.date)}{inst.durationMin ? ` · ${inst.durationMin} min` : ''}</>}{upcoming && ' · Nov 13'}</h1>
-              {inst?.recorded && <span className="inline-flex items-center gap-1 rounded-full bg-rose-50 px-2 py-0.5 text-xs font-medium text-rose-700 dark:bg-rose-500/10 dark:text-rose-300"><span className="h-1.5 w-1.5 rounded-full bg-rose-500" />Recorded</span>}
-              {inst && <AccessBadge />}
-            </div>
-            <div className="mt-2 flex flex-wrap items-center gap-3">
-              <div className="flex -space-x-1.5">{(inst?.attendees ?? series.invitees).map((p) => <Avatar key={p} id={p} size="sm" />)}</div>
-              <div className="text-xs text-slate-500">{series.cadence} · organizer {personName(series.organizer)}</div>
-            </div>
+      <header className="@container border-b border-slate-200 px-5 pt-3 dark:border-slate-800">
+        <div className="flex items-center gap-2">
+          <button onClick={() => nav({ view: 'list' })} title="Back to meetings" aria-label="Back to meetings"
+            className="rounded p-1 text-slate-500 hover:bg-slate-100 hover:text-slate-800 dark:hover:bg-slate-800 dark:hover:text-slate-200"><ArrowLeft size={16} /></button>
+          <h1 className="min-w-0 shrink truncate text-lg font-semibold" title={series.title}>{series.title}</h1>
+          <InstanceMenu inst={inst} upcoming={upcoming} />
+          {inst?.recorded && <span className="hidden items-center gap-1 rounded-full bg-rose-50 px-2 py-0.5 text-xs font-medium text-rose-700 @2xl:inline-flex dark:bg-rose-500/10 dark:text-rose-300"><span className="h-1.5 w-1.5 rounded-full bg-rose-500" />Recorded</span>}
+          {inst && <AccessBadge />}
+          <span className="flex-1" />
+          <div className="hidden -space-x-1.5 @3xl:flex" title={(inst?.attendees ?? series.invitees).map(personName).join(', ')}>
+            {(inst?.attendees ?? series.invitees).map((p) => <Avatar key={p} id={p} size="sm" />)}
           </div>
           {visible && (
-            <div className="flex items-center gap-2">
-              <Btn onClick={() => nav({ shareOpen: true })}><Share2 size={15} aria-hidden />Share</Btn>
-              <NipMenu label="Export" Icon={Download} items={[['Export PDF', FileText], ['Export CSV (action items)', ListChecks]]} />
-              <NipMenu label="Send to" Icon={Send} items={[['Send to Slack thread', MessageSquare], ['Send to Teams', MessageSquare], ['Send to Asana', ListChecks], ['Send to Jira', ListChecks], ['Send to Linear', ListChecks]]} />
+            <div className="flex items-center gap-1.5">
+              <Btn onClick={() => nav({ shareOpen: true })} title="Share"><Share2 size={15} aria-hidden /><span className="hidden @4xl:inline">Share</span></Btn>
+              <NipMenu label="Export" Icon={Download} compact items={[['Export PDF', FileText], ['Export CSV (action items)', ListChecks]]} />
+              <NipMenu label="Send to" Icon={Send} compact items={[['Send to Slack thread', MessageSquare], ['Send to Teams', MessageSquare], ['Send to Asana', ListChecks], ['Send to Jira', ListChecks], ['Send to Linear', ListChecks]]} />
             </div>
           )}
         </div>
-        <div className="mt-3 flex flex-wrap gap-1 text-sm">
-          {SEED.instances.map((i) => (
-            <button key={i.id} onClick={() => nav({ instanceId: i.id, panelItem: null, highlight: null, selectedItem: null, themeId: null })}
-              className={`rounded-md px-2.5 py-1 ${i.id === state.ansel.instanceId ? 'bg-ansel font-semibold text-white dark:bg-ansel-400 dark:text-slate-950' : 'bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700'}`}>
-              {shortDate(i.date)}
+        <div className="mt-2 flex items-end gap-5">
+          {!upcoming && TABS.map(([id, label, Icon]) => (
+            <button key={id} onClick={() => nav({ tab: id })}
+              className={`-mb-px inline-flex items-center gap-1.5 whitespace-nowrap border-b-2 pb-2 text-sm ${tab === id ? 'border-ansel font-semibold text-ansel dark:border-ansel-300 dark:text-ansel-300' : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'}`}>
+              <Icon size={14} aria-hidden />{label}
             </button>
           ))}
-          <button onClick={() => nav({ instanceId: 'upcoming', panelItem: null })}
-            className={`rounded-md border border-dashed px-2.5 py-1 ${upcoming ? 'border-ansel text-ansel dark:text-ansel-300' : 'border-slate-300 text-slate-500 dark:border-slate-600'}`}>Nov 13 · upcoming</button>
+          <span className="ml-auto hidden truncate pb-2 text-xs text-slate-500 @3xl:block">{series.cadence} · organizer {personName(series.organizer)}</span>
         </div>
-        {!upcoming && (
-          <div className="mt-3 flex gap-5">
-            {TABS.map(([id, label, Icon]) => (
-              <button key={id} onClick={() => nav({ tab: id })}
-                className={`-mb-px inline-flex items-center gap-1.5 border-b-2 pb-2 text-sm ${tab === id ? 'border-ansel font-semibold text-ansel dark:border-ansel-300 dark:text-ansel-300' : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'}`}>
-                <Icon size={14} aria-hidden />{label}
-              </button>
-            ))}
-          </div>
-        )}
       </header>
       <div className="flex min-h-0 flex-1">
         <div className="min-w-0 flex-1 overflow-y-auto" id="ansel-scroll">
@@ -100,11 +85,44 @@ export default function MeetingDetail() {
   )
 }
 
+/** "Fri Nov 6 · 48 min ▾": switch between meetings in the series. */
+function InstanceMenu({ inst, upcoming }) {
+  const { state, dispatch } = useStore()
+  const [open, setOpen] = useState(false)
+  const go = (instanceId) => { setOpen(false); dispatch({ type: 'ANSEL_NAV', nav: { instanceId, panelItem: null, highlight: null, selectedItem: null, themeId: null } }) }
+  const label = upcoming ? 'Fri Nov 13 · upcoming' : longDate(inst.date)
+  const duration = !upcoming && inst.durationMin ? ` · ${inst.durationMin} min` : ''
+  const rows = [{ id: 'upcoming', text: 'Fri Nov 13', sub: 'Upcoming · 2:00 PM' }, ...SEED.instances.slice().reverse().map((i) => ({ id: i.id, text: longDate(i.date), sub: i.recorded ? 'Recorded' : 'Not recorded' }))]
+  return (
+    <div className="relative shrink-0">
+      <button onClick={() => setOpen(!open)}
+        className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-sm text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800">
+        {label}<span className="hidden @4xl:inline">{duration}</span><ChevronDown size={14} aria-hidden />
+      </button>
+      {open && (
+        <>
+          <div className="fixed inset-0 z-30" onClick={() => setOpen(false)} />
+          <div className="slidein absolute left-0 z-40 mt-1 w-60 rounded-lg border border-slate-200 bg-white py-1 shadow-lg dark:border-slate-700 dark:bg-slate-900">
+            <div className="px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-500">Weekly Product Sync</div>
+            {rows.map((r) => (
+              <button key={r.id} onClick={() => go(r.id)}
+                className="flex w-full items-center gap-2 px-3 py-1.5 text-left text-sm hover:bg-slate-100 dark:hover:bg-slate-800">
+                <span className="flex-1"><span className="block">{r.text}</span><span className="block text-xs text-slate-500">{r.sub}</span></span>
+                {r.id === state.ansel.instanceId && <Check size={14} className="text-ansel dark:text-ansel-300" aria-hidden />}
+              </button>
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  )
+}
+
 function AccessBadge() {
   const { state } = useStore()
   const shared = state.share && state.ansel.instanceId === 'wps-1106'
   return (
-    <span title="Who can open this record" className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+    <span title="Who can open this record" className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700 dark:bg-slate-800 dark:text-slate-300">
       <Lock size={11} aria-hidden />Attendees only{shared && ' + 1 direct share'}
     </span>
   )

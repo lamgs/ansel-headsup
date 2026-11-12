@@ -71,28 +71,28 @@ export function StatusPill({ a }) {
     : onTrack
       ? 'bg-sky-100 text-sky-800 dark:bg-sky-500/15 dark:text-sky-300'
       : 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300'
-  return <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium ${cls}`}>{done ? 'Done' : onTrack ? 'On track' : a.update ? statusText(a) : 'Open'}</span>
+  return <span className={`inline-flex items-center rounded px-1.5 py-0.5 text-[11px] font-medium ${cls}`}>{done ? 'Done' : onTrack ? 'On track' : a.update ? statusText(a) : 'Open'}</span>
 }
 
 export function KindChip({ kind, onClick, active }) {
   const k = KIND[kind]
   return (
     <button onClick={onClick} title={`${k.label} in the summary`}
-      className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-medium ${k.chip} ${active ? 'ring-2 ring-offset-1 ring-ansel/40 dark:ring-offset-slate-950' : ''}`}>
+      className={`inline-flex items-center gap-1 rounded border px-1.5 py-0.5 text-[11px] font-medium ${k.chip} ${active ? 'ring-2 ring-offset-1 ring-ansel/40 dark:ring-offset-slate-950' : ''}`}>
       <k.Icon size={11} aria-hidden />{k.label}
     </button>
   )
 }
 
 /** Dropdown whose entries are all inactive (Export, Send to). */
-export function NipMenu({ label, Icon, items }) {
+export function NipMenu({ label, Icon, items, compact = false }) {
   const [open, setOpen] = useState(false)
   const nip = useNip()
   return (
     <div className="relative">
-      <button onClick={() => setOpen(!open)}
+      <button onClick={() => setOpen(!open)} title={label}
         className="inline-flex items-center gap-1.5 rounded-md border border-slate-300 bg-white px-2.5 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700">
-        {Icon && <Icon size={15} aria-hidden />}{label}<ChevronDown size={14} aria-hidden />
+        {Icon && <Icon size={15} aria-hidden />}<span className={compact ? 'hidden @4xl:inline' : ''}>{label}</span><ChevronDown size={14} aria-hidden />
       </button>
       {open && (
         <>
