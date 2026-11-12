@@ -183,7 +183,7 @@ The card matches [`../card/heads-up-card.js`](../card/heads-up-card.js) and logs
 
 Also logged: `card_shown`, `card_suppressed` (holdout), `card_skipped` (with the reason) and `state_changed` (posted → starting-soon → started → ended). The countdown and time bar update every poll. Slack can't draw the web card's large timer, colored time bar, row stripes or green done rows, so they are shown as text: `*30 min*`, `▰▰▰▱▱▱▱▱▱▱`, `YOURS`, `✓ Done`.
 
-To get the deep links, host the prototype: run `npm run build` in the repo root, deploy `dist/` (Netlify drop, Vercel or GitHub Pages), and set `PROTOTYPE_URL`. Links look like `…/#ansel/wps-1106/transcript/14:32/a2`.
+To get the deep links, set `PROTOTYPE_URL=https://lamgs.github.io/ansel-headsup/` (published from `main` by GitHub Pages; see the root README) and restart the service. Links look like `…/#ansel/wps-1106/transcript/14:32/a2`.
 
 ## Limits
 
