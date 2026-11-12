@@ -78,7 +78,7 @@ Run these checks after a fresh install, token rotation, scope change, allowlist 
 3. As an allowlisted user, run `/headsup demo`. Confirm a private Ansel DM arrives and its buttons respond while the process is running.
 4. Run `/headsup check maya` and confirm the eligibility/item explanation appears only to the requesting user.
 5. Ask a non-allowlisted teammate to run `/headsup demo`. They should receive `This private demo is not enabled for your Slack account`, and no card should be posted.
-6. If calendar triggering is enabled, run `/headsup next`, confirm the recurring event and fire time, then verify exactly one card is posted by the single running process.
+6. If calendar triggering is enabled, have each connected person run `/headsup next` and confirm they see only their own recurring meetings and fire times, then verify exactly one card is posted to the right person by the single running process.
 7. Check logs for `card_posted`, expected `card_skipped` events, and unexpected `access_denied` or connection errors. Never log or paste token values.
 
 ## Slash command
@@ -100,16 +100,28 @@ npm run trigger -- --to you@example.com --persona maya --in 30
 
 ## Calendar trigger
 
-Set `CALENDAR_ICS_URL` to one of these:
+Each person can connect their own Outlook (or Google) calendar. Set one variable per persona in `SLACK_USERS`:
 
+```dotenv
+SLACK_USERS=maya=maya@uchicago.edu,jordan=jordan@uchicago.edu
+CALENDAR_ICS_URL_MAYA=https://outlook.office365.com/owa/calendar/.../calendar.ics
+CALENDAR_ICS_URL_JORDAN=https://outlook.office365.com/owa/calendar/.../calendar.ics
+```
+
+A persona's feed only triggers that persona's card. `CALENDAR_ICS_URL` (no suffix) is an optional shared fallback for any mapped persona without its own feed; if several personas share it, each of them is triggered by every matching meeting on it. Personas with no feed get no scheduled cards (manual `/headsup demo` still works).
+
+How each person gets their link:
+
+- **Outlook:** Settings → Calendar → Shared calendars → **Publish a calendar** → choose the calendar and **Can view all details** → copy the **ICS** link (not HTML)
 - **Google Calendar:** Settings → *your calendar* → Integrate calendar → **Secret address in iCal format**
-- **Outlook:** Settings → Calendar → Shared calendars → **Publish a calendar** → ICS link
 
-Create a recurring event titled **Weekly Product Sync**, with a Meet, Teams or Zoom link in the location or description. Every `POLL_SECONDS`, the app posts to each persona in `SLACK_USERS` once the time reaches start − `REMINDER_MINUTES`. It applies the same rules as the prototype: one-off meetings are skipped, as are titles with no matching series, holdout users, and so on. The Join button counts down by editing the message each poll.
+Each person should send their link to the operator privately (not in a Slack channel or doc). The operator adds it to the central `.env` or host secret store and restarts the service. No per-person `.env` or token is needed.
+
+Create a recurring event titled **Weekly Product Sync**, with a Meet, Teams or Zoom link in the location or description. Every `POLL_SECONDS`, the app downloads each feed once and posts to that feed's personas once the time reaches start − `REMINDER_MINUTES`. It applies the same rules as the prototype: one-off meetings are skipped, as are titles with no matching series, holdout users, and so on. The Join button counts down by editing the message each poll. `/headsup next` shows only the requesting user's own calendar(s), and feed errors are logged with the URL hidden.
 
 **Caveat for the live demo:** Google and Outlook refresh ICS feeds with a delay (minutes for Google, sometimes hours for Outlook). Create the event well ahead of time and confirm it with `/headsup next`. Use `/headsup demo` as the on-stage trigger.
 
-**Privacy:** the published ICS link gives anyone who has it read access to the whole calendar without signing in. Keep it only in `.env` or the host's secret store, prefer a dedicated demo calendar, and reset the link in Outlook if it leaks. The app watches a single calendar: every persona in `SLACK_USERS` is triggered by it. See [`current_status.md`](../current_status.md#data-privacy-call-out-in-the-demo).
+**Privacy:** each published ICS link gives anyone who has it read access to that whole calendar without signing in. Keep links only in `.env` or the host's secret store, and reset a link in Outlook if it leaks. To remove someone, delete their variable, restart, and have them unpublish the calendar. See [`current_status.md`](../current_status.md#data-privacy-call-out-in-the-demo).
 
 ## Card actions
 

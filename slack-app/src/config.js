@@ -14,12 +14,21 @@ export function loadConfig(env = process.env) {
     users: parseUserMap(env.SLACK_USERS),
     demoPersona: env.DEMO_PERSONA || 'maya',
     icsUrl: env.CALENDAR_ICS_URL || '',
+    calendars: parseCalendarFeeds(env),
     seriesMap: env.SERIES_MAP || 'Weekly Product Sync=wps,Design Review=dr',
     reminderMinutes: Number(env.REMINDER_MINUTES || 30),
     pollSeconds: Number(env.POLL_SECONDS || 60),
     prototypeUrl: env.PROTOTYPE_URL || '',
     demoJoinUrl: env.DEMO_JOIN_URL || 'https://meet.google.com/',
   }
+}
+
+/** CALENDAR_ICS_URL_MAYA=https://… → { maya: 'https://…' }. One variable per person keeps each link a separate secret. */
+export function parseCalendarFeeds(env = process.env) {
+  const prefix = 'CALENDAR_ICS_URL_'
+  return Object.fromEntries(Object.entries(env)
+    .filter(([k, v]) => k.startsWith(prefix) && k.length > prefix.length && v?.trim())
+    .map(([k, v]) => [k.slice(prefix.length).toLowerCase(), v.trim()]))
 }
 
 export function requireTokens(config, { app = true } = {}) {

@@ -129,5 +129,5 @@ export function createHeadsUp({ client, config, access, log = pilotLog }) {
 
   const reset = () => { for (const k of Object.keys(muted)) delete muted[k]; live.clear() }
 
-  return { evaluate, post, refreshCountdowns, entryFor, setFlag, transcriptQuote, summaryText, explain, reset, live }
+  return { evaluate, post, resolveUser, refreshCountdowns, entryFor, setFlag, transcriptQuote, summaryText, explain, reset, live }
 }

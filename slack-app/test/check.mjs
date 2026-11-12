@@ -4,7 +4,8 @@ import assert from 'node:assert/strict'
 import { buildCard } from '../src/card.js'
 import { loadOccurrences, seriesMatcher } from '../src/calendar.js'
 import { createHeadsUp } from '../src/headsup.js'
-import { createScheduler } from '../src/scheduler.js'
+import { createScheduler, redactUrls } from '../src/scheduler.js'
+import { parseCalendarFeeds } from '../src/config.js'
 import { createAccessControl } from '../src/access.js'
 
 const calls = []
@@ -122,6 +123,37 @@ assert.equal(calls.filter(([k]) => k === 'post').length, 1, 'Maya gets exactly o
 assert.ok(events.some((e) => e.startsWith('card_skipped riley Weekly Product Sync: No meetings attended')))
 assert.ok(events.some((e) => e.includes('not a recurring meeting')))
 console.log('ok  scheduler')
+
+// 6b. Per-person calendars: each feed only triggers its owner; a broken feed is logged without its URL
+assert.deepEqual(parseCalendarFeeds({ CALENDAR_ICS_URL_MAYA: ' https://a.example/m.ics ', CALENDAR_ICS_URL_: 'x', CALENDAR_ICS_URL_RILEY: '', OTHER: 'y' }), { maya: 'https://a.example/m.ics' })
+assert.equal(redactUrls('GET https://outlook.office365.com/owa/calendar/abc/secret/calendar.ics 404'), 'GET [calendar URL hidden] 404')
+calls.length = 0; logs.length = 0
+const empty = 'BEGIN:VCALENDAR\r\nVERSION:2.0\r\nEND:VCALENDAR\r\n'
+const loaded = []
+const errors = []
+const origError = console.error
+console.error = (...a) => errors.push(a.join(' '))
+const perPerson = createScheduler({
+  headsUp: createHeadsUp({ client, config, access, log }),
+  config: { ...config, icsUrl: '', calendars: { maya: 'fake://maya', riley: 'fake://riley', sam: 'https://secret.example/sam.ics' } },
+  log,
+  users: { maya: 'UMAYA0001', riley: 'URILEY001', sam: 'U12345678' },
+  load: async (o) => {
+    loaded.push(o.url)
+    if (o.url.includes('sam')) throw new Error(`fetch failed for ${o.url}`)
+    return loadOccurrences({ ...o, text: o.url === 'fake://maya' ? ics : empty })
+  },
+})
+await perPerson.tick()
+console.error = origError
+assert.deepEqual(loaded.sort(), ['fake://maya', 'fake://riley', 'https://secret.example/sam.ics'])
+assert.equal(calls.filter(([k]) => k === 'post').length, 1, 'only Maya (whose calendar has the meeting) gets a card')
+assert.ok(!logs.some(([, p]) => p === 'riley'), 'Riley is not evaluated for a meeting on Maya\'s calendar')
+assert.ok(errors.some((e) => e.includes('calendar feed for sam failed') && e.includes('[calendar URL hidden]')))
+assert.ok(!errors.some((e) => e.includes('secret.example')), 'calendar URL never logged')
+assert.deepEqual((await perPerson.upcoming(24, ['riley'])).length, 0, 'upcoming() can be limited to one person')
+assert.deepEqual(perPerson.calendarPersonas().sort(), ['maya', 'riley', 'sam'])
+console.log('ok  per-person calendars')
 
 // 7. Regression: an action on a card this process didn't post must not unmute the series
 const hu3 = createHeadsUp({ client, config, access, log })

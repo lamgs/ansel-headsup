@@ -34,15 +34,16 @@ The team uses **one central app installation**, not separate Slack tokens for ev
 
 - **Chosen trigger:** a published Outlook calendar ICS feed (`CALENDAR_ICS_URL`). Teams meetings are Outlook events, so this covers Teams; Teams join links are detected automatically.
 - **Out of scope:** Microsoft Graph. No Entra app registration or IT admin consent is needed.
-- **Single calendar:** the app watches one calendar. Every persona mapped in `SLACK_USERS` gets a card when that calendar has a matching recurring meeting. Use a dedicated demo calendar or the operator's calendar.
+- **Per-person calendars:** each pilot user publishes their own Outlook calendar; the operator stores it as `CALENDAR_ICS_URL_<PERSONA>` in the central `.env`. A feed only triggers its owner's card. `CALENDAR_ICS_URL` remains as an optional shared fallback. No per-person `.env` or tokens.
 - **Freshness:** the app downloads the feed every `POLL_SECONDS` (60 s), but Outlook regenerates the published feed on its own schedule (sometimes hours). Create demo meetings well in advance; keep `/headsup demo` as the on-stage trigger.
 
 ## Data privacy (call out in the demo)
 
 This pilot is acceptable for a demo, not for real user data. Say so explicitly when presenting.
 
-- The published ICS link is an unauthenticated credential: anyone with it can read every event on that calendar (titles, attendees, descriptions). Treat it like the Slack tokens: keep it only in `slack-app/.env` or the host's secret store, never in Slack or docs. If it leaks, use **Reset links** in Outlook's publish settings.
-- "Can view all details" publishes the whole calendar. Prefer a dedicated Outlook calendar that holds only the demo meeting so a leaked link exposes nothing real.
+- Each published ICS link is an unauthenticated credential: anyone with it can read every event on that calendar (titles, attendees, descriptions). With per-person feeds there is one per pilot user. Treat them like the Slack tokens: keep it only in `slack-app/.env` or the host's secret store, never in Slack or docs. If it leaks, use **Reset links** in Outlook's publish settings.
+- "Can view all details" publishes the whole calendar, so the operator's host holds read access to every pilot user's real calendar. Get each user's consent, and have them unpublish when they leave the pilot.
+- Feed errors are logged with the URL hidden, and `/headsup next` only shows the requester's own meetings.
 - `.env` is a plaintext file on one machine; move secrets to the host's encrypted environment variables when deploying.
 - Card content is seeded demo data, not real transcripts.
 - A production version would need per-user authorization, scoped calendar access, and a review with UChicago IT before handling real calendars or meeting content.
@@ -50,7 +51,7 @@ This pilot is acceptable for a demo, not for real user data. Say so explicitly w
 ## Not configured yet
 
 - Always-on hosting (the current service is tied to the active development session).
-- A Google or Outlook `CALENDAR_ICS_URL`; the live app is currently manual-trigger only.
+- Per-person calendar links (`CALENDAR_ICS_URL_<PERSONA>`); the live app is currently manual-trigger only.
 - A hosted `PROTOTYPE_URL` for transcript deep links.
 - Durable state. Mutes and fired-trigger history reset when the process restarts.
 - Real Ansel meeting/transcript data; card content is still seeded for the demo.
