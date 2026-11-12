@@ -5,7 +5,7 @@ import assert from 'node:assert/strict'
 import { loadOccurrences, seriesMatcher } from '../src/calendar.js'
 import { createHeadsUp } from '../src/headsup.js'
 import { createScheduler, redactUrls } from '../src/scheduler.js'
-import { parseCalendarFeeds } from '../src/config.js'
+import { parseCalendarFeeds, loadConfig, DEFAULT_PROTOTYPE_URL } from '../src/config.js'
 import { createAccessControl } from '../src/access.js'
 import { buildHome } from '../src/home.js'
 
@@ -91,6 +91,11 @@ console.log('ok  scheduler')
 
 // 6b. Per-person calendars: each feed only triggers its owner; a broken feed is logged without its URL
 assert.deepEqual(parseCalendarFeeds({ CALENDAR_ICS_URL_GABRIEL: ' https://a.example/m.ics ', CALENDAR_ICS_URL_: 'x', CALENDAR_ICS_URL_ARYAN: '', OTHER: 'y' }), { gabriel: 'https://a.example/m.ics' })
+// Prototype links default to the GitHub Pages site; PROTOTYPE_URL overrides it and `off` disables links.
+assert.equal(loadConfig({}).prototypeUrl, 'https://lamgs.github.io/ansel-headsup/')
+assert.equal(loadConfig({ PROTOTYPE_URL: '' }).prototypeUrl, DEFAULT_PROTOTYPE_URL)
+assert.equal(loadConfig({ PROTOTYPE_URL: ' https://other.example/ ' }).prototypeUrl, 'https://other.example/')
+assert.equal(loadConfig({ PROTOTYPE_URL: 'off' }).prototypeUrl, '')
 assert.equal(redactUrls('GET https://outlook.office365.com/owa/calendar/abc/secret/calendar.ics 404'), 'GET [calendar URL hidden] 404')
 calls.length = 0; logs.length = 0
 const empty = 'BEGIN:VCALENDAR\r\nVERSION:2.0\r\nEND:VCALENDAR\r\n'

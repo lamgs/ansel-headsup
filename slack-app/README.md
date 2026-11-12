@@ -174,7 +174,7 @@ Layout (direction 2a in [`../card/slack-mockups/`](../card/slack-mockups/README.
 | Control | Behavior | Event |
 |---|---|---|
 | Join Teams / Join now | Opens the meeting link; green; removed after the meeting ends | `join_tap` (with `joinedPrepared`: true if a timestamp or ✓ came first) |
-| Timestamp (e.g. `14:32`) on your items; ⋮ → Play at 18:40 on other items | Opens the prototype at that transcript line if `PROTOTYPE_URL` is set, otherwise replies privately with the quoted line | `timestamp_tap` ★ |
+| Timestamp (e.g. `14:32`) on your items; ⋮ → Play at 18:40 on other items | Opens the prototype at that transcript line (default), or replies privately with the quoted line if `PROTOTYPE_URL=off` | `timestamp_tap` ★ |
 | ✓ (Mark done) / green ✓ | Only on your own items: marks it done (title shows _Done_), tap again to undo | `mark_done` ★ / `mark_done_undone` |
 | ✎ (Not right) on your items; ⋮ → Not right on others | Asks "What's wrong?" (Wrong owner, Not a real item, Already done); ✎ Flagged / ⋮ → Undo Not right undoes | `item_flagged`, `item_flag_reason`, `item_flag_undone` |
 | +N more in Ansel | Link to the hosted summary, shown when there are more than 6 items | — |
@@ -186,7 +186,7 @@ The ✓ and ✎ buttons have screen-reader labels ("Mark done: Forecast update")
 
 Also logged: `card_shown`, `card_suppressed` (holdout), `card_skipped` (with the reason) and `state_changed` (posted → starting-soon → started → ended). The countdown updates every poll. Slack can't draw the web card's large timer, time bar, row stripes or green done rows; the Slack layout uses Slack's own text sizes and a green ✓ instead.
 
-To get the deep links, set `PROTOTYPE_URL=https://lamgs.github.io/ansel-headsup/` (published from `main` by GitHub Pages; see the root README) and restart the service. Links look like `…/#ansel/wps-1106/transcript/14:32/a2`.
+The ▶ and **Open last meeting** buttons link to the hosted prototype at https://lamgs.github.io/ansel-headsup/ by default (published from `main` by GitHub Pages; see the root README). Set `PROTOTYPE_URL` to point somewhere else, or `PROTOTYPE_URL=off` to have the buttons reply in Slack instead. Links look like `…/#ansel/wps-1106/transcript/14:32/a2`.
 
 ## Limits
 
