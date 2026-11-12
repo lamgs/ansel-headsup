@@ -10,4 +10,6 @@ Three Slack-native (Block Kit) directions for the card in `card/`, using its dem
 | 2b · Same as 2a with icon + word buttons (✓ Done, ✎ Fix) | `2b-refined-icon-words.png` | `2b-refined-icon-words.blocks.json` |
 | 3 · Minimal list: one row per item, every action in a ⋮ menu | `3-minimal.png` | `3-minimal.blocks.json` |
 
-The images are approximations drawn outside Slack (stand-in font; spacing and button shapes may differ slightly). To see exact Slack rendering, paste a `.blocks.json` file into Slack's Block Kit Builder: <https://app.slack.com/block-kit-builder>. The live Slack card (`slack-app/src/card.js`) is not changed by these files.
+The images are approximations drawn outside Slack (stand-in font; spacing and button shapes may differ slightly). To see exact Slack rendering, paste a `.blocks.json` file into Slack's Block Kit Builder: <https://app.slack.com/block-kit-builder>. 
+
+**Chosen: 2a**, with the ▶ arrow removed. `live-card.png` and `live-card.blocks.json` are the real output of `slack-app/src/card.js` (Alicia's card); paste the JSON into Block Kit Builder to see it in Slack's own styling.

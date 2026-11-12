@@ -99,7 +99,12 @@ export function createHeadsUp({ client, config, access, log = pilotLog }) {
   function entryFor(body) {
     const key = `${body.channel.id}:${body.message.ts}`
     if (live.has(key)) return live.get(key)
-    const meta = JSON.parse(body.actions[0].value)
+    // Buttons carry the card's meta; ⋮ menus don't (option values are capped at 150 characters), so use any button in the message.
+    const raw = body.actions[0].value ?? (body.message?.blocks ?? [])
+      .flatMap((b) => (b.type === 'actions' ? b.elements : b.accessory ? [b.accessory] : []))
+      .find((e) => e.type === 'button' && e.value?.startsWith('{'))?.value
+    if (!raw) throw new Error('Card can\'t be rebuilt: no card data in this message')
+    const meta = JSON.parse(raw)
     const { result } = evaluate(meta.p, meta.s, { ignoreMute: true, startMs: meta.st, joinUrl: meta.j })
     if (!result.data) throw new Error(`Card can't be rebuilt: ${result.reason}`)
     const entry = { channel: body.channel.id, ts: body.message.ts, persona: meta.p, sid: meta.s, startMs: meta.st, joinUrl: meta.j, data: result.data, ui: freshUi() }
@@ -115,7 +120,9 @@ export function createHeadsUp({ client, config, access, log = pilotLog }) {
    * contract event and returns a private reply to show the user, if any.
    */
   async function handleAction(body, action) {
-    const [act, a1, a2] = action.action_id.replace(/^hu_/, '').split(':')
+    let [act, a1, a2] = action.action_id.replace(/^hu_/, '').split(':')
+    // ⋮ menus on other people's rows: the chosen option says what to do ("play" or "flag" / "flag_undo")
+    if (act === 'menu') { act = action.selected_option?.value; action = { ...action, url: action.selected_option?.url } }
     const entry = entryFor(body)
     const { ui, persona } = entry
     const title = entry.data.meeting.title

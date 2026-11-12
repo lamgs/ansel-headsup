@@ -169,19 +169,22 @@ Create a recurring event titled **Weekly Product Sync**, with a Meet, Teams or Z
 
 The card matches [`../card/heads-up-card.js`](../card/heads-up-card.js) and logs the same event names as [`../card/CONTRACT.md`](../card/CONTRACT.md) §4 (to the console, as `[pilot]` lines; ★ marks value actions). Every change updates the card in place and has an Undo.
 
-| Button | Behavior | Event |
+Layout (direction 2a in [`../card/slack-mockups/`](../card/slack-mockups/README.md); `live-card.png` shows the real output): bold countdown title with **Join**, then your own items, each with a timestamp button and **✓** / **✎** icon buttons, then everyone else's items, each with a **⋮** menu. Owners and summaries are small grey text under each bold title.
+
+| Control | Behavior | Event |
 |---|---|---|
-| Join Teams / Join now | Opens the meeting link; the only green button; removed after the meeting ends | `join_tap` (with `joinedPrepared`: true if ▶ or Mark done came first) |
-| ▶ mm:ss | Opens the prototype at that transcript line if `PROTOTYPE_URL` is set, otherwise replies privately with the quoted line | `timestamp_tap` ★ |
-| Mark done / ✓ Done | Only on your own rows: marks the row done, tap again to undo | `mark_done` ★ / `mark_done_undone` |
-| Not right → reason / Flagged | On any row: asks "What's wrong?" (Wrong owner, Not a real item, Already done); Flagged undoes | `item_flagged`, `item_flag_reason`, `item_flag_undone` |
-| +N more in Ansel | Shown when there are more than 6 items | `more_tap` |
+| Join Teams / Join now | Opens the meeting link; green; removed after the meeting ends | `join_tap` (with `joinedPrepared`: true if a timestamp or ✓ came first) |
+| Timestamp (e.g. `14:32`) on your items; ⋮ → Play at 18:40 on other items | Opens the prototype at that transcript line if `PROTOTYPE_URL` is set, otherwise replies privately with the quoted line | `timestamp_tap` ★ |
+| ✓ (Mark done) / green ✓ | Only on your own items: marks it done (title shows _Done_), tap again to undo | `mark_done` ★ / `mark_done_undone` |
+| ✎ (Not right) on your items; ⋮ → Not right on others | Asks "What's wrong?" (Wrong owner, Not a real item, Already done); ✎ Flagged / ⋮ → Undo Not right undoes | `item_flagged`, `item_flag_reason`, `item_flag_undone` |
+| +N more in Ansel | Link to the hosted summary, shown when there are more than 6 items | — |
 | Open last meeting | Prototype Summary view, or a private summary reply | `open_last_meeting` |
 | Mute series / Undo | Collapses the card to one line (Join stays) and stops future cards for the series | `mute_series` / `mute_undone` |
 | Not useful → reason / Undo | Asks "What was off?" (Already knew this, Wrong meeting, Bad timing) | `not_useful`, `not_useful_reason`, `not_useful_undone` |
-| Why am I seeing this? | Shows the explanation under the footer; tap again to hide | `why_opened` |
 
-Also logged: `card_shown`, `card_suppressed` (holdout), `card_skipped` (with the reason) and `state_changed` (posted → starting-soon → started → ended). The countdown and time bar update every poll. Slack can't draw the web card's large timer, colored time bar, row stripes or green done rows, so they are shown as text: `*30 min*`, `▰▰▰▱▱▱▱▱▱▱`, `YOURS`, `✓ Done`.
+The ✓ and ✎ buttons have screen-reader labels ("Mark done: Forecast update"). "Why am I seeing this?" is always shown as a short answer in the footer.
+
+Also logged: `card_shown`, `card_suppressed` (holdout), `card_skipped` (with the reason) and `state_changed` (posted → starting-soon → started → ended). The countdown updates every poll. Slack can't draw the web card's large timer, time bar, row stripes or green done rows; the Slack layout uses Slack's own text sizes and a green ✓ instead.
 
 To get the deep links, set `PROTOTYPE_URL=https://lamgs.github.io/ansel-headsup/` (published from `main` by GitHub Pages; see the root README) and restart the service. Links look like `…/#ansel/wps-1106/transcript/14:32/a2`.
 

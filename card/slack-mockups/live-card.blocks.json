@@ -1,0 +1,335 @@
+{
+  "blocks": [
+    {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": "*30 min · Weekly Product Sync*"
+      },
+      "accessory": {
+        "type": "button",
+        "action_id": "hu_join",
+        "text": {
+          "type": "plain_text",
+          "text": "Join Teams",
+          "emoji": true
+        },
+        "value": "{\"p\":\"alicia\",\"s\":\"wps\",\"st\":1794492000000,\"j\":\"https://teams.microsoft.com/\"}",
+        "url": "https://teams.microsoft.com/",
+        "style": "primary"
+      }
+    },
+    {
+      "type": "context",
+      "elements": [
+        {
+          "type": "mrkdwn",
+          "text": "Starts at <!date^1794492000^{time}|2:00 PM> on Teams · 6 action items from last week"
+        }
+      ]
+    },
+    {
+      "type": "divider"
+    },
+    {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": "*Launch checklist*"
+      },
+      "accessory": {
+        "type": "button",
+        "action_id": "hu_play:a5",
+        "text": {
+          "type": "plain_text",
+          "text": "47:20",
+          "emoji": true
+        },
+        "value": "{\"p\":\"alicia\",\"s\":\"wps\",\"st\":1794492000000,\"j\":\"https://teams.microsoft.com/\"}",
+        "url": "https://lamgs.github.io/ansel-headsup/#ansel/wps-1106/transcript/47:20/a5",
+        "accessibility_label": "Play the transcript at 47:20"
+      }
+    },
+    {
+      "type": "context",
+      "elements": [
+        {
+          "type": "mrkdwn",
+          "text": "You · Send the updated launch checklist before next week's sync."
+        }
+      ]
+    },
+    {
+      "type": "actions",
+      "elements": [
+        {
+          "type": "button",
+          "action_id": "hu_done:a5",
+          "text": {
+            "type": "plain_text",
+            "text": "✓",
+            "emoji": true
+          },
+          "value": "{\"p\":\"alicia\",\"s\":\"wps\",\"st\":1794492000000,\"j\":\"https://teams.microsoft.com/\"}",
+          "accessibility_label": "Mark done: Launch checklist"
+        },
+        {
+          "type": "button",
+          "action_id": "hu_flag:a5",
+          "text": {
+            "type": "plain_text",
+            "text": "✎",
+            "emoji": true
+          },
+          "value": "{\"p\":\"alicia\",\"s\":\"wps\",\"st\":1794492000000,\"j\":\"https://teams.microsoft.com/\"}",
+          "accessibility_label": "Not right: Launch checklist"
+        }
+      ]
+    },
+    {
+      "type": "divider"
+    },
+    {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": "*Forecast update*"
+      },
+      "accessory": {
+        "type": "overflow",
+        "action_id": "hu_menu:a2",
+        "options": [
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "Play at 14:32"
+            },
+            "value": "play",
+            "url": "https://lamgs.github.io/ansel-headsup/#ansel/wps-1106/transcript/14:32/a2"
+          },
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "Not right"
+            },
+            "value": "flag"
+          }
+        ]
+      }
+    },
+    {
+      "type": "context",
+      "elements": [
+        {
+          "type": "mrkdwn",
+          "text": "Gabriel · Rerun the Q1 forecast with the new conversion numbers and add it to the shared deck."
+        }
+      ]
+    },
+    {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": "*Pricing page copy*"
+      },
+      "accessory": {
+        "type": "overflow",
+        "action_id": "hu_menu:a3",
+        "options": [
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "Play at 41:52"
+            },
+            "value": "play",
+            "url": "https://lamgs.github.io/ansel-headsup/#ansel/wps-1106/transcript/41:52/a3"
+          },
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "Not right"
+            },
+            "value": "flag"
+          }
+        ]
+      }
+    },
+    {
+      "type": "context",
+      "elements": [
+        {
+          "type": "mrkdwn",
+          "text": "Alex Kim · Send Rishabh the final pricing page copy so it ships with v2."
+        }
+      ]
+    },
+    {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": "*QA estimate*"
+      },
+      "accessory": {
+        "type": "overflow",
+        "action_id": "hu_menu:a4",
+        "options": [
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "Play at 28:30"
+            },
+            "value": "play",
+            "url": "https://lamgs.github.io/ansel-headsup/#ansel/wps-1106/transcript/28:30/a4"
+          },
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "Not right"
+            },
+            "value": "flag"
+          }
+        ]
+      }
+    },
+    {
+      "type": "context",
+      "elements": [
+        {
+          "type": "mrkdwn",
+          "text": "Rishabh · Estimate QA time for the payment flow so the launch date can be set."
+        }
+      ]
+    },
+    {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": "*Pricing model update*"
+      },
+      "accessory": {
+        "type": "overflow",
+        "action_id": "hu_menu:a6",
+        "options": [
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "Play at 34:30"
+            },
+            "value": "play",
+            "url": "https://lamgs.github.io/ansel-headsup/#ansel/wps-1106/transcript/34:30/a6"
+          },
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "Not right"
+            },
+            "value": "flag"
+          }
+        ]
+      }
+    },
+    {
+      "type": "context",
+      "elements": [
+        {
+          "type": "mrkdwn",
+          "text": "Varun · Update the pricing model with the final tiers now that legal is clear."
+        }
+      ]
+    },
+    {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": "*Payment flow test plan*"
+      },
+      "accessory": {
+        "type": "overflow",
+        "action_id": "hu_menu:a7",
+        "options": [
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "Play at 28:50"
+            },
+            "value": "play",
+            "url": "https://lamgs.github.io/ansel-headsup/#ansel/wps-1106/transcript/28:50/a7"
+          },
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "Not right"
+            },
+            "value": "flag"
+          }
+        ]
+      }
+    },
+    {
+      "type": "context",
+      "elements": [
+        {
+          "type": "mrkdwn",
+          "text": "Aryan · Write the payment flow test plan the QA estimate will build on."
+        }
+      ]
+    },
+    {
+      "type": "divider"
+    },
+    {
+      "type": "actions",
+      "elements": [
+        {
+          "type": "button",
+          "action_id": "hu_open_last",
+          "text": {
+            "type": "plain_text",
+            "text": "Open last meeting",
+            "emoji": true
+          },
+          "value": "{\"p\":\"alicia\",\"s\":\"wps\",\"st\":1794492000000,\"j\":\"https://teams.microsoft.com/\"}",
+          "url": "https://lamgs.github.io/ansel-headsup/#ansel/wps-1106/summary/"
+        },
+        {
+          "type": "button",
+          "action_id": "hu_mute",
+          "text": {
+            "type": "plain_text",
+            "text": "Mute series",
+            "emoji": true
+          },
+          "value": "{\"p\":\"alicia\",\"s\":\"wps\",\"st\":1794492000000,\"j\":\"https://teams.microsoft.com/\"}"
+        },
+        {
+          "type": "button",
+          "action_id": "hu_nu",
+          "text": {
+            "type": "plain_text",
+            "text": "Not useful",
+            "emoji": true
+          },
+          "value": "{\"p\":\"alicia\",\"s\":\"wps\",\"st\":1794492000000,\"j\":\"https://teams.microsoft.com/\"}"
+        }
+      ]
+    },
+    {
+      "type": "context",
+      "elements": [
+        {
+          "type": "mrkdwn",
+          "text": ":lock: _Only you can see this. Built from last week's recording, which everyone on the invite can open, with no new AI processing._"
+        }
+      ]
+    },
+    {
+      "type": "context",
+      "elements": [
+        {
+          "type": "mrkdwn",
+          "text": "*Why am I seeing this?* You're on the invite for Weekly Product Sync. These items come from last week's Ansel recording, which invitees can already open. Nothing new is shared, and actions are audit-logged."
+        }
+      ]
+    }
+  ]
+}
