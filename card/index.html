@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Heads-Up · Weekly Product Sync</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap">
+  <script src="heads-up-card.js"></script>
+  <script src="demo-data.js"></script>
+  <style>
+    :root { color-scheme: light; }
+    [hidden] { display: none !important; }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; padding: 40px 16px; display: flex; justify-content: center; align-items: flex-start;
+      background: #F4F4F5; color: #1D1C1D; font: 15px/1.46668 Lato, "Helvetica Neue", Helvetica, Arial, sans-serif;
+      -webkit-font-smoothing: antialiased; }
+    .pane { width: 100%; max-width: 860px; background: #fff; border: 1px solid #DDDDDD; border-radius: 10px; overflow: hidden; }
+    .pane-head { display: flex; align-items: center; gap: 6px; padding: 10px 20px; border-bottom: 1px solid #DDDDDD; font-weight: 900; }
+    .pane-head small { font-size: 10px; font-weight: 700; color: #616061; background: rgba(29, 28, 29, .13); border-radius: 2px; padding: 1px 3px; }
+    .day { display: flex; align-items: center; gap: 8px; margin: 12px 20px 4px; color: #616061; font-size: 13px; font-weight: 700; }
+    .day::before, .day::after { content: ''; flex: 1; border-top: 1px solid #DDDDDD; }
+    heads-up-card { padding-bottom: 12px; }
+    .toast { position: fixed; left: 50%; bottom: 24px; max-width: calc(100% - 32px); padding: 10px 16px; border-radius: 8px;
+      background: #1D1C1D; color: #fff; font-size: 14px; opacity: 0; pointer-events: none;
+      transform: translate(-50%, 8px); transition: opacity 150ms ease-out, transform 150ms ease-out; }
+    .toast.show { opacity: 1; transform: translate(-50%, 0); }
+    #load-error { max-width: 70ch; padding: 12px; border: 2px solid #B00020; border-radius: 8px; color: #B00020; background: #fff; }
+    @media (max-width: 480px) { body { padding: 12px 0; } .pane { border-radius: 0; border-left: 0; border-right: 0; } }
+    @media (prefers-reduced-motion: reduce) { .toast { transition: none; } }
+  </style>
+</head>
+<body>
+  <div id="load-error" role="alert" hidden></div>
+
+  <main class="pane" aria-label="Direct message from Ansel">
+    <div class="pane-head">Ansel <small>APP</small></div>
+    <div class="day">Today</div>
+    <heads-up-card id="card"></heads-up-card>
+  </main>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    (function () {
+      'use strict';
+      const missing = [
+        !customElements.get('heads-up-card') && 'heads-up-card.js',
+        !window.HeadsUpDemoData && 'demo-data.js',
+      ].filter(Boolean);
+      if (missing.length) {
+        const box = document.getElementById('load-error');
+        box.innerHTML = `<strong>The card didn't load.</strong> This page can't find ${missing.join(', ')}. ` +
+          'Those files must sit in the same folder as this page. If you opened it from inside the zip, ' +
+          'right-click the zip, choose <strong>Extract All</strong>, then open index.html from the extracted folder.';
+        box.hidden = false;
+        document.querySelector('.pane').hidden = true;
+        return;
+      }
+
+      const card = document.getElementById('card');
+      const toast = document.getElementById('toast');
+      card.data = HeadsUpDemoData.alex;
+
+      const stamp = (s) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+      // Taps that open Ansel or Zoom. Until the app hosts those pages, say where the tap goes.
+      const opens = {
+        timestamp_tap: (p) => `Opening last week's transcript at ${stamp(p.seconds)}`,
+        open_last_meeting: () => "Opening last week's meeting in Ansel",
+        more_tap: () => "Opening all of last week's action items in Ansel",
+        join_tap: () => 'Opening the Zoom meeting from your calendar invite',
+      };
+      let timer = null;
+      card.addEventListener('headsup:action', (e) => {
+        const say = opens[e.detail.action];
+        if (!say) return;
+        e.preventDefault();
+        toast.textContent = say(e.detail.payload);
+        toast.classList.add('show');
+        clearTimeout(timer);
+        timer = setTimeout(() => toast.classList.remove('show'), 2400);
+      });
+    })();
+  </script>
+</body>
+</html>
