@@ -10,7 +10,6 @@ import { NipMenu, NipSwitch, canSee, useNip } from './shared.jsx'
 import TranscriptTab from './TranscriptTab.jsx'
 import SummaryTab from './SummaryTab.jsx'
 import ActionItemsTab from './ActionItemsTab.jsx'
-import AskTab from './AskTab.jsx'
 import SidePanel from './SidePanel.jsx'
 import ItemPanel from './ItemPanel.jsx'
 
@@ -18,7 +17,6 @@ const TABS = [
   ['transcript', 'Transcript', FileText],
   ['summary', 'Summary', Sparkles],
   ['actions', 'Action items', ListChecks],
-  ['ask', 'Ask Ansel', MessageSquare],
 ]
 
 export default function MeetingDetail() {
@@ -73,7 +71,6 @@ export default function MeetingDetail() {
                 {tab === 'transcript' && <TranscriptTab inst={inst} />}
                 {tab === 'summary' && <SummaryTab inst={inst} series={series} />}
                 {tab === 'actions' && <ActionItemsTab inst={inst} />}
-                {tab === 'ask' && <AskTab inst={inst} />}
               </>
             )}
         </div>

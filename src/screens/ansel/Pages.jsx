@@ -1,13 +1,12 @@
 // App pages around the meeting record. Visible so Ansel looks complete; mostly inactive.
 import React from 'react'
-import { BellRing, CalendarDays, Check, EyeOff, Mic, Search, Sparkles } from 'lucide-react'
+import { BellRing, CalendarDays, Check, EyeOff, Mic, Search } from 'lucide-react'
 import { useStore } from '../../state/store.jsx'
 import { SEED } from '../../data/seed.js'
 import { longDate } from '../../logic/buildHeadsUp.js'
-import { Avatar, Ts, firstName } from '../../components/ui.jsx'
+import { Avatar, firstName } from '../../components/ui.jsx'
 import HeadsUpSettings from '../HeadsUpSettings.jsx'
 import { NipSwitch, useNip } from './shared.jsx'
-import { NOV6_QA } from './AskTab.jsx'
 
 const Page = ({ title, sub, children }) => (
   <div className="h-full overflow-y-auto">
@@ -86,32 +85,6 @@ export function SearchPage() {
         <button onClick={nip('Date filter')} className="rounded-full border border-slate-300 px-2.5 py-1 text-slate-600 dark:border-slate-600 dark:text-slate-300">Any date</button>
       </div>
       <p className="mt-6 text-sm text-slate-500">Default scope is meetings you attended. Records outside it appear only if they're shared with you directly and workspace policy allows it.</p>
-    </Page>
-  )
-}
-
-export function AskAnselPage() {
-  const { dispatch } = useStore()
-  const nip = useNip()
-  return (
-    <Page title="Ask Ansel" sub="Ask about meetings you attended. Every answer links to where it was said.">
-      <div className="space-y-4">
-        {NOV6_QA.map(({ q, a, cites }) => (
-          <Card key={q}>
-            <div className="font-medium">{q}</div>
-            <div className="mt-1 text-sm text-slate-600 dark:text-slate-300">{a}</div>
-            <div className="mt-2 flex items-center gap-1 text-xs text-slate-500">
-              Weekly Product Sync · Nov 6
-              {cites.map((t) => <Ts key={t} t={t} onClick={() => openMeeting(dispatch, 'wps-1106', { tab: 'transcript', highlight: { t, n: Date.now() } })} />)}
-            </div>
-          </Card>
-        ))}
-        <div className="relative">
-          <Sparkles size={15} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ansel dark:text-ansel-300" aria-hidden />
-          <input readOnly onClick={nip('Ask Ansel')} placeholder="Ask a question"
-            className="w-full cursor-pointer rounded-full border border-slate-300 bg-transparent py-2 pl-9 pr-3 text-sm dark:border-slate-700" />
-        </div>
-      </div>
     </Page>
   )
 }

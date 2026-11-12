@@ -47,7 +47,7 @@ Layout sketch (the player is audio only):
 │ Meetings │ 🔒 Visible to attendees only    [Share] [Export ▾]   │ Decisions             │
 │ Search   │                                 [Send to ▾]          │ Open questions        │
 │ Ask Ansel│ Oct 23 · Oct 30 · [Nov 6] · Nov 13 upcoming          │ Action items          │
-│ Settings │ Transcript | Summary | Action items | Ask Ansel      │ Themes                │
+│ Settings │ Transcript | Summary | Action items                  │ Themes                │
 │ ──────── │ ┌──────────────────────────────────────────────────┐ │                       │
 │ Admin    │ │ ▶ ━━━━━━━━○──────── 14:32 / 48:00  (player)      │ │ each row: text, owner,│
 │ console  │ │ 🔍 Search this transcript                         │ │ ▶ time, status        │
@@ -78,6 +78,12 @@ Layout sketch (the player is audio only):
 - Jumps place the line a third of the way down below the player, so its speaker and theme label stay visible.
 - Transcript labels and status tags use the same small rectangle as the card's `Edited` badge.
 
+**Chat and transcript pass (branch `rishabh/ansel-chat`)**
+- Ask Ansel is a floating chat window at the bottom right instead of a meeting tab or page: a launcher button, an open window (360 px) and a minimized bar. The sidebar's Ask Ansel entry opens it.
+- Scope follows the screen: the open meeting if you can see it, otherwise "Meetings you attended". Suggested questions add canned answers with ▶ citations; clicking one opens the transcript at that line and minimizes the chat.
+- Answers only appear where the person can open the Nov 6 record (Aryan without the direct share sees none). "What do I owe" is offered to Gabriel only. The thread resets when the persona changes.
+- Transcript: the speaker's avatar and name sit on the same line as their first line of dialogue, in a fixed column; consecutive lines from the same speaker leave it blank.
+
 **Summary tab (Granola-style)**
 - Single readable column (~680 px), generous spacing, section headings: Decisions, Open questions, Action items, Themes.
 - Short bullets with a quiet ▶ timestamp on the right; `Edited` shown inline with the original struck through.
@@ -87,7 +93,7 @@ Layout sketch (the player is audio only):
 **Shared shell**
 - Left sidebar: workspace name, Home, Meetings, Search, Ask Ansel, Settings, Admin console.
 - Meeting header: title, date and duration, "● Recorded" pill, attendee avatars, 🔒 "Attendees only" badge, Share / Export / Send to buttons.
-- Ask Ansel: chat panel whose answers carry ▶ citation chips.
+- Ask Ansel: floating chat window, bottom right (see below).
 - Small toast for inactive features.
 
 **Guardrails**
@@ -159,7 +165,7 @@ All look real. Clicking shows a toast: "Not in this prototype." Grouped by where
 | Feature (Phase 1 case) | Where |
 |---|---|
 | Search across meetings you attended (default scope) | Left nav **Search** page with a scope note "Meetings you attended" |
-| Ask Ansel with cited moments | Left nav and meeting tab. Canned Q&A whose citations look like ▶ links |
+| Ask Ansel with cited moments | Floating chat (bottom right) and the sidebar entry that opens it. Suggested questions give canned answers whose ▶ citations jump to the line; typing is inactive |
 | Share and permissions | Meeting header: 🔒 "Visible to attendees only" badge, **Share** opens a mock dialog (organizer sets access, direct share if policy allows, "Access is audit-logged") |
 | Task-tool push (Asana, Jira, Linear) | **Send to ▾** menu on the header and action items |
 | Slack / Teams thread delivery | **Send to ▾** menu |

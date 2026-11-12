@@ -68,17 +68,13 @@ export default function TranscriptTab({ inst }) {
   return (
     <div>
       <PlayerBar inst={inst} durationSec={durationSec} posSec={posSec} />
-      <div className="mx-auto max-w-3xl px-6 pb-16 pt-2">
+      <div className="max-w-4xl px-6 pb-16 pt-2">
         {blocks.map((b, i) => (
           <React.Fragment key={`${b.lines[0].t}-${i}`}>
             {b.theme && <ThemeDivider theme={b.theme} selected={selTheme?.id === b.theme.id} />}
-            <div className="mt-3">
-              <div className="ml-14 flex items-center gap-2 pb-0.5">
-                <Avatar id={b.speaker} size="xs" />
-                <span className="text-sm font-semibold">{firstName(b.speaker)}</span>
-              </div>
-              {b.lines.map((s) => (
-                <Line key={s.t} s={s} inst={inst} items={cited.get(s.t) || []} flash={flashT === s.t}
+            <div className="mt-2">
+              {b.lines.map((s, j) => (
+                <Line key={s.t} s={s} inst={inst} items={cited.get(s.t) || []} flash={flashT === s.t} showSpeaker={j === 0}
                   inTheme={!!selTheme && s.sec >= toSec(selTheme.start) && s.sec <= toSec(selTheme.end)} />
               ))}
             </div>
@@ -94,7 +90,7 @@ function PlayerBar({ inst, durationSec, posSec }) {
   const nip = useNip()
   return (
     <div id="ansel-player" className="sticky top-0 z-10 border-b border-slate-200 bg-white/95 px-6 py-2 backdrop-blur dark:border-slate-800 dark:bg-slate-950/95">
-      <div className="@container mx-auto max-w-3xl">
+      <div className="@container max-w-4xl">
       <div className="flex items-center gap-2.5">
         <button onClick={nip('Audio playback')} aria-label="Play" className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-ansel text-white hover:bg-ansel-700 dark:bg-ansel-400 dark:text-slate-950">
           <Play size={14} fill="currentColor" aria-hidden />
@@ -200,7 +196,7 @@ const ToolBtn = ({ title, onClick, children }) => (
     className="rounded p-1 text-slate-500 hover:bg-slate-100 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200">{children}</button>
 )
 
-function Line({ s, inst, items, flash, inTheme }) {
+function Line({ s, inst, items, flash, inTheme, showSpeaker }) {
   const { state, dispatch } = useStore()
   const key = lineKey(inst.id, s.t)
   const comments = state.comments[key] || []
@@ -223,6 +219,10 @@ function Line({ s, inst, items, flash, inTheme }) {
       className={`group relative flex gap-3 rounded-md py-1 pr-2 ${tint} ${selected ? 'ring-2 ring-ansel/30 dark:ring-ansel-300/30' : ''} ${flash ? 'flash ring-2 ring-amber-400' : ''}`}>
       <button onClick={() => jumpTo(dispatch, s.t)} title={`Play from ${s.t}`}
         className="w-11 shrink-0 pt-0.5 text-right font-mono text-xs text-slate-400 hover:text-ansel dark:hover:text-ansel-300">{s.t}</button>
+      {/* Speaker sits on the same line as what they said; repeated only when the speaker changes. */}
+      <div className="flex w-24 shrink-0 items-start gap-1.5 pt-0.5">
+        {showSpeaker && <><Avatar id={s.speaker} size="xs" /><span className="truncate text-sm font-semibold leading-5">{firstName(s.speaker)}</span></>}
+      </div>
       <div className="min-w-0 flex-1">
         <p className="text-[15px] leading-relaxed text-slate-800 dark:text-slate-200">{s.text}</p>
         {items.length > 0 && (

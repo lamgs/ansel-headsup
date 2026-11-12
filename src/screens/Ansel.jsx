@@ -5,13 +5,13 @@ import { CalendarDays, House, MessageSquare, Search, Settings, ShieldCheck, Exte
 import { useStore } from '../state/store.jsx'
 import { Avatar, personName } from '../components/ui.jsx'
 import MeetingDetail from './ansel/MeetingDetail.jsx'
-import { HomePage, MeetingList, SearchPage, AskAnselPage, SettingsPage } from './ansel/Pages.jsx'
+import { HomePage, MeetingList, SearchPage, SettingsPage } from './ansel/Pages.jsx'
+import AskAnselChat from './ansel/AskAnselChat.jsx'
 
 const NAV = [
   ['home', 'Home', House],
   ['meetings', 'Meetings', CalendarDays],
   ['search', 'Search', Search],
-  ['ask-ansel', 'Ask Ansel', MessageSquare],
   ['settings', 'Settings', Settings],
 ]
 
@@ -36,6 +36,10 @@ export default function Ansel() {
               <Icon size={16} aria-hidden />{label}
             </button>
           ))}
+          <button onClick={() => dispatch({ type: 'ANSEL_NAV', nav: { chat: 'open' } })}
+            className="flex items-center gap-2.5 rounded-md px-2 py-1.5 text-left text-sm text-slate-700 hover:bg-slate-200/60 dark:text-slate-300 dark:hover:bg-slate-800">
+            <MessageSquare size={16} aria-hidden />Ask Ansel
+          </button>
         </div>
         <div className="mt-auto space-y-2 border-t border-slate-200 pt-3 dark:border-slate-800">
           <button onClick={() => dispatch({ type: 'SET_TAB', tab: 'governance' })} title="Opens Setup & governance"
@@ -51,9 +55,9 @@ export default function Ansel() {
         {page === 'meetings' && (state.ansel.view === 'list' ? <MeetingList /> : <MeetingDetail />)}
         {page === 'home' && <HomePage />}
         {page === 'search' && <SearchPage />}
-        {page === 'ask-ansel' && <AskAnselPage />}
         {page === 'settings' && <SettingsPage />}
       </div>
+      <AskAnselChat />
     </div>
   )
 }
