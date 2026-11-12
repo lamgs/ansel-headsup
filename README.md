@@ -17,6 +17,14 @@ npm run build    # static build in dist/ (relative paths, can be hosted anywhere
 npm test         # checks buildHeadsUp against the per-persona table, transcript spacing, themes
 ```
 
+## Hosting (GitHub Pages)
+
+Every push to `main` tests, builds and publishes the prototype to **https://lamgs.github.io/ansel-headsup/** ([`.github/workflows/pages.yml`](.github/workflows/pages.yml)). Pull requests run the tests and build, but don't deploy.
+
+One-time setup by a repo admin: **Settings → Pages → Build and deployment → Source: GitHub Actions**. Then re-run the workflow (Actions → Deploy prototype to GitHub Pages → Run workflow) or push to `main`.
+
+To make the real Slack card's ▶ and **Open last meeting** buttons open it, set `PROTOTYPE_URL=https://lamgs.github.io/ansel-headsup/` in the Slack service's `.env` (on the VM: `/opt/ansel-headsup/slack-app/.env`, then `sudo systemctl restart ansel-headsup`).
+
 ## Demo script
 
 1. Persona **Gabriel** (default). Clock starts at 1:25 PM, Fri Nov 13. Click **Jump to 1:30 PM**. A toast appears and the **Ansel** DM gets an unread badge.
