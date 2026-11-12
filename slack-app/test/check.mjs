@@ -155,6 +155,15 @@ assert.deepEqual((await perPerson.upcoming(24, ['aryan'])).length, 0, 'upcoming(
 assert.deepEqual(perPerson.calendarPersonas().sort(), ['aryan', 'gabriel', 'rishabh'])
 console.log('ok  per-person calendars')
 
+// 6c. Ping everyone: one card per eligible person, skipped people get nothing
+calls.length = 0; logs.length = 0
+const ping = await createHeadsUp({ client, config, access, log }).pingAll({ gabriel: 'UGABRIEL01', aryan: 'UARYAN001', rishabh: 'U12345678', alicia: 'intruder@acme.example' }, { startMs: start })
+assert.deepEqual(ping.sent.map((r) => r.persona), ['gabriel'])
+assert.deepEqual(ping.skipped.map((r) => [r.persona, r.reason]), [['aryan', 'No meetings attended in this series'], ['rishabh', 'Holdout (measured, no card)'], ['alicia', 'Not authorized for this app']])
+assert.equal(calls.filter(([k]) => k === 'post').length, 1, 'only one DM is sent')
+assert.equal(calls[0][1].channel, 'D_UGABRIEL01')
+console.log('ok  ping everyone')
+
 // 7. Regression: an action on a card this process didn't post must not unmute the series
 const hu3 = createHeadsUp({ client, config, access, log })
 await hu3.setFlag({ channel: { id: 'D1' }, message: { ts: 'a' }, actions: [{ value: JSON.stringify({ sid: 'wps', persona: 'gabriel', startMs: start }) }] }, 'muted', true)

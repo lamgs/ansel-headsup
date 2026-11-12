@@ -22,6 +22,7 @@ const HELP = [
   '`/headsup demo [persona]`: post a Heads-Up to you now, for a Weekly Product Sync starting in ' + config.reminderMinutes + ' min (default persona: ' + config.demoPersona + ')',
   '`/headsup check [persona]`: why a persona gets a card or is skipped (the behind-the-scenes drawer)',
   '`/headsup next`: your upcoming recurring meetings from your calendar feed and when Heads-Up fires',
+  '`/headsup ping`: show the *Ping everyone* button, which sends each mapped teammate their own Heads-Up now (people with no card get nothing)',
   '`/headsup reset`: clear mutes and fired triggers',
   `Personas: ${personas.join(', ')}`,
 ].join('\n')
@@ -56,11 +57,47 @@ app.command('/headsup', async ({ command, ack, respond }) => {
       const who = (o) => (mine.length > 1 ? ` [${o.personas.join(', ')}]` : '')
       return say(['*Your upcoming recurring meetings*', ...occ.map((o) => `• ${o.title}: ${fmt(o.startMs)}${who(o)} · ${o.sid ? `Heads-Up at ${fmt(o.fireAtMs)} (series ${o.sid})` : 'no Ansel series matches, skipped'}`)].join('\n'))
     }
+    if (sub === 'ping') return respond({ response_type: 'ephemeral', text: 'Ping everyone', blocks: pingBlocks() })
     if (sub === 'reset') { headsUp.reset(); scheduler.reset(); return say('Reset: mutes and fired triggers cleared.') }
     return say(HELP)
   } catch (e) {
     console.error(e)
     return say(`Something went wrong: ${e.data?.error ?? e.message}`)
+  }
+})
+
+const nameOf = (id) => SEED.people.find((p) => p.id === id)?.name ?? id
+const demoStartMs = () => Math.ceil((Date.now() + config.reminderMinutes * 60000) / 60000) * 60000
+
+function pingBlocks() {
+  const mapped = Object.keys(config.users)
+  return [
+    { type: 'section', text: { type: 'mrkdwn', text: mapped.length
+      ? `*Ping everyone*: send a Heads-Up for a Weekly Product Sync starting in ${config.reminderMinutes} min to ${mapped.map(nameOf).join(', ')}. People with nothing to show get no message.`
+      : 'No teammates are mapped in `SLACK_USERS`, so there is no one to ping.' } },
+    ...(mapped.length ? [{ type: 'actions', elements: [{ type: 'button', action_id: 'ping_everyone', style: 'primary', text: { type: 'plain_text', text: 'Ping everyone' }, value: 'wps' }] }] : []),
+  ]
+}
+
+let pinging = false
+app.action('ping_everyone', async ({ ack, body, respond }) => {
+  await ack()
+  if (!await allowAction(body, respond)) return
+  if (pinging) return respond({ response_type: 'ephemeral', replace_original: false, text: 'A ping is already being sent.' })
+  pinging = true
+  try {
+    await respond({ response_type: 'ephemeral', replace_original: true, text: 'Sending…' })
+    pilotLog('ping_everyone', '-', `by ${body.user.id}`)
+    const { sent, skipped, failed } = await headsUp.pingAll(config.users, { startMs: demoStartMs(), joinUrl: config.demoJoinUrl })
+    const line = (label, rows, why) => (rows.length ? `*${label}:* ${rows.map((r) => (why ? `${nameOf(r.persona)} (${r.reason})` : nameOf(r.persona))).join(', ')}` : null)
+    await respond({ response_type: 'ephemeral', replace_original: true, text: [
+      '*Ping sent.*',
+      line('Card sent to', sent, false) ?? '*Card sent to:* nobody',
+      line('No card, nothing sent (by design)', skipped, true),
+      line('Failed', failed, true),
+    ].filter(Boolean).join('\n') })
+  } finally {
+    pinging = false
   }
 })
 

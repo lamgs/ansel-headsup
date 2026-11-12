@@ -62,6 +62,21 @@ export function createHeadsUp({ client, config, access, log = pilotLog }) {
     return { posted: true, series, result }
   }
 
+  /** "Ping everyone": post each mapped person their own persona's card. Skipped people get nothing. */
+  async function pingAll(users, { sid = 'wps', startMs, joinUrl } = {}) {
+    const sent = [], skipped = [], failed = []
+    for (const [persona, slackUser] of Object.entries(users)) {
+      try {
+        const r = await post({ persona, sid, slackUser, startMs, joinUrl })
+        ;(r.posted ? sent : skipped).push({ persona, reason: r.result.reason })
+      } catch (e) {
+        failed.push({ persona, reason: e.data?.error ?? e.message })
+        console.error(`ping failed for ${persona}:`, e.data?.error ?? e.message)
+      }
+    }
+    return { sent, skipped, failed }
+  }
+
   const render = (entry) => buildCard({ ...entry.ctx, nowMs: Date.now(), muted: entry.muted, notUseful: entry.notUseful })
 
   /** Keep the Join countdown current. Called by the scheduler every poll. */
@@ -129,5 +144,5 @@ export function createHeadsUp({ client, config, access, log = pilotLog }) {
 
   const reset = () => { for (const k of Object.keys(muted)) delete muted[k]; live.clear() }
 
-  return { evaluate, post, resolveUser, refreshCountdowns, entryFor, setFlag, transcriptQuote, summaryText, explain, reset, live }
+  return { evaluate, post, pingAll, resolveUser, refreshCountdowns, entryFor, setFlag, transcriptQuote, summaryText, explain, reset, live }
 }
