@@ -1,12 +1,17 @@
 # ansel-headsup
 BoothHacks Entry: Repository for the Kilts Center Case Competition for Chicago Booth
 
-Clickable, front-end-only prototype of **Heads-Up** for Ansel. React + Tailwind (Vite). No backend, no network calls, no AI calls. All state lives in memory.
+This repository contains two parts:
+
+- A clickable, front-end-only **Heads-Up** prototype for Ansel (React + Vite). It has no backend, network calls, or AI calls; all state lives in memory.
+- A real Slack app in [`slack-app/`](slack-app/README.md) that runs over Socket Mode and posts private Heads-Up DMs.
+
+See [`current_status.md`](current_status.md) for the current pilot stage and remaining work.
 
 ## Run
 
 ```bash
-npm install
+npm ci
 npm run dev      # local dev server
 npm run build    # static build in dist/ (relative paths, can be hosted anywhere)
 npm test         # checks buildHeadsUp against the per-persona table + transcript spacing
@@ -38,3 +43,12 @@ npm test         # checks buildHeadsUp against the per-persona table + transcrip
 ## Slack app (real integration)
 
 [`slack-app/`](slack-app/README.md) is a working Slack app (Socket Mode) that posts the same card from a Google or Outlook calendar ICS feed (30 minutes before a recurring meeting) or from a manual `/headsup demo` trigger. Its ▶ buttons deep-link into the hosted prototype (`#ansel/<instance>/<tab>/<mm:ss>/<item>`).
+
+The Slack app uses **central service credentials**, not one token per teammate:
+
+- One workspace bot token (`SLACK_BOT_TOKEN`) identifies the installed app.
+- One app-level token (`SLACK_APP_TOKEN`) opens the Socket Mode connection.
+- One centrally managed process should run at a time. Teammates use `/headsup`; they do not create or store tokens.
+- `ALLOWED_SLACK_USERS` is a deny-by-default list of the pilot users who may invoke commands, receive cards, or use card actions.
+
+For installation, secret handling, and the live verification checklist, see the [Slack app runbook](slack-app/README.md).

@@ -15,7 +15,7 @@ export function parseUserMap(s = '') {
   return Object.fromEntries(s.split(',').map((p) => p.split('=').map((x) => x.trim())).filter(([a, b]) => a && b))
 }
 
-export function createHeadsUp({ client, config, log = pilotLog }) {
+export function createHeadsUp({ client, config, access, log = pilotLog }) {
   const muted = {} // `${persona}:${sid}` → true
   const live = new Map() // `${channel}:${ts}` → { ctx, muted, notUseful }
   const userIds = {}
@@ -41,6 +41,12 @@ export function createHeadsUp({ client, config, log = pilotLog }) {
 
   /** Evaluate and, if eligible, post the card as a DM. Returns { posted, result }. */
   async function post({ persona, sid, slackUser, startMs, joinUrl }) {
+    if (!access || !await access.isAllowed(slackUser)) {
+      const series = seriesById(sid)
+      const result = { eligible: false, reason: 'Not authorized for this app', items: [], considered: [], cost: '' }
+      log('access_denied', persona, `Slack user ${slackUser || '(missing)'}`)
+      return { posted: false, series, result }
+    }
     const { series, result } = evaluate(persona, sid)
     if (!result.eligible) {
       log('card_skipped', persona, `${series.title}: ${result.reason}`)

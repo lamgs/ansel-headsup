@@ -5,6 +5,7 @@ import { buildCard } from '../src/card.js'
 import { loadOccurrences, seriesMatcher } from '../src/calendar.js'
 import { createHeadsUp } from '../src/headsup.js'
 import { createScheduler } from '../src/scheduler.js'
+import { createAccessControl } from '../src/access.js'
 
 const calls = []
 const client = {
@@ -18,7 +19,15 @@ const client = {
 const config = { prototypeUrl: 'https://demo.example/headsup/', demoJoinUrl: 'https://meet.google.com/abc-defg-hij', reminderMinutes: 30, seriesMap: 'Weekly Product Sync=wps,Design Review=dr' }
 const logs = []
 const log = (...a) => logs.push(a)
-const hu = createHeadsUp({ client, config, log })
+const access = createAccessControl({ client, allowedUsers: ['maya@acme.example', 'U12345678', 'UMAYA0001', 'URILEY001'], log })
+const hu = createHeadsUp({ client, config, access, log })
+
+assert.equal(await access.isAllowed('maya@acme.example'), true)
+assert.equal(await access.isAllowed('U_MAYA'), true)
+assert.equal(await access.isAllowed('intruder@acme.example'), false)
+assert.equal((await hu.post({ persona: 'maya', sid: 'wps', slackUser: 'U_INTRUDER', startMs: Date.now() })).result.reason, 'Not authorized for this app')
+assert.equal(calls.length, 0)
+console.log('ok  user allowlist')
 
 // 1. Card for Maya
 const start = Date.now() + 30 * 60000
@@ -54,7 +63,7 @@ assert.match(calls.at(-1)[1].blocks[1].text.text, /YOU OWN/)
 console.log('ok  mute / undo')
 
 // 4. Button state survives an app restart (rebuilt from the button value)
-const hu2 = createHeadsUp({ client, config, log })
+const hu2 = createHeadsUp({ client, config, access, log })
 await hu2.setFlag(body, 'notUseful', true)
 assert.match(calls.at(-1)[1].blocks[1].text.text, /^Thanks/)
 console.log('ok  restart-safe actions')
@@ -101,8 +110,8 @@ console.log('ok  ICS parsing:', occ.length, 'occurrences')
 // 6. Scheduler fires once per (occurrence, persona) inside the reminder window
 calls.length = 0; logs.length = 0
 const sched = createScheduler({
-  headsUp: createHeadsUp({ client, config, log }), config, log,
-  users: { maya: 'U_MAYA0001', riley: 'U_RILEY001' },
+  headsUp: createHeadsUp({ client, config, access, log }), config, log,
+  users: { maya: 'UMAYA0001', riley: 'URILEY001' },
   load: (o) => loadOccurrences({ ...o, text: ics }),
 })
 config.icsUrl = 'fake://ics'
@@ -115,7 +124,7 @@ assert.ok(events.some((e) => e.includes('not a recurring meeting')))
 console.log('ok  scheduler')
 
 // 7. Regression: an action on a card this process didn't post must not unmute the series
-const hu3 = createHeadsUp({ client, config, log })
+const hu3 = createHeadsUp({ client, config, access, log })
 await hu3.setFlag({ channel: { id: 'D1' }, message: { ts: 'a' }, actions: [{ value: JSON.stringify({ sid: 'wps', persona: 'maya', startMs: start }) }] }, 'muted', true)
 hu3.entryFor({ channel: { id: 'D2' }, message: { ts: 'b' }, actions: [{ value: JSON.stringify({ sid: 'wps', persona: 'maya', startMs: start }) }] })
 assert.equal(hu3.evaluate('maya', 'wps').result.reason, 'Series muted')

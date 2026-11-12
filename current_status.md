@@ -1,0 +1,47 @@
+# Current status: Ansel Heads-Up
+
+_Last updated: 2026-11-11_
+
+## Stage
+
+**Working local pilot / manual Slack demo.** The prototype builds, the Slack app is installed in the Chicago Booth workspace, Socket Mode connects successfully, and an authorized end-to-end demo card has been posted as a private Slack DM.
+
+This is not yet an always-on or production deployment. The current process runs from a developer machine/session and stops when that process stops.
+
+## Completed
+
+- The React prototype builds and its selection tests pass.
+- The Slack app manifest is applied to the workspace with `/headsup`, interactivity, Socket Mode, and the required bot scopes.
+- The app has one active bot token and one active app-level Socket Mode token; the superseded app-level token was revoked.
+- Tokens are stored only in the Git-ignored `slack-app/.env` file on the current machine.
+- The service starts successfully over Socket Mode with no connection errors.
+- A live manual trigger posted Maya's Heads-Up card to an authorized user's Slack DM.
+- Access is deny-by-default. Commands, scheduled/manual DMs, and card actions are restricted by `ALLOWED_SLACK_USERS`.
+- The current local allowlist contains 10 approved email aliases. Only the Maya persona is mapped for scheduled delivery.
+- Offline Slack tests cover the allowlist, card blocks, skip rules, mute/undo, restart-safe actions, ICS parsing, and scheduler behavior.
+
+## Credential and runtime model
+
+The team uses **one central app installation**, not separate Slack tokens for every person.
+
+- `SLACK_BOT_TOKEN` (`xoxb-…`) belongs to the workspace installation.
+- `SLACK_APP_TOKEN` (`xapp-…`) belongs to the service and has only `connections:write`.
+- Both secrets should live in one operator's local `.env` or, preferably, the secret store of the always-on host.
+- Teammates do not need tokens. They only need to be added to `ALLOWED_SLACK_USERS`.
+- Run one scheduler/service process at a time. Multiple processes sharing the credentials can handle events unpredictably and can independently fire duplicate calendar cards.
+
+## Not configured yet
+
+- Always-on hosting (the current service is tied to the active development session).
+- A Google or Outlook `CALENDAR_ICS_URL`; the live app is currently manual-trigger only.
+- A hosted `PROTOTYPE_URL` for transcript deep links.
+- Durable state. Mutes and fired-trigger history reset when the process restarts.
+- Real Ansel meeting/transcript data; card content is still seeded for the demo.
+
+## Next stage
+
+1. Deploy one `slack-app/` worker to an always-on host and move the central tokens and allowlist into its encrypted environment variables.
+2. Run the team verification checklist in [`slack-app/README.md`](slack-app/README.md), including an allowlisted and a non-allowlisted user.
+3. Add and validate the recurring calendar feed.
+4. Host the prototype and set `PROTOTYPE_URL` if transcript deep links are needed for the demo.
+5. Add persistence and real data integrations before treating the app as production-ready.

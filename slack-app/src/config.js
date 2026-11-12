@@ -1,5 +1,6 @@
 import { existsSync } from 'node:fs'
 import { parseUserMap } from './headsup.js'
+import { parseAllowedUsers } from './access.js'
 
 // Load slack-app/.env if present (Node 20.12+). Real environment variables win.
 const envPath = new URL('../.env', import.meta.url)
@@ -9,6 +10,7 @@ export function loadConfig(env = process.env) {
   return {
     botToken: env.SLACK_BOT_TOKEN,
     appToken: env.SLACK_APP_TOKEN,
+    allowedUsers: parseAllowedUsers(env.ALLOWED_SLACK_USERS),
     users: parseUserMap(env.SLACK_USERS),
     demoPersona: env.DEMO_PERSONA || 'maya',
     icsUrl: env.CALENDAR_ICS_URL || '',
@@ -21,7 +23,11 @@ export function loadConfig(env = process.env) {
 }
 
 export function requireTokens(config, { app = true } = {}) {
-  const missing = [!config.botToken && 'SLACK_BOT_TOKEN', app && !config.appToken && 'SLACK_APP_TOKEN'].filter(Boolean)
+  const missing = [
+    !config.botToken && 'SLACK_BOT_TOKEN',
+    app && !config.appToken && 'SLACK_APP_TOKEN',
+    !config.allowedUsers?.length && 'ALLOWED_SLACK_USERS',
+  ].filter(Boolean)
   if (missing.length) {
     console.error(`Missing ${missing.join(', ')}. Copy .env.example to .env and fill it in (see slack-app/README.md).`)
     process.exit(1)
