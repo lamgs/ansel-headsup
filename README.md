@@ -19,7 +19,7 @@ npm test         # checks buildHeadsUp against the per-persona table, transcript
 
 ## Hosting (GitHub Pages)
 
-Every push to `main` tests, builds and publishes the prototype to **https://lamgs.github.io/ansel-headsup/** ([`.github/workflows/pages.yml`](.github/workflows/pages.yml)). Pull requests run the tests and build, but don't deploy.
+Every push to `main` runs both test suites (prototype and `slack-app/`), builds, and publishes the prototype to **https://lamgs.github.io/ansel-headsup/** ([`.github/workflows/pages.yml`](.github/workflows/pages.yml)). It only deploys if both suites pass. Pull requests run the tests and build, but don't deploy.
 
 One-time setup by a repo admin: **Settings → Pages → Build and deployment → Source: GitHub Actions**. Then re-run the workflow (Actions → Deploy prototype to GitHub Pages → Run workflow) or push to `main`.
 
