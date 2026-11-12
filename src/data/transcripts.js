@@ -57,6 +57,7 @@ const NOV6 = [
   // Launch checklist & legal
   ['28:05', 'alicia', 'Let us talk through the launch checklist.'],
   ['28:30', 'rishabh', "I'll get a QA estimate on the payment flow by Thursday.", true],
+  ['28:50', 'aryan', "I'll write up the payment flow test plan so the estimate has something to work from.", true],
   ['29:05', 'alex', 'Marketing copy is drafted. It needs the final pricing page language.'],
   ['29:45', 'rishabh', 'Support docs are in progress.'],
   ['30:25', 'varun', 'Billing setup in the finance system is done.'],
@@ -66,6 +67,7 @@ const NOV6 = [
   ['33:10', 'varun', 'Legal came back. No separate review needed for the new pricing tiers.', true],
   ['33:45', 'alicia', "Great, that closes last week's legal question."],
   ['34:20', 'varun', 'Nothing needed from procurement either.'],
+  ['34:30', 'varun', "Now that legal's clear, I'll update the pricing model with the final tiers by Wednesday.", true],
   // Pricing page
   ['34:45', 'alex', 'Pulling up the pricing page mock now.'],
   ['35:25', 'alicia', 'Thanks. Walk us through it.'],
@@ -88,6 +90,7 @@ const NOV6 = [
   ['45:50', 'gabriel', 'I will post the dashboard link in the channel.'],
   ['46:30', 'alicia', 'Any other business?'],
   ['47:05', 'varun', 'Nothing from me.'],
+  ['47:20', 'alicia', "I'll send the updated launch checklist before next week's sync.", true],
   ['47:40', 'alicia', 'Thanks all. Same time next week.', true],
 ]
 

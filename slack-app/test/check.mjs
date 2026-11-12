@@ -20,7 +20,7 @@ const client = {
 const config = { prototypeUrl: 'https://demo.example/headsup/', demoJoinUrl: 'https://meet.google.com/abc-defg-hij', reminderMinutes: 30, seriesMap: 'Weekly Product Sync=wps,Design Review=dr' }
 const logs = []
 const log = (...a) => logs.push(a)
-const access = createAccessControl({ client, allowedUsers: ['gabriel@acme.example', 'U12345678', 'UGABRIEL01', 'UARYAN001'], log })
+const access = createAccessControl({ client, allowedUsers: ['gabriel@acme.example', 'U12345678', 'UGABRIEL01', 'UARYAN001', 'URILEY001'], log })
 const hu = createHeadsUp({ client, config, access, log })
 
 assert.equal(await access.isAllowed('gabriel@acme.example'), true)
@@ -48,7 +48,7 @@ for (const b of msg.blocks) { if (b.accessory) assert.ok(b.accessory.text.text.l
 console.log('ok  card blocks')
 
 // 2. Skips match the prototype
-for (const [p, reason] of [['aryan', 'No meetings attended in this series'], ['rishabh', 'Holdout (measured, no card)'], ['alicia', 'Nothing for you from recent meetings'], ['leo', 'External guest']]) {
+for (const [p, reason] of [['riley', 'No meetings attended in this series'], ['sam', 'Holdout (measured, no card)'], ['alex', 'Slack not connected'], ['leo', 'External guest']]) {
   r = await hu.post({ persona: p, sid: 'wps', slackUser: 'U12345678', startMs: start })
   assert.deepEqual([r.posted, r.result.reason], [false, reason])
 }
@@ -112,7 +112,7 @@ console.log('ok  ICS parsing:', occ.length, 'occurrences')
 calls.length = 0; logs.length = 0
 const sched = createScheduler({
   headsUp: createHeadsUp({ client, config, access, log }), config, log,
-  users: { gabriel: 'UGABRIEL01', aryan: 'UARYAN001' },
+  users: { gabriel: 'UGABRIEL01', riley: 'URILEY001' },
   load: (o) => loadOccurrences({ ...o, text: ics }),
 })
 config.icsUrl = 'fake://ics'
@@ -120,7 +120,7 @@ await sched.tick(); await sched.tick()
 const events = logs.map(([e, p, d]) => `${e} ${p} ${d}`)
 console.log(events.join('\n'))
 assert.equal(calls.filter(([k]) => k === 'post').length, 1, 'Gabriel gets exactly one card')
-assert.ok(events.some((e) => e.startsWith('card_skipped aryan Weekly Product Sync: No meetings attended')))
+assert.ok(events.some((e) => e.startsWith('card_skipped riley Weekly Product Sync: No meetings attended')))
 assert.ok(events.some((e) => e.includes('not a recurring meeting')))
 console.log('ok  scheduler')
 
@@ -155,13 +155,12 @@ assert.deepEqual((await perPerson.upcoming(24, ['aryan'])).length, 0, 'upcoming(
 assert.deepEqual(perPerson.calendarPersonas().sort(), ['aryan', 'gabriel', 'rishabh'])
 console.log('ok  per-person calendars')
 
-// 6c. Ping everyone: one card per eligible person, skipped people get nothing
+// 6c. Ping everyone: every team member gets their own card; anyone not allowlisted gets nothing
 calls.length = 0; logs.length = 0
 const ping = await createHeadsUp({ client, config, access, log }).pingAll({ gabriel: 'UGABRIEL01', aryan: 'UARYAN001', rishabh: 'U12345678', alicia: 'intruder@acme.example' }, { startMs: start })
-assert.deepEqual(ping.sent.map((r) => r.persona), ['gabriel'])
-assert.deepEqual(ping.skipped.map((r) => [r.persona, r.reason]), [['aryan', 'No meetings attended in this series'], ['rishabh', 'Holdout (measured, no card)'], ['alicia', 'Not authorized for this app']])
-assert.equal(calls.filter(([k]) => k === 'post').length, 1, 'only one DM is sent')
-assert.equal(calls[0][1].channel, 'D_UGABRIEL01')
+assert.deepEqual(ping.sent.map((r) => r.persona), ['gabriel', 'aryan', 'rishabh'])
+assert.deepEqual(ping.skipped.map((r) => [r.persona, r.reason]), [['alicia', 'Not authorized for this app']])
+assert.deepEqual(calls.filter(([k]) => k === 'post').map(([, m]) => m.channel), ['D_UGABRIEL01', 'D_UARYAN001', 'D_U12345678'], 'one DM per team member')
 console.log('ok  ping everyone')
 
 // 7. Regression: an action on a card this process didn't post must not unmute the series

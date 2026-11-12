@@ -153,7 +153,7 @@ function ShareDialog({ inst, series, onClose }) {
   const { state } = useStore()
   const nip = useNip()
   const isOrganizer = state.persona === series.organizer
-  const direct = state.share && inst.id === 'wps-1106' ? ['aryan'] : []
+  const direct = state.share && inst.id === 'wps-1106' ? ['riley'] : []
   return (
     <Modal onClose={onClose}>
       <div className="p-5">

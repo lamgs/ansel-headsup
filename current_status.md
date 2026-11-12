@@ -21,7 +21,7 @@ This is not yet an always-on or production deployment. The current process runs 
 - The service starts successfully over Socket Mode with no connection errors.
 - A live manual trigger posted Gabriel's Heads-Up card to an authorized user's Slack DM.
 - Access is deny-by-default. Commands, scheduled/manual DMs, and card actions are restricted by `ALLOWED_SLACK_USERS`.
-- The current local allowlist contains 10 approved email aliases. Only the Gabriel persona is mapped for scheduled delivery.
+- The current local allowlist contains 10 approved email aliases. All five team personas are mapped in `SLACK_USERS`, and each has their own card (see `profiles.md`), so **Ping everyone** reaches all five.
 - Offline Slack tests cover the allowlist, card blocks, skip rules, mute/undo, restart-safe actions, ICS parsing, and scheduler behavior.
 
 ## Credential and runtime model

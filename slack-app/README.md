@@ -117,7 +117,7 @@ Access is deny-by-default. Only Slack user IDs or emails listed in `ALLOWED_SLAC
 
 | Command | What it does |
 |---|---|
-| `/headsup demo [persona]` | Manual trigger: posts the card to you now (default persona `gabriel`). Try `aryan` or `rishabh` to see a skip reason. |
+| `/headsup demo [persona]` | Manual trigger: posts the card to you now (default persona `gabriel`). Try `riley` or `sam` to see a skip reason. |
 | `/headsup check [persona]` | The behind-the-scenes drawer: eligibility, items considered, cost line |
 | `/headsup next` | Upcoming recurring meetings from the calendar feed and when Heads-Up fires |
 | `/headsup ping` | Shows two demo buttons (visible only to you). **Ping me** sends the demo persona's card to you only, like `/headsup demo`. **Ping everyone** sends every persona in `SLACK_USERS` their own Heads-Up now, for a meeting starting in `REMINDER_MINUTES`. People with no card get nothing; you get a private summary of who was sent a card and who was skipped and why. |

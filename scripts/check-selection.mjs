@@ -11,7 +11,7 @@ const now = { date: '2026-11-13', sec: 13.5 * 3600 }
 const run = (pid, sid) => buildHeadsUp(world.person(pid), SEED.series.find((s) => s.id === sid), now, world)
 
 const expected = {
-  wps: { gabriel: true, alicia: 'Nothing for you from recent meetings', rishabh: 'Holdout (measured, no card)', varun: 'Nothing for you from recent meetings', alex: 'Slack not connected', aryan: 'No meetings attended in this series', leo: 'External guest' },
+  wps: { gabriel: true, alicia: true, rishabh: true, varun: true, aryan: true, sam: 'Holdout (measured, no card)', riley: 'No meetings attended in this series', alex: 'Slack not connected', leo: 'External guest' },
   dr: { gabriel: 'No record of last meeting', alicia: 'No record of last meeting' },
 }
 for (const [sid, rows] of Object.entries(expected)) {
@@ -31,6 +31,14 @@ assert.equal(gabriel.items[0].hedge, true)
 assert.equal(gabriel.items[2].edited, true)
 assert.equal(gabriel.recordsRead, 3)
 console.log('ok  gabriel card items + cost:', gabriel.cost)
+
+// Every team member's "You own" line is their own item (profiles.md)
+for (const [pid, id, text] of [['alicia', 'a5', 'Launch checklist'], ['rishabh', 'a4', 'QA estimate'], ['varun', 'a6', 'Pricing model update'], ['aryan', 'a7', 'Payment flow test plan']]) {
+  const r = run(pid, 'wps')
+  assert.deepEqual([r.items[0].section, r.items[0].id, r.items[0].text], ['own', id, text], pid)
+  assert.deepEqual(r.items.slice(1).map((i) => i.id), ['q2', 'd3'], pid)
+  console.log(`ok  ${pid} card: ${r.items.map((i) => i.text).join(' / ')}`)
+}
 
 // Muted series and done item
 const w2 = buildWorld({ muted: { 'gabriel:wps': true } })

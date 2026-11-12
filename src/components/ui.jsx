@@ -3,7 +3,7 @@ import { SEED } from '../data/seed.js'
 
 export const PERSON_COLORS = {
   gabriel: 'bg-rose-500', alicia: 'bg-sky-600', rishabh: 'bg-emerald-600', varun: 'bg-amber-500',
-  alex: 'bg-violet-500', aryan: 'bg-teal-500', leo: 'bg-slate-500', ansel: 'bg-ansel',
+  alex: 'bg-violet-500', aryan: 'bg-teal-500', sam: 'bg-lime-600', riley: 'bg-cyan-600', leo: 'bg-slate-500', ansel: 'bg-ansel',
 }
 
 export const personName = (id) => SEED.people.find((p) => p.id === id)?.name ?? id
