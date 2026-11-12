@@ -6,15 +6,15 @@ To change a role, edit this file first so the intent is clear, then apply it in 
 
 ## Summary
 
-| Persona ID | Name | Demo role | Heads-Up for Weekly Product Sync | Why |
-|---|---|---|---|---|
-| `gabriel` | Gabriel | Data Analyst | **Full card** (default for `/headsup demo`) | Owns an open action item and an open question from the last meeting |
-| `alicia` | Alicia | Product Manager, series organizer | Skipped: *Nothing for you from recent meetings* | Ran the meetings but owns no open items |
-| `rishabh` | Rishabh | Engineering Lead | Skipped: *Holdout (measured, no card)* | In the measurement holdout group, despite owning open items |
-| `varun` | Varun | Finance Partner | Skipped: *Nothing for you from recent meetings* | Their legal question was resolved; nothing open |
-| `aryan` | Aryan | QA Engineer, new to the series | Skipped: *No meetings attended in this series* | Newly invited; hasn't attended a recorded meeting yet |
-| `alex` | Alex Kim *(synthetic)* | Content Designer | Skipped: *Slack not connected* | Shows the no-Slack case |
-| `leo` | Leo Grant *(synthetic)* | Agency partner | Skipped: *External guest* | Shows that external guests never get cards |
+| Persona ID | Name | Pronouns | Demo role | Heads-Up for Weekly Product Sync | Why |
+|---|---|---|---|---|---|
+| `gabriel` | Gabriel | he/him | Data Analyst | **Full card** (default for `/headsup demo`) | Owns an open action item and an open question from the last meeting |
+| `alicia` | Alicia | she/her | Product Manager, series organizer | Skipped: *Nothing for you from recent meetings* | Ran the meetings but owns no open items |
+| `rishabh` | Rishabh | he/him | Engineering Lead | Skipped: *Holdout (measured, no card)* | In the measurement holdout group, even though he owns open items |
+| `varun` | Varun | he/him | Finance Partner | Skipped: *Nothing for you from recent meetings* | His legal question was resolved; nothing open |
+| `aryan` | Aryan | he/him | QA Engineer, new to the series | Skipped: *No meetings attended in this series* | Newly invited; hasn't attended a recorded meeting yet |
+| `alex` | Alex Kim *(synthetic)* | n/a | Content Designer | Skipped: *Slack not connected* | Shows the no-Slack case |
+| `leo` | Leo Grant *(synthetic)* | n/a | Agency partner | Skipped: *External guest* | Shows that external guests never get cards |
 
 Design Review (`dr`) is skipped for everyone (*No record of last meeting*), because its last meeting had "Keep Ansel out" on.
 
@@ -30,22 +30,22 @@ Design Review (`dr`) is skipped for everyone (*No record of last meeting*), beca
 
 ### Alicia (`alicia`): organizer
 - **Attends:** all three recorded meetings; organizer of Weekly Product Sync; invited to Design Review.
-- **In the story:** assigns the work in the transcript, made the tracked edit to the pricing decision (Nov 7), and is the one who adds Aryan to the series and can share the Nov 6 notes with Aryan (Governance screen).
+- **In the story:** she assigns the work in the transcript, made the tracked edit to the pricing decision (Nov 7), and is the one who adds Aryan to the series and can share the Nov 6 notes with him (Governance screen).
 - **Card:** none. Organizing a meeting doesn't create items for you.
 
 ### Rishabh (`rishabh`): holdout
 - **Attends:** all three recorded meetings.
 - **Owns:** "Estimate QA time for payment flow" (due Nov 12) and shares the open launch-date question.
-- **Card:** none: Rishabh is in the holdout group used to measure whether Heads-Up helps. The Pilot Log screen calls this out.
+- **Card:** none, because he is in the holdout group used to measure whether Heads-Up helps. The Pilot Log screen calls this out.
 
 ### Varun (`varun`): finance, nothing open
 - **Attends:** Oct 23 and Nov 6 (not Oct 30).
 - **In the story:** raised "Do we need legal review for new pricing?", answered at the Nov 6 meeting (33:10).
-- **Card:** none. Varun's only item is resolved.
+- **Card:** none. His only item is resolved.
 
 ### Aryan (`aryan`): new to the series
 - **Attends:** no recorded meetings yet; newly invited.
-- **Card:** none until after Aryan's first meeting. In the prototype, Alicia can share the Nov 6 notes with Aryan.
+- **Card:** none until after his first meeting. In the prototype, Alicia can share the Nov 6 notes with him.
 
 ### Alex Kim and Leo Grant (synthetic)
 Kept as made-up people because their roles (no Slack account; external agency guest) don't fit a team member.
