@@ -30,7 +30,7 @@ export function loadConfig(env = process.env) {
     reminderMinutes: Number(env.REMINDER_MINUTES || 30),
     pollSeconds: Number(env.POLL_SECONDS || 60),
     prototypeUrl: prototypeUrlFrom(env.PROTOTYPE_URL),
-    demoJoinUrl: env.DEMO_JOIN_URL || 'https://meet.google.com/',
+    demoJoinUrl: env.DEMO_JOIN_URL || 'https://zoom.us/',
   }
 }
 

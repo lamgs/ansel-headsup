@@ -1,10 +1,11 @@
-// Slack Block Kit version of the Heads-Up card, contract 2.0 (card/CONTRACT.md), in the team's chosen
-// "Yours first" layout (card/slack-mockups, direction 2a): countdown + Join, your own items with a
-// timestamp button and ✓ / ✎ icon buttons, everyone else's items with a ⋮ menu (Play, Not right),
-// then Open last meeting / Mute series / Not useful and the trust footer. Owners and summaries sit in
-// small grey context text under each bold title.
+// Slack Block Kit version of the Heads-Up card, contract 2.0 data (card/CONTRACT.md), in the team's chosen
+// condensed layout (card/slack-mockups/condensed, B3 + M2): one text block and one row of buttons.
+//   *30 min · Weekly Product Sync*
+//   You own <Forecast update> · 5 more items from last week          (one item of yours: a ✓ button)
+//   You own 3 items · 4 more from the team last week + a checkbox per item (several items of yours)
+//   [✓] [Join Zoom] [Open in Ansel] [Mute series] [Not useful]
+// Item names link to their moment in last meeting's transcript in the hosted prototype.
 
-export const FLAG_REASONS = [['wrong_owner', 'Wrong owner'], ['not_real', 'Not a real item'], ['already_done', 'Already done']]
 export const NOT_USEFUL_REASONS = [['already_knew', 'Already knew this'], ['wrong_meeting', 'Wrong meeting'], ['bad_timing', 'Bad timing']]
 const SOON_MS = 5 * 60000
 
@@ -31,8 +32,10 @@ const btn = (action_id, text, value, extra = {}) => ({ type: 'button', action_id
 const md = (text) => ({ type: 'mrkdwn', text })
 const ctxBlock = (text) => ({ type: 'context', elements: [md(text)] })
 
+export const MAX_CHECKBOXES = 3
+
 /**
- * entry: { persona, sid, startMs, joinUrl, postMs, data (contract 2.0), ui: { muted, notUseful, done, flags, whyOpen } }
+ * entry: { persona, sid, startMs, joinUrl, postMs, data (contract 2.0), ui: { muted, notUseful, done } }
  * Every button carries the meta needed to rebuild the card after a restart.
  */
 export function buildCard(entry, { nowMs = Date.now(), prototypeUrl = '' } = {}) {
@@ -41,10 +44,9 @@ export function buildCard(entry, { nowMs = Date.now(), prototypeUrl = '' } = {})
   const meta = JSON.stringify({ p: entry.persona, s: entry.sid, st: entry.startMs, j: entry.joinUrl })
   const state = cardState(nowMs, entry.startMs, m.durationMinutes)
   const mins = Math.max(1, Math.ceil((entry.startMs - nowMs) / 60000))
-  const on = m.platform && m.platform !== 'meeting' ? ` on ${m.platform}` : ''
-  const at = slackTime(entry.startMs)
   const join = state === 'ended' || !m.joinUrl ? null
     : btn('hu_join', state === 'started' ? 'Join now' : `Join ${m.platform || 'meeting'}`, meta, { url: m.joinUrl, style: 'primary' })
+  const hero = state === 'started' ? 'Live' : state === 'ended' ? 'Ended' : `${mins} min`
   const statusText = state === 'started' ? 'Started' : state === 'ended' ? 'Ended · new summary in about 6 min' : `Starts in ${mins} min`
   const fallback = `Heads-Up for ${m.title} · ${statusText}`
 
@@ -55,81 +57,58 @@ export function buildCard(entry, { nowMs = Date.now(), prototypeUrl = '' } = {})
     ] }
   }
 
-  const items = data.actionItems.items
-  const count = items.length + (data.actionItems.moreCount || 0)
-  const hero = state === 'started' ? 'Live' : state === 'ended' ? 'Ended' : `${mins} min`
-  const when = state === 'started' ? `Started at ${at}${on}` : state === 'ended' ? 'New summary in about 6 min' : `Starts at ${at}${on}`
-  const itemsLine = count ? ` · ${count} action item${count === 1 ? '' : 's'} from last week` : ''
-  const blocks = [
-    { type: 'section', text: md(`*${hero} · ${m.title}*`), ...(join ? { accessory: join } : {}) },
-    ctxBlock(`${when}${itemsLine}`),
-    { type: 'divider' },
-  ]
-
   const me = data.viewer.id
+  const items = data.actionItems.items
   const mine = items.filter((i) => i.owner.id === me)
-  const others = items.filter((i) => i.owner.id !== me)
-  const flagNote = (it) => {
-    const f = ui.flags[it.id]
-    if (!f) return ''
-    const label = f.reason ? FLAG_REASONS.find(([r]) => r === f.reason)?.[1] : null
-    return ` · _Flagged${label ? `: ${label}` : ''}_`
+  const othersCount = items.length - mine.length + (data.actionItems.moreCount || 0)
+  const isDone = (it) => ui.done[it.id] ?? !!it.done
+  const name = (it) => {
+    const url = deepLink(prototypeUrl, { instanceId: data.lastMeeting.meetingId, t: it.t, itemId: it.id })
+    return url ? `<${url}|${it.text}>` : it.text
   }
-  const transcriptUrl = (it) => deepLink(prototypeUrl, { instanceId: data.lastMeeting.meetingId, t: it.t, itemId: it.id })
-  const reasonRows = (it) => (ui.flags[it.id] && !ui.flags[it.id].reason
-    ? [ctxBlock(`What's wrong with *${it.text}*?`), { type: 'actions', elements: FLAG_REASONS.map(([r, label]) => btn(`hu_flag_reason:${it.id}:${r}`, label, meta)) }]
-    : [])
+  const plural = (n, word) => `${n} ${word}${n === 1 ? '' : 's'}`
 
-  for (const it of mine) {
-    const done = ui.done[it.id] ?? !!it.done
-    const url = transcriptUrl(it)
-    blocks.push({
-      type: 'section',
-      text: md(`*${it.text}*${done ? ' · _Done_' : ''}${flagNote(it)}`),
-      accessory: btn(`hu_play:${it.id}`, fmtStamp(it.seconds), meta, { ...(url ? { url } : {}), accessibility_label: `Play the transcript at ${fmtStamp(it.seconds)}` }),
-    }, ctxBlock(`You${it.summary ? ` · ${it.summary}` : ''}`))
-    const acts = done
-      ? [btn(`hu_done_undo:${it.id}`, '✓', meta, { style: 'primary', accessibility_label: `Done: ${it.text}. Tap to undo`.slice(0, 75) })]
-      : [btn(`hu_done:${it.id}`, '✓', meta, { accessibility_label: `Mark done: ${it.text}`.slice(0, 75) }),
-         ui.flags[it.id]
-           ? btn(`hu_flag_undo:${it.id}`, '✎ Flagged', meta, { accessibility_label: `Flagged: ${it.text}. Tap to undo`.slice(0, 75) })
-           : btn(`hu_flag:${it.id}`, '✎', meta, { accessibility_label: `Not right: ${it.text}`.slice(0, 75) })]
-    blocks.push({ type: 'actions', elements: acts }, ...reasonRows(it))
-  }
-  if (mine.length && others.length) blocks.push({ type: 'divider' })
-  for (const it of others) {
-    const url = transcriptUrl(it)
-    const flagged = !!ui.flags[it.id]
-    blocks.push({
-      type: 'section',
-      text: md(`*${it.text}*${flagNote(it)}`),
-      accessory: { type: 'overflow', action_id: `hu_menu:${it.id}`, options: [
-        { text: { type: 'plain_text', text: `Play at ${fmtStamp(it.seconds)}` }, value: 'play', ...(url ? { url } : {}) },
-        { text: { type: 'plain_text', text: flagged ? 'Undo Not right' : 'Not right' }, value: flagged ? 'flag_undo' : 'flag' },
-      ] },
-    }, ctxBlock(`${it.owner.name}${it.summary ? ` · ${it.summary}` : ''}`), ...reasonRows(it))
-  }
-  if (!items.length) blocks.push(ctxBlock('No action items from last week.'))
-  if (data.actionItems.moreCount > 0) {
-    const url = deepLink(prototypeUrl, { instanceId: data.lastMeeting.meetingId, tab: 'summary' })
-    const label = `+${data.actionItems.moreCount} more in Ansel`
-    blocks.push(ctxBlock(url ? `<${url}|${label}>` : label))
+  let line
+  if (mine.length === 0) line = `${plural(othersCount, 'action item')} from last week, none assigned to you`
+  else if (mine.length === 1) {
+    const it = mine[0]
+    line = `You own ${isDone(it) ? `~${name(it)}~ · _Done_` : `*${name(it)}*`}${othersCount ? ` · ${othersCount} more item${othersCount === 1 ? '' : 's'} from last week` : ''}`
+  } else line = `You own ${mine.length} items${othersCount ? ` · ${othersCount} more from the team last week` : ''}`
+  if (state === 'ended') line += '\n_Meeting ended · new summary in about 6 min_'
+
+  const blocks = [{ type: 'section', text: md(`*${hero} · ${m.title}*\n${line}`) }]
+
+  if (mine.length > 1) {
+    const shown = mine.slice(0, MAX_CHECKBOXES)
+    const option = (it) => ({ text: md(isDone(it) ? `~${name(it)}~` : `*${name(it)}*`), value: it.id })
+    const checked = shown.filter(isDone).map(option)
+    blocks.push({ type: 'actions', elements: [{ type: 'checkboxes', action_id: 'hu_check', options: shown.map(option), ...(checked.length ? { initial_options: checked } : {}) }] })
+    if (mine.length > shown.length) {
+      const url = deepLink(prototypeUrl, { instanceId: data.lastMeeting.meetingId, tab: 'summary' })
+      const more = `+${mine.length - shown.length} more of yours in Ansel`
+      blocks.push(ctxBlock(url ? `<${url}|${more}>` : more))
+    }
   }
 
-  blocks.push({ type: 'divider' })
   if (ui.notUseful) {
     blocks.push(ui.notUseful.reason
       ? { type: 'section', text: md('Thanks for the feedback.'), accessory: btn('hu_nu_undo', 'Undo', meta) }
       : { type: 'section', text: md('Thanks. What was off?') },
     ...(ui.notUseful.reason ? [] : [{ type: 'actions', elements: [...NOT_USEFUL_REASONS.map(([r, label]) => btn(`hu_nu_reason:${r}`, label, meta)), btn('hu_nu_undo', 'Undo', meta)] }]))
   }
-  const lastUrl = deepLink(prototypeUrl, { instanceId: data.lastMeeting.meetingId, tab: 'summary' })
-  blocks.push({ type: 'actions', elements: [
-    btn('hu_open_last', 'Open last meeting', meta, lastUrl ? { url: lastUrl } : {}),
-    btn('hu_mute', 'Mute series', meta),
-    ...(ui.notUseful ? [] : [btn('hu_nu', 'Not useful', meta)]),
-  ] })
-  blocks.push(ctxBlock(`:lock: _Only you can see this. Built from ${data.lastMeeting.label}, which everyone on the invite can open, with no new AI processing._`))
-  blocks.push(ctxBlock(`*Why am I seeing this?* You're on the invite for ${m.title}. These items come from last week's Ansel recording, which invitees can already open. Nothing new is shared, and actions are audit-logged.`))
+
+  const row = []
+  if (mine.length === 1) {
+    const it = mine[0]
+    row.push(isDone(it)
+      ? btn(`hu_done_undo:${it.id}`, '✓', meta, { style: 'primary', accessibility_label: `Done: ${it.text}. Tap to undo`.slice(0, 75) })
+      : btn(`hu_done:${it.id}`, '✓', meta, { accessibility_label: `Mark done: ${it.text}`.slice(0, 75) }))
+  }
+  if (join) row.push(join)
+  const summaryUrl = deepLink(prototypeUrl, { instanceId: data.lastMeeting.meetingId, tab: 'summary' })
+  row.push(btn('hu_open_last', 'Open in Ansel', meta, summaryUrl ? { url: summaryUrl } : {}))
+  row.push(btn('hu_mute', 'Mute series', meta))
+  if (!ui.notUseful) row.push(btn('hu_nu', 'Not useful', meta))
+  blocks.push({ type: 'actions', elements: row })
   return { text: fallback, blocks }
 }

@@ -12,12 +12,12 @@ Three Slack-native (Block Kit) directions for the card in `card/`, using its dem
 
 The images are approximations drawn outside Slack (stand-in font; spacing and button shapes may differ slightly). To see exact Slack rendering, paste a `.blocks.json` file into Slack's Block Kit Builder: <https://app.slack.com/block-kit-builder>. 
 
-**Chosen: 2a**, with the ▶ arrow removed. `live-card.png` and `live-card.blocks.json` are the real output of `slack-app/src/card.js` (Alicia's card); paste the JSON into Block Kit Builder to see it in Slack's own styling.
+**Earlier choice: 2a**, with the ▶ arrow removed (replaced by the condensed card below). `live-card.png` and `live-card.blocks.json` are the real output of `slack-app/src/card.js` (Alicia's card); paste the JSON into Block Kit Builder to see it in Slack's own styling.
 
 ## Condensed previews (not built)
 
 `condensed/` has three shorter directions, previews only: **A · Condensed** (your item + a one-line team list; ✓ and ⋮, then Open in Ansel on its own row), **B · Minimal** (two lines; ✓ and ⋮, then Open in Ansel), **C · Glance** (two lines and a link; only Join and Open in Ansel are buttons). All use Zoom. Each has a `.blocks.json` for Block Kit Builder.
 
-**Chosen: B · Minimal, one row** (`condensed/B3-minimal.*`): one text block (title, and your item as a link to its transcript moment) and one row of buttons: ✓ Mark done, Join Zoom, Open in Ansel, Mute series, Not useful. (`B2-minimal.*` was the earlier stacked-buttons version.)
+**Built: B · Minimal, one row** (`condensed/B3-minimal.*`, with `condensed/M2-checkboxes.*` when you own several items; this is what `slack-app/src/card.js` now sends): one text block (title, and your item as a link to its transcript moment) and one row of buttons: ✓ Mark done, Join Zoom, Open in Ansel, Mute series, Not useful. (`B2-minimal.*` was the earlier stacked-buttons version.)
 
 **Several items of your own** (previews): `condensed/M1-dropdown.*` lists each of your items as a link and puts a "Mark done" dropdown in the button row; `condensed/M2-checkboxes.*` gives each item a checkbox (ticked = done). With one item, the card keeps the single ✓ button.

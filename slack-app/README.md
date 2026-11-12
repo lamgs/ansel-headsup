@@ -169,22 +169,28 @@ Create a recurring event titled **Weekly Product Sync**, with a Meet, Teams or Z
 
 The card matches [`../card/heads-up-card.js`](../card/heads-up-card.js) and logs the same event names as [`../card/CONTRACT.md`](../card/CONTRACT.md) §4 (to the console, as `[pilot]` lines; ★ marks value actions). Every change updates the card in place and has an Undo.
 
-Layout (direction 2a in [`../card/slack-mockups/`](../card/slack-mockups/README.md); `live-card.png` shows the real output): bold countdown title with **Join**, then your own items, each with a timestamp button and **✓** / **✎** icon buttons, then everyone else's items, each with a **⋮** menu. Owners and summaries are small grey text under each bold title.
+Layout (condensed, chosen in [`../card/slack-mockups/`](../card/slack-mockups/README.md): `condensed/B3-minimal.png` and `condensed/M2-checkboxes.png`): one text block and one row of buttons.
+
+```
+30 min · Weekly Product Sync
+You own Forecast update · 5 more items from last week
+[✓] [Join Zoom] [Open in Ansel] [Mute series] [Not useful]
+```
+
+Your item's name links to its moment in last meeting's transcript in the hosted prototype. If you own several items, each gets a checkbox (up to 3, then "+N more of yours in Ansel") instead of the ✓ button. Everything else (other people's items, the transcript, Not right) is in Ansel.
 
 | Control | Behavior | Event |
 |---|---|---|
-| Join Teams / Join now | Opens the meeting link; green; removed after the meeting ends | `join_tap` (with `joinedPrepared`: true if a timestamp or ✓ came first) |
-| Timestamp (e.g. `14:32`) on your items; ⋮ → Play at 18:40 on other items | Opens the prototype at that transcript line (default), or replies privately with the quoted line if `PROTOTYPE_URL=off` | `timestamp_tap` ★ |
-| ✓ (Mark done) / green ✓ | Only on your own items: marks it done (title shows _Done_), tap again to undo | `mark_done` ★ / `mark_done_undone` |
-| ✎ (Not right) on your items; ⋮ → Not right on others | Asks "What's wrong?" (Wrong owner, Not a real item, Already done); ✎ Flagged / ⋮ → Undo Not right undoes | `item_flagged`, `item_flag_reason`, `item_flag_undone` |
-| +N more in Ansel | Link to the hosted summary, shown when there are more than 6 items | — |
-| Open last meeting | Prototype Summary view, or a private summary reply | `open_last_meeting` |
+| ✓ (one item of yours) / checkboxes (several) | Marks your item done (struck through, ✓ turns green); tap or untick to undo | `mark_done` ★ / `mark_done_undone` |
+| Join Zoom / Join now | Opens the meeting link; the green button; removed after the meeting ends | `join_tap` (with `joinedPrepared`: true if something was marked done first) |
+| Open in Ansel | Opens last meeting's summary in the hosted prototype (default), or replies privately with the summary if `PROTOTYPE_URL=off` | `open_last_meeting` |
 | Mute series / Undo | Collapses the card to one line (Join stays) and stops future cards for the series | `mute_series` / `mute_undone` |
 | Not useful → reason / Undo | Asks "What was off?" (Already knew this, Wrong meeting, Bad timing) | `not_useful`, `not_useful_reason`, `not_useful_undone` |
+| Item name (link) | Opens the transcript at that item | not logged (Slack doesn't report link clicks) |
 
-The ✓ and ✎ buttons have screen-reader labels ("Mark done: Forecast update"). "Why am I seeing this?" is always shown as a short answer in the footer.
+Slack buttons come in three styles only (default, green, red), so Open in Ansel uses the default style.
 
-Also logged: `card_shown`, `card_suppressed` (holdout), `card_skipped` (with the reason) and `state_changed` (posted → starting-soon → started → ended). The countdown updates every poll. Slack can't draw the web card's large timer, time bar, row stripes or green done rows; the Slack layout uses Slack's own text sizes and a green ✓ instead.
+Also logged: `card_shown`, `card_suppressed` (holdout), `card_skipped` (with the reason) and `state_changed` (posted → starting-soon → started → ended). The countdown in the title updates every poll.
 
 The ▶ and **Open last meeting** buttons link to the hosted prototype at https://lamgs.github.io/ansel-headsup/ by default (published from `main` by GitHub Pages; see the root README). Set `PROTOTYPE_URL` to point somewhere else, or `PROTOTYPE_URL=off` to have the buttons reply in Slack instead. Links look like `…/#ansel/wps-1106/transcript/14:32/a2`.
 
