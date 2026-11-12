@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Heads-Up card · demo controls</title>
+  <script src="heads-up-card.js"></script>
+  <script src="heads-up-log.js"></script>
+  <script src="demo-data.js"></script>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap">
+  <style>
+    :root { color-scheme: light; }
+    [hidden] { display: none !important; }
+    body { font: 14px/1.45 Lato, system-ui, sans-serif; margin: 24px; color: #1d1c1d; background: #F4F4F5; }
+    #load-error { padding: 12px; border: 2px solid #b00020; border-radius: 6px; color: #b00020; max-width: 70ch; margin-bottom: 16px; }
+    h1 { font-size: 20px; margin: 0 0 4px; }
+    h2 { font-size: 15px; margin: 20px 0 8px; }
+    .intro { margin: 0 0 16px; color: #616061; max-width: 70ch; }
+    .controls { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-start; }
+    fieldset { border: 1px solid #bbb; border-radius: 6px; }
+    button { font: inherit; padding: 3px 10px; border: 1px solid #999; border-radius: 4px; background: #fff; cursor: pointer; }
+    button[aria-pressed="true"] { background: #1d1c1d; color: #fff; }
+    :focus-visible { outline: 3px solid #e8912d; outline-offset: 2px; }
+    .layout { display: grid; grid-template-columns: minmax(0, 840px) minmax(0, 1fr); gap: 32px; }
+    @media (max-width: 1200px) { .layout { grid-template-columns: 1fr; } }
+    #app-out { padding: 8px 12px; border: 1px solid #ddd; border-radius: 8px; min-height: 1.5em; background: #fff; }
+    .pane { background: #fff; border: 1px solid #ddd; border-radius: 8px; overflow: hidden; }
+    .pane-head { display: flex; align-items: center; gap: 6px; padding: 10px 20px; border-bottom: 1px solid #ddd; font-weight: 900; font-size: 15px; }
+    .pane-head small { font-size: 10px; font-weight: 700; color: #616061; background: rgba(29,28,29,.13); border-radius: 2px; padding: 1px 3px; }
+    .day { display: flex; align-items: center; gap: 8px; margin: 12px 20px 4px; color: #616061; font-size: 13px; font-weight: 700; }
+    .day::before, .day::after { content: ''; flex: 1; border-top: 1px solid #ddd; }
+    .pane heads-up-card { padding-bottom: 8px; }
+    fieldset { background: #fff; }
+  </style>
+</head>
+<body>
+  <h1>Heads-Up card · demo controls</h1>
+  <p class="intro">For testing. The final page is <a href="index.html">index.html</a>. This page plays the app's role:
+    it handles every tap and says what the real app would do. Nothing here leaves the page.</p>
+
+  <div id="load-error" role="alert" hidden></div>
+
+  <div class="controls">
+    <fieldset>
+      <legend>Viewer</legend>
+      <button data-viewer="alex" aria-pressed="true">Alex</button>
+      <button data-viewer="alexOwnsNothing" aria-pressed="false">Alex, owns nothing</button>
+      <button data-viewer="holdout" aria-pressed="false">Holdout user</button>
+    </fieldset>
+    <fieldset>
+      <legend>Clock · <span id="clock">—</span></legend>
+      <button data-jump="posted">Posted</button>
+      <button data-jump="starting-soon">Starting soon</button>
+      <button data-jump="started">Started</button>
+      <button data-jump="ended">Ended</button>
+      <button id="real-clock">Real clock</button>
+    </fieldset>
+    <fieldset>
+      <legend>Card</legend>
+      <button id="reset">Reset taps</button>
+    </fieldset>
+  </div>
+
+  <div class="layout">
+    <div>
+      <h2 id="viewer-heading">What Alex sees</h2>
+      <div class="pane" aria-label="Direct message from Ansel">
+        <div class="pane-head">Ansel <small>APP</small></div>
+        <div class="day">Today</div>
+        <heads-up-card id="card"></heads-up-card>
+      </div>
+
+      <h2>What the app would do</h2>
+      <p id="app-out" aria-live="polite">No taps yet.</p>
+
+    </div>
+    <div>
+      <h2>Event log</h2>
+      <heads-up-log></heads-up-log>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      'use strict';
+      const missing = [
+        !customElements.get('heads-up-card') && 'heads-up-card.js',
+        !customElements.get('heads-up-log') && 'heads-up-log.js',
+        !window.HeadsUpDemoData && 'demo-data.js',
+      ].filter(Boolean);
+      if (missing.length) {
+        const box = document.getElementById('load-error');
+        box.innerHTML = `<strong>The card didn't load.</strong> This page can't find ${missing.join(', ')}. ` +
+          'Those files must sit in the same folder as this page. If you opened this page from inside the zip, ' +
+          'right-click the zip, choose <strong>Extract All</strong>, then open demo.html from the extracted folder.';
+        box.hidden = false;
+        document.querySelector('.controls').hidden = true;
+        document.querySelector('.layout').hidden = true;
+        return;
+      }
+      const card = document.getElementById('card');
+      const out = document.getElementById('app-out');
+      const clock = document.getElementById('clock');
+
+      let appData = null;
+
+      function stamp(seconds) {
+        const m = Math.floor(seconds / 60), s = seconds % 60;
+        return `${m}:${String(s).padStart(2, '0')}`;
+      }
+
+      function loadViewer(key) {
+        appData = structuredClone(HeadsUpDemoData[key]);
+        card.data = appData;
+        card.reset();
+        document.getElementById('viewer-heading').textContent = `What ${appData.viewer.name} sees`;
+        document.querySelectorAll('[data-viewer]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.viewer === key)));
+        out.textContent = 'No taps yet.';
+      }
+
+      const responses = {
+        timestamp_tap: (p) => `Opens last meeting's transcript at ${stamp(p.seconds)}.`,
+        mark_done: (p) => `Saves ${p.itemId} as done in the mocked Ansel record.`,
+        mark_done_undone: (p) => `Restores ${p.itemId} to open.`,
+        item_flagged: (p) => `Logs ${p.itemId} (owner ${p.ownerId}) as possibly wrong, for owner-accuracy tracking.`,
+        item_flag_reason: (p) => `Adds the reason "${p.reason}" to the flag on ${p.itemId}.`,
+        item_flag_undone: (p) => `Removes the flag on ${p.itemId}.`,
+        more_tap: (p) => `Opens last meeting's full ${p.section === 'actionItems' ? 'action item' : p.section} list (${p.moreCount} more).`,
+        join_tap: (p) => `Opens the Zoom link from the Outlook invite${p.joinedPrepared ? ', and records a prepared join' : ''}.`,
+        open_last_meeting: () => `Opens last week's full transcript.`,
+        mute_series: () => 'Stops future cards for Weekly Product Sync (mocked).',
+        mute_undone: () => 'Turns cards back on for Weekly Product Sync.',
+        not_useful: () => 'Logs the card as not useful.',
+        not_useful_reason: (p) => `Adds the reason "${p.reason}".`,
+        not_useful_undone: () => 'Removes the not-useful feedback.',
+        why_opened: () => 'Nothing to do. The card shows the explanation itself.',
+      };
+
+      card.addEventListener('headsup:action', (e) => {
+        const { action, payload } = e.detail;
+        e.preventDefault(); // this page handles everything, so no backup link is followed
+
+        if (action === 'card_suppressed') {
+          out.textContent = 'No card sent · holdout group. In Slack, this user sees nothing.';
+          return;
+        }
+        const say = responses[action];
+        if (say) out.textContent = say(payload);
+      });
+
+      document.querySelectorAll('[data-viewer]').forEach((b) => b.addEventListener('click', () => loadViewer(b.dataset.viewer)));
+      document.querySelectorAll('[data-jump]').forEach((b) => b.addEventListener('click', () => card.jumpTo(b.dataset.jump)));
+      document.getElementById('real-clock').addEventListener('click', () => { card.now = null; });
+      document.getElementById('reset').addEventListener('click', () => {
+        loadViewer(document.querySelector('[data-viewer][aria-pressed="true"]').dataset.viewer);
+      });
+      setInterval(() => {
+        clock.textContent = card.now.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', second: '2-digit' });
+      }, 500);
+
+      loadViewer('alex');
+    })();
+  </script>
+</body>
+</html>
