@@ -106,6 +106,16 @@ app.action('undo_not_useful', async ({ ack, body, respond }) => { await ack(); i
 
 await app.start()
 scheduler.start()
+
+// Hosts (Railway, Docker) send SIGTERM on redeploy: stop polling and close the Slack socket so the
+// old and new deployments don't both post cards.
+for (const signal of ['SIGTERM', 'SIGINT']) {
+  process.once(signal, async () => {
+    scheduler.stop()
+    await app.stop().catch(() => {})
+    process.exit(0)
+  })
+}
 console.log(`Ansel Heads-Up is running (Socket Mode).
   Calendar: ${scheduler.feedCount() ? `${scheduler.feedCount()} ICS feed(s) for ${scheduler.calendarPersonas().join(', ')}, polled every ${config.pollSeconds}s` : 'none (manual trigger only)'}
   Reminder: ${config.reminderMinutes} min before · Personas mapped: ${Object.keys(config.users).join(', ') || 'none'}
