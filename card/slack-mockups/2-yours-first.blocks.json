@@ -1,0 +1,234 @@
+{
+  "blocks": [
+    {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": "*30 min*  ·  *Weekly Product Sync*\nStarts at 2:00 PM on Zoom · 6 action items from last week"
+      },
+      "accessory": {
+        "type": "button",
+        "text": {
+          "type": "plain_text",
+          "text": "Join Zoom"
+        },
+        "action_id": "Join Zoom",
+        "style": "primary",
+        "url": "https://zoom.us/j/0000000000"
+      }
+    },
+    {
+      "type": "context",
+      "elements": [
+        {
+          "type": "mrkdwn",
+          "text": "▰▱▱▱▱▱▱▱▱▱"
+        }
+      ]
+    },
+    {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": "*Forecast update*  ·  You\nRerun the forecast with the revised pipeline and share it with the team."
+      },
+      "accessory": {
+        "type": "button",
+        "text": {
+          "type": "plain_text",
+          "text": "▶ 14:32"
+        },
+        "action_id": "▶ 14:32"
+      }
+    },
+    {
+      "type": "actions",
+      "elements": [
+        {
+          "type": "button",
+          "text": {
+            "type": "plain_text",
+            "text": "Mark done"
+          },
+          "action_id": "Mark done"
+        },
+        {
+          "type": "button",
+          "text": {
+            "type": "plain_text",
+            "text": "Not right"
+          },
+          "action_id": "Not right"
+        }
+      ]
+    },
+    {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": "*Customer interview notes*  ·  You  ·  _Done_\nShare notes from the three customer calls before pricing is set."
+      },
+      "accessory": {
+        "type": "button",
+        "text": {
+          "type": "plain_text",
+          "text": "▶ 22:15"
+        },
+        "action_id": "▶ 22:15"
+      }
+    },
+    {
+      "type": "actions",
+      "elements": [
+        {
+          "type": "button",
+          "text": {
+            "type": "plain_text",
+            "text": "✓ Done"
+          },
+          "action_id": "✓ Done"
+        }
+      ]
+    },
+    {
+      "type": "divider"
+    },
+    {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": "*Final Q3 numbers*  ·  Sam\nClose out Q3 actuals so the forecast can use them."
+      },
+      "accessory": {
+        "type": "overflow",
+        "action_id": "more",
+        "options": [
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "Play from 18:40"
+            },
+            "value": "Play from 18:40"
+          },
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "Not right"
+            },
+            "value": "Not right"
+          }
+        ]
+      }
+    },
+    {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": "*Launch checklist draft*  ·  Theo\nDraft the launch checklist covering QA, support and comms."
+      },
+      "accessory": {
+        "type": "overflow",
+        "action_id": "more",
+        "options": [
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "Play from 33:10"
+            },
+            "value": "Play from 33:10"
+          },
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "Not right"
+            },
+            "value": "Not right"
+          }
+        ]
+      }
+    },
+    {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": "*Pricing page copy review*  ·  Ines\nCheck the new pricing page copy against the v2 plan names."
+      },
+      "accessory": {
+        "type": "overflow",
+        "action_id": "more",
+        "options": [
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "Play from 36:02"
+            },
+            "value": "Play from 36:02"
+          },
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "Not right"
+            },
+            "value": "Not right"
+          }
+        ]
+      }
+    },
+    {
+      "type": "context",
+      "elements": [
+        {
+          "type": "mrkdwn",
+          "text": "<https://lamgs.github.io/ansel-headsup/|+1 more in Ansel>"
+        }
+      ]
+    },
+    {
+      "type": "actions",
+      "elements": [
+        {
+          "type": "button",
+          "text": {
+            "type": "plain_text",
+            "text": "Open last meeting"
+          },
+          "action_id": "Open last meeting"
+        },
+        {
+          "type": "button",
+          "text": {
+            "type": "plain_text",
+            "text": "Mute series"
+          },
+          "action_id": "Mute series"
+        },
+        {
+          "type": "button",
+          "text": {
+            "type": "plain_text",
+            "text": "Not useful"
+          },
+          "action_id": "Not useful"
+        }
+      ]
+    },
+    {
+      "type": "context",
+      "elements": [
+        {
+          "type": "mrkdwn",
+          "text": "Only you can see this. Built from last week's recording, which everyone on the invite can open, with no new AI processing."
+        }
+      ]
+    },
+    {
+      "type": "context",
+      "elements": [
+        {
+          "type": "mrkdwn",
+          "text": "<https://lamgs.github.io/ansel-headsup/|Why am I seeing this?>"
+        }
+      ]
+    }
+  ]
+}

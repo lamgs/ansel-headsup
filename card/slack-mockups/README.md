@@ -1,0 +1,11 @@
+# Slack mockups of the Heads-Up card
+
+Three Slack-native (Block Kit) directions for the card in `card/`, using its demo data (`card/demo-data.js`, viewer Alex), for choosing a layout. `comparison.png` puts Varun's design next to all three.
+
+| Direction | Image | Block Kit |
+|---|---|---|
+| 1 · Stacked: every row shows its buttons underneath | `1-stacked.png` | `1-stacked.blocks.json` |
+| 2 · Yours first: ▶ beside your rows with Mark done / Not right under them; other rows use a ⋮ menu | `2-yours-first.png` | `2-yours-first.blocks.json` |
+| 3 · Minimal list: one row per item, every action in a ⋮ menu | `3-minimal.png` | `3-minimal.blocks.json` |
+
+The images are approximations drawn outside Slack (stand-in font; spacing and button shapes may differ slightly). To see exact Slack rendering, paste a `.blocks.json` file into Slack's Block Kit Builder: <https://app.slack.com/block-kit-builder>. The live Slack card (`slack-app/src/card.js`) is not changed by these files.
