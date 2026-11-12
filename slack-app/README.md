@@ -48,7 +48,7 @@ The About page text, the Home tab and the event subscriptions come from [`manife
 3. If Slack shows a banner asking to **reinstall** the app, click it and approve. The existing tokens keep working.
 4. Restart or update the service so it runs the matching code (`sudo /opt/ansel-headsup/slack-app/deploy/setup-vm.sh` on the VM).
 
-The **Home** tab is drawn by the service each time someone opens it: what Heads-Up is, that person's persona, calendar status and next scheduled Heads-Up, the **Ping me** and **Ping everyone** buttons, and the commands. People not on the allowlist see only a notice.
+The **Home** tab is drawn by the service each time someone opens it: what Heads-Up is, that person's persona, calendar status and next scheduled Heads-Up, a separate **Demo only** section with the **Ping me** and **Ping everyone** buttons, and the everyday commands. People not on the allowlist see only a notice.
 
 ## Local configuration
 

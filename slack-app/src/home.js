@@ -41,8 +41,14 @@ export function buildHome(p) {
       md(`*Timing*\n${p.reminderMinutes} min before the meeting`),
       md(`*Next Heads-Up*\n${nextLine}`),
     ] },
+  )
+
+  // Demo-only controls, kept in their own clearly labelled section.
+  blocks.push(
     divider,
-    section(`*Try it*\n• *Ping me* sends ${p.demoName}'s demo card to you only.\n• *Ping everyone* sends ${p.mappedNames.length ? p.mappedNames.join(', ') : 'nobody yet'} their own card at once.`),
+    { type: 'header', text: { type: 'plain_text', text: 'Demo only' } },
+    context('For trying Heads-Up out during the pilot demo. Real cards are sent automatically from your calendar.'),
+    section(`• *Ping me* sends ${p.demoName}'s demo card to you only.\n• *Ping everyone* sends ${p.mappedNames.length ? p.mappedNames.join(', ') : 'nobody yet'} their own card at once.\n• Same from any conversation: \`/headsup ping\`, or \`/headsup demo [persona]\` for one persona's card.`),
     { type: 'actions', elements: [
       { type: 'button', action_id: 'ping_me', text: { type: 'plain_text', text: 'Ping me' }, value: 'home' },
       ...(p.mappedNames.length ? [{ type: 'button', action_id: 'ping_everyone', style: 'primary', text: { type: 'plain_text', text: 'Ping everyone' }, value: 'home' }] : []),
@@ -54,8 +60,6 @@ export function buildHome(p) {
     divider,
     section([
       '*Commands* (type in any conversation, for example your own DM)',
-      '`/headsup demo [persona]`: send a demo card to yourself',
-      '`/headsup ping`: the Ping me / Ping everyone buttons',
       '`/headsup check [persona]`: why a persona gets a card or is skipped',
       '`/headsup next`: your upcoming recurring meetings and when Heads-Up fires',
     ].join('\n')),
