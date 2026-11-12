@@ -1,0 +1,51 @@
+{
+  "blocks": [
+    {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": "*30 min · Weekly Product Sync*"
+      },
+      "accessory": {
+        "type": "button",
+        "action_id": "hu_join",
+        "text": {
+          "type": "plain_text",
+          "text": "Join Zoom"
+        },
+        "style": "primary",
+        "url": "https://zoom.us/j/0000000000"
+      }
+    },
+    {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": "You own *Forecast update* · 5 more items from last week"
+      },
+      "accessory": {
+        "type": "button",
+        "action_id": "hu_open_last",
+        "text": {
+          "type": "plain_text",
+          "text": "Open in Ansel"
+        },
+        "url": "https://lamgs.github.io/ansel-headsup/#ansel/wps-1106/summary/"
+      }
+    },
+    {
+      "type": "actions",
+      "elements": [
+        {
+          "type": "button",
+          "action_id": "hu_done:a2",
+          "text": {
+            "type": "plain_text",
+            "text": "✓"
+          },
+          "accessibility_label": "Mark done: Forecast update"
+        }
+      ]
+    }
+  ]
+}
