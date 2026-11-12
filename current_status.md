@@ -60,7 +60,7 @@ This pilot is acceptable for a demo, not for real user data. Say so explicitly w
 
 ## Next stage
 
-1. Deploy the `slack-app/` service to Railway using the steps in [`slack-app/README.md`](slack-app/README.md#deploy-to-railway-always-on) (`railway.json` + `slack-app/Dockerfile` are in the repo; not yet test-built) and move the central tokens, allowlist and calendar links into its variables.
+1. Deploy the `slack-app/` service to a free Google Cloud e2-micro VM using [`slack-app/deploy/setup-vm.sh`](slack-app/deploy/setup-vm.sh) and the steps in [`slack-app/README.md`](slack-app/README.md#deploy-to-a-google-cloud-vm-free-tier-always-on) (Railway config is kept as a paid alternative) and move the central tokens, allowlist and calendar links into its variables.
 2. Run the team verification checklist in [`slack-app/README.md`](slack-app/README.md), including an allowlisted and a non-allowlisted user.
 3. Add and validate the recurring calendar feed.
 4. Host the prototype and set `PROTOTYPE_URL` if transcript deep links are needed for the demo.

@@ -58,6 +58,22 @@ git check-ignore slack-app/.env
 
 `ALLOWED_SLACK_USERS` is the security boundary for this pilot. `SLACK_USERS` is narrower: it controls which persona/recipient pairs receive calendar-driven cards. Adding someone to the allowlist lets them use `/headsup`; add a persona mapping only when they should also receive scheduled cards.
 
+## Deploy to a Google Cloud VM (free tier, always-on)
+
+[`deploy/setup-vm.sh`](deploy/setup-vm.sh) installs Node 22, the service's dependencies and a `systemd` service (starts on boot, restarts on crash) on a Debian/Ubuntu VM. Re-run it to update.
+
+1. In Google Cloud, create a VM: **e2-micro**, region `us-central1`, `us-east1` or `us-west1` (free tier), **standard persistent disk** up to 30 GB, Debian 12. No firewall rules or external ports are needed.
+2. Set a billing budget alert (e.g. $1) so any charge is noticed immediately.
+3. SSH in (the **SSH** button in the console) and run:
+   ```bash
+   sudo git clone https://github.com/lamgs/ansel-headsup.git /opt/ansel-headsup
+   sudo nano /opt/ansel-headsup/slack-app/.env   # paste your slack-app/.env, save
+   sudo /opt/ansel-headsup/slack-app/deploy/setup-vm.sh
+   ```
+4. Stop any other running copy (laptop or Railway), then run the verification checklist below.
+
+Logs: `sudo journalctl -u ansel-headsup -f`. Update after a push to `main`: re-run `setup-vm.sh`. After editing `.env`: `sudo systemctl restart ansel-headsup`.
+
 ## Deploy to Railway (always-on)
 
 The repo includes [`../railway.json`](../railway.json) and [`Dockerfile`](Dockerfile). Railway builds from the **repo root** (the service reuses `../src`), installs only `slack-app` dependencies, and runs `node src/index.js`. No public URL, domain or port is needed: Socket Mode connects outward to Slack.
@@ -149,7 +165,7 @@ To get the deep links, host the prototype: run `npm run build` in the repo root,
 
 ## Limits
 
-- The service needs one continuously running process: Railway (above) or a local `npm start`, never both.
+- The service needs one continuously running process: the Google VM, Railway or a local `npm start`, never more than one.
 - State lives in memory: restarting clears mutes. Status updates made in the prototype (Mark done) don't sync back to Slack, because there's no shared backend.
 - Content is seeded, so there are no real transcripts. For production, swap ICS polling for Google Calendar push notifications or Microsoft Graph change notifications, and use the event's recurring-series ID instead of matching titles.
 
