@@ -6,16 +6,16 @@ import { Avatar, personName } from '../components/ui.jsx'
 
 const CHANNELS = {
   product: [
-    ['jordan', 'Fri Nov 13 · 10:02 AM', 'Reminder: launch checklist doc is updated. Comments welcome before the sync.'],
+    ['alicia', 'Fri Nov 13 · 10:02 AM', 'Reminder: launch checklist doc is updated. Comments welcome before the sync.'],
     ['alex', '10:15 AM', 'Pricing page copy v3 is in the shared folder.'],
-    ['dana', '11:40 AM', 'October actuals are posted in the finance folder.'],
+    ['varun', '11:40 AM', 'October actuals are posted in the finance folder.'],
   ],
   'eng-standup': [
-    ['sam', '9:30 AM', 'Payments: two flaky tests left in staging. Looking at them today.'],
-    ['riley', '9:34 AM', 'Starting on the payment flow test plan.'],
+    ['rishabh', '9:30 AM', 'Payments: two flaky tests left in staging. Looking at them today.'],
+    ['aryan', '9:34 AM', 'Starting on the payment flow test plan.'],
   ],
   random: [
-    ['dana', '12:05 PM', 'Lunch truck is outside again.'],
+    ['varun', '12:05 PM', 'Lunch truck is outside again.'],
     ['alex', '12:07 PM', 'The taco one?'],
   ],
 }
@@ -51,7 +51,7 @@ export default function Slack() {
     }
   }, [state.tab, ch, cards.length, me.id])
 
-  const dms = SEED.people.filter((p) => p.id !== me.id && p.org === 'acme' && ['jordan', 'maya', 'sam', 'dana'].includes(p.id))
+  const dms = SEED.people.filter((p) => p.id !== me.id && p.org === 'acme' && ['alicia', 'gabriel', 'rishabh', 'varun'].includes(p.id))
 
   const Item = ({ id, label, badge, prefix = '#' }) => (
     <button onClick={() => dispatch({ type: 'SLACK_CHANNEL', id })}

@@ -8,7 +8,7 @@ When someone clicks **▶ mm:ss** on the Heads-Up Slack card, Ansel opens on tha
 
 The mockup should look like the complete Ansel product from the Phase 1 case, so judges see Heads-Up inside a real product. Only the meeting record (transcript, summary panel, item actions, comments) needs to work. Everything else is visible but inactive.
 
-**Core flow it supports** (Brief §4, Phase 2): Maya taps **▶ 14:32** → reads Jordan's line → confirms the deadline (On track / New date / Mark done) → joins ready to report.
+**Core flow it supports** (Brief §4, Phase 2): Gabriel taps **▶ 14:32** → reads Alicia's line → confirms the deadline (On track / New date / Mark done) → joins ready to report.
 
 ## 2. Decisions so far
 
@@ -43,7 +43,7 @@ Layout sketch (the player is audio only):
 ┌──────────┬──────────────────────────────────────────────────────┬───────────────────────┐
 │ Ansel    │ ← Meetings                                           │ SUMMARY PANEL         │
 │          │ Weekly Product Sync · Nov 6 · 48 min  ● Recorded     │ (or item panel)       │
-│ Home     │ 👥 avatars · Weekly, Fri 2:00 PM · organizer Jordan  │                       │
+│ Home     │ 👥 avatars · Weekly, Fri 2:00 PM · organizer Alicia  │                       │
 │ Meetings │ 🔒 Visible to attendees only    [Share] [Export ▾]   │ Decisions             │
 │ Search   │                                 [Send to ▾]          │ Open questions        │
 │ Ask Ansel│ Oct 23 · Oct 30 · [Nov 6] · Nov 13 upcoming          │ Action items          │
@@ -52,9 +52,9 @@ Layout sketch (the player is audio only):
 │ Admin    │ │ ▶ ━━━━━━━━○──────── 14:32 / 48:00  (player)      │ │ each row: text, owner,│
 │ console  │ │ 🔍 Search this transcript                         │ │ ▶ time, status        │
 │          │ └──────────────────────────────────────────────────┘ │                       │
-│          │ 14:32  (J) Jordan  Maya, can you update the Q1 …     │                       │
+│          │ 14:32  (A) Alicia  Gabriel, can you update the Q1 …  │                       │
 │          │                    [Action item · a2]  💬 1           │                       │
-│          │ 14:51  (M) Maya    Yep. I'll have it in the …         │                       │
+│          │ 14:51  (G) Gabriel Yep. I'll have it in the …         │                       │
 └──────────┴──────────────────────────────────────────────────────┴───────────────────────┘
 ```
 
@@ -103,8 +103,8 @@ Layout sketch (the player is audio only):
 
 **Comments on lines (new)**
 - Hovering a line shows a **Comment** button. Comments show inline under the line with author, time and a count badge.
-- Who can comment: attendees of that meeting, and Riley only when the G3 direct share is on (matches the case: people the organizer grants access can comment). Non-attendees see the existing "didn't attend" message instead of the transcript.
-- One seeded comment so the feature is visible on first load, e.g. Dana on 16:05: "March revenue line updated in the budget view."
+- Who can comment: attendees of that meeting, and Aryan only when the G3 direct share is on (matches the case: people the organizer grants access can comment). Non-attendees see the existing "didn't attend" message instead of the transcript.
+- One seeded comment so the feature is visible on first load, e.g. Varun on 16:05: "March revenue line updated in the budget view."
 
 **Visible but inactive on this tab**
 - Audio player strip (play button, scrubber at the current line, speed). No video. Clicking it → toast.
@@ -115,7 +115,7 @@ Layout sketch (the player is audio only):
 - Opens by default on the Transcript tab; collapsible.
 - Sections in this order, per the case: **Decisions**, **Open questions**, **Action items**, **Themes**.
 - Each row: text, ▶ timestamp, and type-specific details:
-  - Decisions: tracked change shown as strikethrough original + `Edited · Jordan · Nov 7` (existing). Organizer can ✎ edit (existing).
+  - Decisions: tracked change shown as strikethrough original + `Edited · Alicia · Nov 7` (existing). Organizer can ✎ edit (existing).
   - Open questions: status (Open / Resolved Nov 6). Organizer can ✎ edit.
   - Action items: owner, due date, status. The owner sees **Update**, which swaps the panel to the existing item panel (Mark done / On track for today / New date / Reassign).
   - Themes: title, range, linked items.
@@ -165,7 +165,7 @@ All look real. Clicking shows a toast: "Not in this prototype." Grouped by where
 ## 10. Permissions (unchanged rules, shown in the UI)
 
 - Notes are visible to attendees only (case default, 78% of meetings). Non-attendees see an explanation, not the transcript.
-- Riley sees Nov 6 only if Jordan's G3 direct share is ticked; it's recorded in the G4 audit log (existing).
+- Aryan sees Nov 6 only if Alicia's G3 direct share is ticked; it's recorded in the G4 audit log (existing).
 - External guests (Leo) never see notes.
 - Only the organizer edits decisions and questions; only the owner updates an action item.
 
@@ -193,4 +193,4 @@ None.
 - Open last meeting: stays on the Summary tab. Summary answers "what happened last time"; ▶ answers "where was it said". No card files change.
 - Video: left out for now; audio-only player strip.
 - Icons: `lucide-react` added to the root `package.json`.
-- Personas: start simple. Build and rehearse with Maya only; the existing persona switcher keeps working, and other persona flows can be polished later.
+- Personas: start simple. Build and rehearse with Gabriel only; the existing persona switcher keeps working, and other persona flows can be polished later.

@@ -10,7 +10,7 @@ export function pilotLog(event, persona, detail = '') {
   console.log(`[pilot] ${t}  ${event.padEnd(16)} ${String(persona).padEnd(7)} ${detail}`)
 }
 
-/** "maya=U123,jordan=jordan@acme.com" → { maya: 'U123', jordan: 'jordan@acme.com' } */
+/** "gabriel=U123,alicia=alicia@acme.com" → { gabriel: 'U123', alicia: 'alicia@acme.com' } */
 export function parseUserMap(s = '') {
   return Object.fromEntries(s.split(',').map((p) => p.split('=').map((x) => x.trim())).filter(([a, b]) => a && b))
 }
@@ -129,5 +129,5 @@ export function createHeadsUp({ client, config, access, log = pilotLog }) {
 
   const reset = () => { for (const k of Object.keys(muted)) delete muted[k]; live.clear() }
 
-  return { evaluate, post, refreshCountdowns, entryFor, setFlag, transcriptQuote, summaryText, explain, reset, live }
+  return { evaluate, post, resolveUser, refreshCountdowns, entryFor, setFlag, transcriptQuote, summaryText, explain, reset, live }
 }

@@ -1,5 +1,5 @@
 // One-shot manual trigger without the long-running app (cron, a keyboard shortcut, or a backup for the live demo).
-//   npm run trigger -- --to U0123ABC [--persona maya] [--in 30]
+//   npm run trigger -- --to U0123ABC [--persona gabriel] [--in 30]
 // Buttons on the card (Mute, Not useful, ▶ quotes) only respond while `npm start` is running.
 import { WebClient } from '@slack/web-api'
 import { loadConfig, requireTokens } from './config.js'

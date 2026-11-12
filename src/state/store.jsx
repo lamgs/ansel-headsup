@@ -8,7 +8,7 @@ const prefersDark = typeof window !== 'undefined' && window.matchMedia?.('(prefe
 export function initialState(theme = prefersDark ? 'dark' : 'light') {
   return {
     theme,
-    persona: 'maya',
+    persona: 'gabriel',
     clock: CLOCK_START,
     tab: 'slack',
     drawerOpen: false,
@@ -100,7 +100,7 @@ function reducer(s, a) {
       const u = { ...a.update, by: s.persona, atSec: s.clock }
       let n = { ...s, itemUpdates: { ...s.itemUpdates, [a.id]: u } }
       n = addLog(n, s.persona, 'item_acted_on', `${a.id}: ${a.label}`)
-      return addToast(n, 'Saved. Jordan will see this in the meeting record.')
+      return addToast(n, 'Saved. Alicia will see this in the meeting record.')
     }
     case 'EDIT': {
       const n = { ...s, edits: { ...s.edits, [a.id]: { text: a.text, by: s.persona, on: DEMO_DATE, atSec: s.clock } } }

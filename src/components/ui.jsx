@@ -2,8 +2,8 @@ import React from 'react'
 import { SEED } from '../data/seed.js'
 
 export const PERSON_COLORS = {
-  maya: 'bg-rose-500', jordan: 'bg-sky-600', sam: 'bg-emerald-600', dana: 'bg-amber-500',
-  alex: 'bg-violet-500', riley: 'bg-teal-500', leo: 'bg-slate-500', ansel: 'bg-ansel',
+  gabriel: 'bg-rose-500', alicia: 'bg-sky-600', rishabh: 'bg-emerald-600', varun: 'bg-amber-500',
+  alex: 'bg-violet-500', aryan: 'bg-teal-500', leo: 'bg-slate-500', ansel: 'bg-ansel',
 }
 
 export const personName = (id) => SEED.people.find((p) => p.id === id)?.name ?? id

@@ -6,8 +6,8 @@ import { Avatar, Ts } from '../../components/ui.jsx'
 import { jumpTo, useNip } from './shared.jsx'
 
 export const NOV6_QA = [
-  { q: 'What did we decide about the pricing page?', a: 'The pricing page ships with v2, not before. Jordan confirmed it after finance and QA weighed in.', cites: ['41:18', '39:25'] },
-  { q: 'Who is bringing the launch date recommendation?', a: 'Maya and Sam, at next week’s sync. Jordan asked not to lock March 3 or March 10 without the new forecast.', cites: ['27:40', '27:05'] },
+  { q: 'What did we decide about the pricing page?', a: 'The pricing page ships with v2, not before. Alicia confirmed it after finance and QA weighed in.', cites: ['41:18', '39:25'] },
+  { q: 'Who is bringing the launch date recommendation?', a: 'Gabriel and Rishabh, at next week’s sync. Alicia asked not to lock March 3 or March 10 without the new forecast.', cites: ['27:40', '27:05'] },
 ]
 
 export default function AskTab({ inst }) {

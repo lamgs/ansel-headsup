@@ -21,7 +21,7 @@ const HELP = [
   '*Heads-Up demo controls*',
   '`/headsup demo [persona]`: post a Heads-Up to you now, for a Weekly Product Sync starting in ' + config.reminderMinutes + ' min (default persona: ' + config.demoPersona + ')',
   '`/headsup check [persona]`: why a persona gets a card or is skipped (the behind-the-scenes drawer)',
-  '`/headsup next`: upcoming recurring meetings from the calendar feed and when Heads-Up fires',
+  '`/headsup next`: your upcoming recurring meetings from your calendar feed and when Heads-Up fires',
   '`/headsup reset`: clear mutes and fired triggers',
   `Personas: ${personas.join(', ')}`,
 ].join('\n')
@@ -45,10 +45,16 @@ app.command('/headsup', async ({ command, ack, respond }) => {
     }
     if (sub === 'check') return say(headsUp.explain(persona))
     if (sub === 'next') {
-      if (!config.icsUrl) return say('No CALENDAR_ICS_URL set. Use `/headsup demo` for the manual trigger.')
-      const occ = (await scheduler.upcoming()).filter((o) => o.recurring).slice(0, 10)
+      // Only show the requester's own calendar(s): meeting titles are private.
+      const mine = []
+      for (const p of scheduler.calendarPersonas()) {
+        if (await headsUp.resolveUser(config.users[p]).catch(() => null) === command.user_id) mine.push(p)
+      }
+      if (!mine.length) return say('No calendar feed is connected for you. Use `/headsup demo` for the manual trigger.')
+      const occ = (await scheduler.upcoming(24 * 7, mine)).filter((o) => o.recurring).slice(0, 10)
       if (!occ.length) return say('No recurring meetings in the next 7 days.')
-      return say(['*Upcoming recurring meetings*', ...occ.map((o) => `• ${o.title}: ${fmt(o.startMs)} · ${o.sid ? `Heads-Up at ${fmt(o.fireAtMs)} (series ${o.sid})` : 'no Ansel series matches, skipped'}`)].join('\n'))
+      const who = (o) => (mine.length > 1 ? ` [${o.personas.join(', ')}]` : '')
+      return say(['*Your upcoming recurring meetings*', ...occ.map((o) => `• ${o.title}: ${fmt(o.startMs)}${who(o)} · ${o.sid ? `Heads-Up at ${fmt(o.fireAtMs)} (series ${o.sid})` : 'no Ansel series matches, skipped'}`)].join('\n'))
     }
     if (sub === 'reset') { headsUp.reset(); scheduler.reset(); return say('Reset: mutes and fired triggers cleared.') }
     return say(HELP)
@@ -100,8 +106,18 @@ app.action('undo_not_useful', async ({ ack, body, respond }) => { await ack(); i
 
 await app.start()
 scheduler.start()
+
+// Hosts (Railway, Docker) send SIGTERM on redeploy: stop polling and close the Slack socket so the
+// old and new deployments don't both post cards.
+for (const signal of ['SIGTERM', 'SIGINT']) {
+  process.once(signal, async () => {
+    scheduler.stop()
+    await app.stop().catch(() => {})
+    process.exit(0)
+  })
+}
 console.log(`Ansel Heads-Up is running (Socket Mode).
-  Calendar: ${config.icsUrl ? 'ICS feed, polled every ' + config.pollSeconds + 's' : 'none (manual trigger only)'}
+  Calendar: ${scheduler.feedCount() ? `${scheduler.feedCount()} ICS feed(s) for ${scheduler.calendarPersonas().join(', ')}, polled every ${config.pollSeconds}s` : 'none (manual trigger only)'}
   Reminder: ${config.reminderMinutes} min before · Personas mapped: ${Object.keys(config.users).join(', ') || 'none'}
   Allowed Slack users: ${config.allowedUsers.length}
   Manual trigger: /headsup demo   ·   or: npm run trigger -- --to <slack user id or email>`)
