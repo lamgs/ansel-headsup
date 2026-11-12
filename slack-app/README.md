@@ -172,7 +172,7 @@ The card matches [`../card/heads-up-card.js`](../card/heads-up-card.js) and logs
 | Button | Behavior | Event |
 |---|---|---|
 | Join Teams / Join now | Opens the meeting link; the only green button; removed after the meeting ends | `join_tap` (with `joinedPrepared`: true if ▶ or Mark done came first) |
-| ▶ mm:ss | Opens the prototype at that transcript line if `PROTOTYPE_URL` is set, otherwise replies privately with the quoted line | `timestamp_tap` ★ |
+| ▶ mm:ss | Opens the prototype at that transcript line (default), or replies privately with the quoted line if `PROTOTYPE_URL=off` | `timestamp_tap` ★ |
 | Mark done / ✓ Done | Only on your own rows: marks the row done, tap again to undo | `mark_done` ★ / `mark_done_undone` |
 | Not right → reason / Flagged | On any row: asks "What's wrong?" (Wrong owner, Not a real item, Already done); Flagged undoes | `item_flagged`, `item_flag_reason`, `item_flag_undone` |
 | +N more in Ansel | Shown when there are more than 6 items | `more_tap` |
@@ -183,7 +183,7 @@ The card matches [`../card/heads-up-card.js`](../card/heads-up-card.js) and logs
 
 Also logged: `card_shown`, `card_suppressed` (holdout), `card_skipped` (with the reason) and `state_changed` (posted → starting-soon → started → ended). The countdown and time bar update every poll. Slack can't draw the web card's large timer, colored time bar, row stripes or green done rows, so they are shown as text: `*30 min*`, `▰▰▰▱▱▱▱▱▱▱`, `YOURS`, `✓ Done`.
 
-To get the deep links, set `PROTOTYPE_URL=https://lamgs.github.io/ansel-headsup/` (published from `main` by GitHub Pages; see the root README) and restart the service. Links look like `…/#ansel/wps-1106/transcript/14:32/a2`.
+The ▶ and **Open last meeting** buttons link to the hosted prototype at https://lamgs.github.io/ansel-headsup/ by default (published from `main` by GitHub Pages; see the root README). Set `PROTOTYPE_URL` to point somewhere else, or `PROTOTYPE_URL=off` to have the buttons reply in Slack instead. Links look like `…/#ansel/wps-1106/transcript/14:32/a2`.
 
 ## Limits
 
