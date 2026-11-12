@@ -6,6 +6,8 @@ Personas now use the team's names (Gabriel, Alicia, Rishabh, Varun, Aryan); see 
 
 ## Stage
 
+**Update 2026-11-12: always-on.** The Slack service now runs on a free-tier Google Cloud e2-micro VM (Debian 13) as the `ansel-headsup` systemd service, installed with `slack-app/deploy/setup-vm.sh` from `main`. Startup confirmed Socket Mode, 5 mapped personas, 10 allowlisted users and 2 per-person calendar feeds (Gabriel, Aryan); `/headsup demo` delivered a card from the VM. The `.env` lives only on the VM at `/opt/ansel-headsup/slack-app/.env`. No laptop should run `npm start` any more.
+
 **Working local pilot / manual Slack demo.** The prototype builds, the Slack app is installed in the Chicago Booth workspace, Socket Mode connects successfully, and an authorized end-to-end demo card has been posted as a private Slack DM.
 
 This is not yet an always-on or production deployment. The current process runs from a developer machine/session and stops when that process stops.
@@ -52,7 +54,6 @@ This pilot is acceptable for a demo, not for real user data. Say so explicitly w
 
 ## Not configured yet
 
-- Always-on hosting (the current service is tied to the active development session).
 - Per-person calendar links (`CALENDAR_ICS_URL_<PERSONA>`); the live app is currently manual-trigger only.
 - A hosted `PROTOTYPE_URL` for transcript deep links.
 - Durable state. Mutes and fired-trigger history reset when the process restarts.
@@ -60,7 +61,7 @@ This pilot is acceptable for a demo, not for real user data. Say so explicitly w
 
 ## Next stage
 
-1. Deploy the `slack-app/` service to a free Google Cloud e2-micro VM using [`slack-app/deploy/setup-vm.sh`](slack-app/deploy/setup-vm.sh) and the steps in [`slack-app/README.md`](slack-app/README.md#deploy-to-a-google-cloud-vm-free-tier-always-on) (Railway config is kept as a paid alternative) and move the central tokens, allowlist and calendar links into its variables.
+1. ~~Deploy to an always-on host.~~ Done: Google Cloud VM (see Stage). Railway config is kept as a paid alternative.
 2. Run the team verification checklist in [`slack-app/README.md`](slack-app/README.md), including an allowlisted and a non-allowlisted user.
 3. Add and validate the recurring calendar feed.
 4. Host the prototype and set `PROTOTYPE_URL` if transcript deep links are needed for the demo.
