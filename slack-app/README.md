@@ -174,7 +174,7 @@ Create a recurring event titled **Weekly Product Sync**, with a Meet, Teams or Z
 | Open last meeting | Prototype Summary view, or a summary reply | `open_last_meeting` |
 | Mute series / Not useful | Replaces the card body, with Undo | `series_muted` / `not_useful` |
 
-To get the deep links, host the prototype: run `npm run build` in the repo root, deploy `dist/` (Netlify drop, Vercel or GitHub Pages), and set `PROTOTYPE_URL`. Links look like `…/#ansel/wps-1106/transcript/14:32/a2`.
+To get the deep links, set `PROTOTYPE_URL=https://lamgs.github.io/ansel-headsup/` (published from `main` by GitHub Pages; see the root README) and restart the service. Links look like `…/#ansel/wps-1106/transcript/14:32/a2`.
 
 ## Limits
 

@@ -1,0 +1,70 @@
+# Publishes the prototype to GitHub Pages: https://lamgs.github.io/ansel-headsup/
+# The Slack card's ▶ and "Open last meeting" buttons link here via PROTOTYPE_URL.
+#
+# - Push to main: run both test suites (prototype and Slack app), build, deploy.
+#   Nothing deploys unless both suites pass.
+# - Pull request: tests and build only, so a broken build is caught before it's merged.
+#
+# One-time setup by a repo admin: Settings → Pages → Build and deployment → Source: GitHub Actions.
+name: Deploy prototype to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Never cancel a deploy halfway; queue the next one instead.
+concurrency:
+  group: pages-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
+      - if: github.event_name != 'pull_request'
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: dist
+
+  # Offline Slack service tests (fake Slack client; no tokens or network needed).
+  slack-app-test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: slack-app
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: slack-app/package-lock.json
+      - run: npm ci
+      - run: npm test
+
+  deploy:
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    needs: [build, slack-app-test]
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
