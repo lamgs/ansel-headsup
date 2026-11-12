@@ -25,7 +25,7 @@ export function initialState(theme = prefersDark ? 'dark' : 'light') {
     toasts: [],
     share: null, // { sec } when the G3 direct share is ticked
     slackChannel: 'product',
-    ansel: { page: 'meetings', view: 'detail', instanceId: 'wps-1106', tab: 'summary', highlight: null, panelItem: null, focusId: null, selectedItem: null, themeId: null, sideTab: 'summary', sideOpen: true, shareOpen: false },
+    ansel: { page: 'meetings', view: 'detail', instanceId: 'wps-1106', tab: 'summary', highlight: null, panelItem: null, focusId: null, selectedItem: null, themeId: null, sideTab: 'summary', sideOpen: true, shareOpen: false, chat: 'closed', chatThread: [] },
     join: null, // null | { step: 'notice' | 'call', keptOut, joinedAt }
   }
 }
@@ -81,7 +81,7 @@ function reducer(s, a) {
     case 'NOT_IN_PROTOTYPE':
       // One toast at a time for inactive controls: a new click replaces the old toast.
       return addToast({ ...s, toasts: s.toasts.filter((t) => t.kind !== 'nip') },a.what ? `${a.what} · not in this prototype` : 'Not in this prototype', { kind: 'nip' })
-    case 'SET_PERSONA': return { ...s, persona: a.id, join: null }
+    case 'SET_PERSONA': return { ...s, persona: a.id, join: null, ansel: { ...s.ansel, chatThread: [] } }
     case 'SET_TAB': return { ...s, tab: a.tab }
     case 'TOGGLE_DRAWER': return { ...s, drawerOpen: !s.drawerOpen }
     case 'TOGGLE_THEME': return { ...s, theme: s.theme === 'dark' ? 'light' : 'dark' }

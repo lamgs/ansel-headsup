@@ -24,7 +24,7 @@ export default function ItemPanel({ id }) {
   const status = a.update ? statusText(a) : a.status === 'done' ? 'Done' : 'Open (may already be done)'
 
   return (
-    <aside className="slidein flex w-80 shrink-0 flex-col overflow-y-auto border-l border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900">
+    <aside className="slidein flex w-80 shrink-0 flex-col overflow-y-auto border-l border-slate-200 bg-slate-50 p-4 pb-20 dark:border-slate-800 dark:bg-slate-900">
       <div className="flex items-start justify-between">
         <div className="text-xs font-bold uppercase tracking-wider text-slate-500">Action item</div>
         <button onClick={() => dispatch({ type: 'ANSEL_NAV', nav: { panelItem: null } })} aria-label="Close" className="text-slate-400 hover:text-slate-700"><X size={16} /></button>
