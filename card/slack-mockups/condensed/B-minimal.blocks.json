@@ -1,0 +1,77 @@
+{
+  "blocks": [
+    {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": "*30 min · Weekly Product Sync*\nYou own *Forecast update* · 5 more items from last week"
+      },
+      "accessory": {
+        "type": "button",
+        "action_id": "hu_join",
+        "text": {
+          "type": "plain_text",
+          "text": "Join Teams"
+        },
+        "style": "primary",
+        "url": "https://teams.microsoft.com/"
+      }
+    },
+    {
+      "type": "actions",
+      "elements": [
+        {
+          "type": "button",
+          "action_id": "hu_open_last",
+          "text": {
+            "type": "plain_text",
+            "text": "Open in Ansel"
+          },
+          "url": "https://lamgs.github.io/ansel-headsup/#ansel/wps-1106/summary/"
+        },
+        {
+          "type": "button",
+          "action_id": "hu_done:a2",
+          "text": {
+            "type": "plain_text",
+            "text": "✓"
+          }
+        },
+        {
+          "type": "overflow",
+          "action_id": "hu_more_menu",
+          "options": [
+            {
+              "text": {
+                "type": "plain_text",
+                "text": "Play at 14:32"
+              },
+              "value": "Play at 14:32"
+            },
+            {
+              "text": {
+                "type": "plain_text",
+                "text": "Not right"
+              },
+              "value": "Not right"
+            },
+            {
+              "text": {
+                "type": "plain_text",
+                "text": "Mute series"
+              },
+              "value": "Mute series"
+            },
+            {
+              "text": {
+                "type": "plain_text",
+                "text": "Not useful"
+              },
+              "value": "Not useful"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

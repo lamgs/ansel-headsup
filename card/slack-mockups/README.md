@@ -13,3 +13,7 @@ Three Slack-native (Block Kit) directions for the card in `card/`, using its dem
 The images are approximations drawn outside Slack (stand-in font; spacing and button shapes may differ slightly). To see exact Slack rendering, paste a `.blocks.json` file into Slack's Block Kit Builder: <https://app.slack.com/block-kit-builder>. 
 
 **Chosen: 2a**, with the ▶ arrow removed. `live-card.png` and `live-card.blocks.json` are the real output of `slack-app/src/card.js` (Alicia's card); paste the JSON into Block Kit Builder to see it in Slack's own styling.
+
+## Condensed previews (not built)
+
+`condensed/` has three shorter directions, previews only: **A · Condensed** (your item + a one-line team list, one row of buttons), **B · Minimal** (two lines, Open in Ansel / ✓ / ⋮), **C · Glance** (one section + links; everything else in Ansel). Each has a `.blocks.json` for Block Kit Builder.

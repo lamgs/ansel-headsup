@@ -1,0 +1,30 @@
+{
+  "blocks": [
+    {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": "*30 min · Weekly Product Sync*\nYou own *Forecast update* · 5 more items from last week"
+      },
+      "accessory": {
+        "type": "button",
+        "action_id": "hu_join",
+        "text": {
+          "type": "plain_text",
+          "text": "Join Teams"
+        },
+        "style": "primary",
+        "url": "https://teams.microsoft.com/"
+      }
+    },
+    {
+      "type": "context",
+      "elements": [
+        {
+          "type": "mrkdwn",
+          "text": "<https://lamgs.github.io/ansel-headsup/#ansel/wps-1106/summary/|Open in Ansel>  ·  <https://lamgs.github.io/ansel-headsup/#ansel/wps-1106/transcript/14:32/a2|Your item at 14:32>  ·  Only you can see this"
+        }
+      ]
+    }
+  ]
+}
