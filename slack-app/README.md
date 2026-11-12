@@ -109,6 +109,8 @@ Create a recurring event titled **Weekly Product Sync**, with a Meet, Teams or Z
 
 **Caveat for the live demo:** Google and Outlook refresh ICS feeds with a delay (minutes for Google, sometimes hours for Outlook). Create the event well ahead of time and confirm it with `/headsup next`. Use `/headsup demo` as the on-stage trigger.
 
+**Privacy:** the published ICS link gives anyone who has it read access to the whole calendar without signing in. Keep it only in `.env` or the host's secret store, prefer a dedicated demo calendar, and reset the link in Outlook if it leaks. The app watches a single calendar: every persona in `SLACK_USERS` is triggered by it. See [`current_status.md`](../current_status.md#data-privacy-call-out-in-the-demo).
+
 ## Card actions
 
 | Button | Behavior | Pilot event (logged to the console) |
