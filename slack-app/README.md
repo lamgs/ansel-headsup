@@ -39,6 +39,17 @@ Store the two tokens in one central secret store (or a Git-ignored local `.env` 
 
 For an existing installation, do not create new tokens per developer. Obtain access to the central runtime or its secret manager. If a token must be replaced, generate/reinstall once, update the central secret, confirm the app connects, and revoke the superseded token.
 
+## Updating the Slack app settings
+
+The About page text, the Home tab and the event subscriptions come from [`manifest.yml`](manifest.yml). After changing it:
+
+1. Open <https://api.slack.com/apps> → **Ansel Heads-Up (demo)** → **App Manifest**.
+2. Replace the YAML with the contents of `manifest.yml` and click **Save Changes**.
+3. If Slack shows a banner asking to **reinstall** the app, click it and approve. The existing tokens keep working.
+4. Restart or update the service so it runs the matching code (`sudo /opt/ansel-headsup/slack-app/deploy/setup-vm.sh` on the VM).
+
+The **Home** tab is drawn by the service each time someone opens it: what Heads-Up is, that person's persona, calendar status and next scheduled Heads-Up, the **Ping me** and **Ping everyone** buttons, and the commands. People not on the allowlist see only a notice.
+
 ## Local configuration
 
 Minimum `slack-app/.env`:

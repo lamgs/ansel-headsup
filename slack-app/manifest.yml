@@ -1,12 +1,26 @@
-# Paste into https://api.slack.com/apps → Create New App → From an app manifest.
-# Socket Mode: no public URL needed, the app runs on a laptop.
+# Apply in https://api.slack.com/apps → your app → App Manifest (paste, Save Changes).
+# Socket Mode: no public URL needed. The service runs on one always-on host (see README).
 display_information:
   name: Ansel Heads-Up (demo)
-  description: Private pre-meeting notes from meetings you attended.
+  description: A private note before your recurring meetings, from the meetings you attended.
   background_color: "#3B3F9E"
+  long_description: |
+    Ansel Heads-Up sends you a short, private note 30 minutes before a recurring meeting. It is drawn only from earlier meetings in the same series that you attended, and shows up to three things:
+
+    • You own: your open action item, with its due date
+    • Still open: a question that is still unresolved
+    • Decided: the most important decision from the last meeting
+
+    Each item links back to the moment in the transcript where it was said. If there is nothing for you, Ansel stays quiet. You can mute a series or mark a card as not useful right from the card.
+
+    How it is triggered: Ansel watches your published Outlook calendar for recurring meetings (Teams links are picked up automatically), or a pilot member can send a demo card from the Home tab with Ping me or Ping everyone.
+
+    Privacy: cards are sent only to you, never to a channel. Only people on the pilot allowlist can use the app. This is a pilot demo: card content comes from seeded demo meetings, not real transcripts, and nothing is written back to your calendar.
+
+    Commands: /headsup demo, /headsup ping, /headsup check, /headsup next.
 features:
   app_home:
-    home_tab_enabled: false
+    home_tab_enabled: true
     messages_tab_enabled: true
     messages_tab_read_only_enabled: true
   bot_user:
@@ -15,7 +29,7 @@ features:
   slash_commands:
     - command: /headsup
       description: Heads-Up demo controls
-      usage_hint: "demo [persona] | check [persona] | next"
+      usage_hint: "demo [persona] | ping | check [persona] | next"
       should_escape: false
 oauth_config:
   scopes:
@@ -26,6 +40,9 @@ oauth_config:
       - users:read
       - users:read.email
 settings:
+  event_subscriptions:
+    bot_events:
+      - app_home_opened
   interactivity:
     is_enabled: true
   org_deploy_enabled: false

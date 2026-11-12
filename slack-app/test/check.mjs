@@ -7,6 +7,7 @@ import { createHeadsUp } from '../src/headsup.js'
 import { createScheduler, redactUrls } from '../src/scheduler.js'
 import { parseCalendarFeeds } from '../src/config.js'
 import { createAccessControl } from '../src/access.js'
+import { buildHome } from '../src/home.js'
 
 const calls = []
 const client = {
@@ -162,6 +163,17 @@ assert.deepEqual(ping.sent.map((r) => r.persona), ['gabriel', 'aryan', 'rishabh'
 assert.deepEqual(ping.skipped.map((r) => [r.persona, r.reason]), [['alicia', 'Not authorized for this app']])
 assert.deepEqual(calls.filter(([k]) => k === 'post').map(([, m]) => m.channel), ['D_UGABRIEL01', 'D_UARYAN001', 'D_U12345678'], 'one DM per team member')
 console.log('ok  ping everyone')
+
+// 6d. App Home: allowlisted users see their setup and both ping buttons; others see only the notice
+const home = buildHome({ allowed: true, personaName: 'Alicia', calendar: true, next: { title: 'Weekly Product Sync', fireAt: 'Fri 1:30 PM' }, demoName: 'Gabriel', mappedNames: ['Gabriel', 'Alicia'], reminderMinutes: 30, status: 'Sent.' })
+const homeText = JSON.stringify(home)
+assert.equal(home.type, 'home')
+assert.deepEqual(home.blocks.find((b) => b.type === 'actions').elements.map((e) => e.action_id), ['ping_me', 'ping_everyone'])
+for (const t of ['Alicia', 'Connected (Outlook)', 'Fri 1:30 PM', 'Sent.', '/headsup ping']) assert.ok(homeText.includes(t), t)
+const denied = buildHome({ allowed: false, demoName: 'Gabriel', mappedNames: [], reminderMinutes: 30 })
+assert.ok(!JSON.stringify(denied).includes('ping_me') && JSON.stringify(denied).includes('not enabled'))
+assert.ok(home.blocks.length <= 100)
+console.log('ok  app home')
 
 // 7. Regression: an action on a card this process didn't post must not unmute the series
 const hu3 = createHeadsUp({ client, config, access, log })

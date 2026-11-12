@@ -5,6 +5,7 @@ import { loadConfig, requireTokens } from './config.js'
 import { createAccessControl } from './access.js'
 import { createHeadsUp, pilotLog } from './headsup.js'
 import { createScheduler } from './scheduler.js'
+import { buildHome } from './home.js'
 
 const { App, LogLevel } = bolt
 const config = loadConfig()
@@ -92,10 +93,10 @@ app.action('ping_me', async ({ ack, body, respond }) => {
   pilotLog('manual_trigger', persona, `ping me by ${body.user.id}`)
   try {
     const r = await headsUp.post({ persona, sid: 'wps', slackUser: body.user.id, startMs: demoStartMs(), joinUrl: config.demoJoinUrl })
-    await respond({ response_type: 'ephemeral', replace_original: false, text: r.posted ? `Sent ${nameOf(persona)}'s Heads-Up to your DMs with Ansel.` : `No card for ${nameOf(persona)}: *${r.result.reason}*.` })
+    await reply(body, respond, r.posted ? `Sent ${nameOf(persona)}'s Heads-Up to your DMs with Ansel.` : `No card for ${nameOf(persona)}: *${r.result.reason}*.`)
   } catch (e) {
     console.error('ping me failed:', e.data?.error ?? e.message)
-    await respond({ response_type: 'ephemeral', replace_original: false, text: `Something went wrong: ${e.data?.error ?? e.message}` })
+    await reply(body, respond, `Something went wrong: ${e.data?.error ?? e.message}`)
   }
 })
 
@@ -103,25 +104,71 @@ let pinging = false
 app.action('ping_everyone', async ({ ack, body, respond }) => {
   await ack()
   if (!await allowAction(body, respond)) return
-  if (pinging) return respond({ response_type: 'ephemeral', replace_original: false, text: 'A ping is already being sent.' })
+  if (pinging) return reply(body, respond, 'A ping is already being sent.')
   pinging = true
   try {
-    await respond({ response_type: 'ephemeral', replace_original: true, text: 'Sending…' })
+    if (fromHome(body)) await publishHome(body.user.id, 'Sending…')
+    else await respond({ response_type: 'ephemeral', replace_original: true, text: 'Sending…' })
     pilotLog('ping_everyone', '-', `by ${body.user.id}`)
     const { sent, skipped, failed } = await headsUp.pingAll(config.users, { startMs: demoStartMs(), joinUrl: config.demoJoinUrl })
     const line = (label, rows, why) => (rows.length ? `*${label}:* ${rows.map((r) => (why ? `${nameOf(r.persona)} (${r.reason})` : nameOf(r.persona))).join(', ')}` : null)
-    await respond({ response_type: 'ephemeral', replace_original: true, text: [
+    const summary = [
       '*Ping sent.*',
       line('Card sent to', sent, false) ?? '*Card sent to:* nobody',
       line('No card, nothing sent (by design)', skipped, true),
       line('Failed', failed, true),
-    ].filter(Boolean).join('\n') })
+    ].filter(Boolean).join('\n')
+    if (fromHome(body)) await publishHome(body.user.id, summary)
+    else await respond({ response_type: 'ephemeral', replace_original: true, text: summary })
   } finally {
     pinging = false
   }
 })
 
 const meta = (body) => JSON.parse(body.actions[0].value)
+
+// Buttons on the Home tab have no response_url, so their feedback is shown on the Home tab itself.
+const fromHome = (body) => body.view?.type === 'home'
+async function reply(body, respond, text) {
+  if (fromHome(body)) return publishHome(body.user.id, text)
+  return respond({ response_type: 'ephemeral', replace_original: false, text })
+}
+
+/** Personas in SLACK_USERS that belong to this Slack user. */
+async function personasFor(userId) {
+  const mine = []
+  for (const [p, ref] of Object.entries(config.users)) {
+    if (await headsUp.resolveUser(ref).catch(() => null) === userId) mine.push(p)
+  }
+  return mine
+}
+
+const withTimeout = (promise, ms) => Promise.race([promise, new Promise((_, no) => setTimeout(() => no(new Error('timeout')), ms))])
+
+async function publishHome(userId, status) {
+  try {
+    const allowed = await access.isAllowed(userId)
+    const view = { allowed, demoName: nameOf(config.demoPersona), mappedNames: Object.keys(config.users).map(nameOf), reminderMinutes: config.reminderMinutes, status }
+    if (allowed) {
+      const [persona] = await personasFor(userId)
+      view.personaName = persona && nameOf(persona)
+      view.calendar = !!persona && scheduler.calendarPersonas().includes(persona)
+      if (view.calendar) {
+        try {
+          const o = (await withTimeout(scheduler.upcoming(24 * 7, [persona]), 5000)).find((x) => x.recurring && x.sid && x.fireAtMs > Date.now())
+          if (o) view.next = { title: o.title, fireAt: fmt(o.fireAtMs) }
+        } catch { view.calendarError = true }
+      }
+    }
+    await app.client.views.publish({ user_id: userId, view: buildHome(view) })
+  } catch (e) {
+    console.error('home publish failed:', e.data?.error ?? e.message)
+  }
+}
+
+app.event('app_home_opened', async ({ event }) => {
+  if (event.tab === 'home') await publishHome(event.user)
+})
 
 async function allowAction(body, respond) {
   if (await access.isAllowed(body.user?.id)) return true
