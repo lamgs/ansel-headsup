@@ -6,6 +6,7 @@ import { TRANSCRIPTS } from '../src/data/transcripts.js'
 import { SUMMARIES } from '../src/data/summaries.js'
 import { buildHeadsUp } from '../src/logic/buildHeadsUp.js'
 import { buildWorld } from '../src/logic/world.js'
+import { buildCardData } from '../src/logic/buildCardData.js'
 
 const world = buildWorld()
 const now = { date: '2026-11-13', sec: 13.5 * 3600 }
@@ -111,4 +112,25 @@ for (const [id, segs] of Object.entries(TRANSCRIPTS)) {
     assert.ok(segs[0].sec <= 60 && 48 * 60 - segs.at(-1).sec <= 60)
   }
   console.log(`ok  transcript ${id}: ${segs.length} segments`)
+}
+
+// Heads-Up card: acting on your own item (Mark done, On track, New date, Edit wording/due) never
+// removes a row, including items carried over from earlier meetings, and Mark done shows as done.
+{
+  const wps = SEED.series.find((s) => s.id === 'wps')
+  const rows = (st, pid) => { const w = buildWorld(st); return buildCardData(w.person(pid), wps, { ...w, isMuted: () => false }, { maxRows: Infinity }).data.actionItems.items }
+  for (const pid of wps.invitees) {
+    const base = rows({}, pid)
+    const order = base.map((i) => i.id).join()
+    for (const it of base.filter((i) => i.owner.id === pid)) {
+      for (const kind of ['done', 'on_track', 'new_date']) {
+        const after = rows({ itemUpdates: { [it.id]: { kind, due: '2026-11-20' } } }, pid)
+        assert.equal(after.map((i) => i.id).join(), order, `${pid}: ${kind} on ${it.id} changed the card's rows`)
+        if (kind === 'done') assert.ok(after.find((i) => i.id === it.id).done, `${pid}: ${it.id} not shown as done`)
+      }
+      const edited = rows({ itemEdits: { [it.id]: { text: 'Reworded', due: '2026-11-20' } } }, pid)
+      assert.equal(edited.map((i) => i.id).join(), order, `${pid}: editing ${it.id} changed the card's rows`)
+    }
+  }
+  console.log('ok  heads-up card keeps every row when you act on your items')
 }
