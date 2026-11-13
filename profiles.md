@@ -6,7 +6,7 @@ Who plays which role in the Heads-Up demo. The team's real names are used, but *
 
 ## How a card is built (so edits stay realistic)
 
-**Slack card (current, follows the design in [`card/`](card/README.md)):** everyone on the Weekly Product Sync invite gets a card listing **every action item from the last meeting (Nov 6), each with its owner**. Your own items come first, marked YOURS, with Mark done; everyone else's show the owner's name. No card for external guests (Leo); holdout users and people without Slack would get none either, but no one in the cast is either. So the personal part of each card is the YOURS row below, and every card also shows the other items.
+**Slack card (current, condensed):** everyone on the Weekly Product Sync invite gets a card. **Each team member owns two items** from the last meeting (Nov 6), listed on the card with their timestamps, e.g. "You own 2 items · 8 more from the team last week · • Forecast update (14:32) · • Dashboard link (45:50)". Only the timestamp is a link (to that moment in the transcript); "8 more from the team" links to the meeting's Action items tab in Ansel. A **✓ Mark done** dropdown marks either item done. No card for external guests (Leo).
 
 **Prototype card (the React app's own Heads-Up screen):** unchanged, built by `src/logic/buildHeadsUp.js` with the rules below.
 
@@ -22,11 +22,11 @@ So with the items below, everyone shares *Still open: Launch date: Mar 3 or Mar 
 
 | Persona ID | Name | Pronouns | Demo role | Card: You own | Card: Still open | Card: Decided |
 |---|---|---|---|---|---|---|
-| `gabriel` | Gabriel | he/him | Data Analyst | Forecast update, due Thu *(14:32)* | Launch date: Mar 3 or Mar 10? (stakeholder) | Pricing page ships with v2 `Edited` |
+| `gabriel` | Gabriel | he/him | Data Analyst | Forecast update, due Thu *(14:32)*; also owns Dashboard link, due Fri *(45:50)* | Launch date: Mar 3 or Mar 10? (stakeholder) | Pricing page ships with v2 `Edited` |
 | `alicia` | Alicia | she/her | Product Manager, series organizer | Pricing page copy, due Wed *(41:52)*; also owns Launch checklist *(47:20)* | Launch date (latest meeting) | Pricing page ships with v2 `Edited` |
-| `rishabh` | Rishabh | he/him | Engineering Lead | QA estimate, due Thu *(28:30)* | Launch date (stakeholder) | Pricing page ships with v2 `Edited` |
-| `varun` | Varun | he/him | Finance Partner | Pricing model update, due Wed *(34:30)* | Launch date (latest meeting) | Pricing page ships with v2 `Edited` |
-| `aryan` | Aryan | he/him | QA Engineer | Payment flow test plan, due Thu *(28:50)* | Launch date (latest meeting) | Pricing page ships with v2 `Edited` |
+| `rishabh` | Rishabh | he/him | Engineering Lead | QA estimate, due Thu *(28:30)*; also owns On-call rotation, due Fri *(5:25)* | Launch date (stakeholder) | Pricing page ships with v2 `Edited` |
+| `varun` | Varun | he/him | Finance Partner | Pricing model update, due Wed *(34:30)*; also owns Budget view, due Fri *(44:30)* | Launch date (latest meeting) | Pricing page ships with v2 `Edited` |
+| `aryan` | Aryan | he/him | QA Engineer | Payment flow test plan, due Thu *(28:50)*; also owns Staging test accounts, due Fri *(29:25)* | Launch date (latest meeting) | Pricing page ships with v2 `Edited` |
 | `riley` | Riley Park *(synthetic)* | n/a | Support Lead, new to the series | Prototype: no card (*No meetings attended*). Slack: a card with everyone's items and no YOURS row | | |
 | `leo` | Leo Grant *(synthetic)* | n/a | Agency partner | No card: *External guest* | | |
 
@@ -39,13 +39,14 @@ Times in *(mm:ss)* are where the item is said in the Nov 6 transcript; the card'
 - **Aryan** is no longer "new to the series": he attended the Nov 6 meeting.
 - The **holdout** and **new to the series** demo cases move to two synthetic people, **Sam Ortiz** and **Riley Park**, so the Pilot Log (holdout) and Governance (add a new member, share notes) screens keep working without using a teammate.
 - "Ping everyone" sends a card to all five team members.
+- **Everyone owns two items:** Gabriel (+ Dashboard link, 45:50), Rishabh (+ On-call rotation, 5:25; his line now ends "I'll post the new schedule."), Varun (+ Budget view, 44:30) and Aryan (+ Staging test accounts, new line at 29:25: *"I'll set up the staging test accounts for the payment run."*); Alicia already had two. The new items are due Fri Nov 13, so each person's first item still leads the prototype's own Heads-Up screen.
 - **Alex Kim and Sam Ortiz removed** from the demo. Alex's transcript lines go to whoever fits the moment (Alicia presents the pricing page mock and copy, Varun asks the pricing-tier questions, Aryan has the screen and audio lines), Alex's action item "Send final pricing page copy to Rishabh" moves to Alicia, and Alicia organizes Design Review. No one is in the holdout or without Slack now; those rules are still tested with stand-in users.
 
 ## Details
 
 ### Gabriel (`gabriel`): main demo card, unchanged
 - **Attends:** all three recorded Weekly Product Syncs (Oct 23, Oct 30, Nov 6); invited to Design Review.
-- **Owns:** "Update Q1 forecast with new conversion numbers" (Forecast update), due Thu Nov 12, flagged "may already be done".
+- **Owns:** "Update Q1 forecast with new conversion numbers" (Forecast update), due Thu Nov 12, flagged "may already be done"; and "Post the dashboard link in the channel" (Dashboard link, 45:50), due Fri Nov 13.
 - **Stakeholder on:** "Launch date: Mar 3 or Mar 10?"
 - Default persona for `/headsup demo` and **Ping me**.
 
@@ -57,19 +58,19 @@ Times in *(mm:ss)* are where the item is said in the Nov 6 transcript; the card'
 
 ### Rishabh (`rishabh`): engineering lead
 - **Attends:** all three recorded meetings.
-- **Owns:** "Estimate QA time for payment flow", due Thu Nov 12.
+- **Owns:** "Estimate QA time for payment flow", due Thu Nov 12; and "Post the new on-call rotation schedule" (5:25), due Fri Nov 13.
 - **Stakeholder on:** the launch-date question.
 - **Change:** no longer in the holdout group.
 
 ### Varun (`varun`): finance
 - **Attends:** Oct 23 and Nov 6 (not Oct 30).
 - **In the story:** raised "Do we need legal review for new pricing?", answered at the Nov 6 meeting (33:10).
-- **Owns:** "Update the pricing model with the final tiers", due Wed Nov 11.
+- **Owns:** "Update the pricing model with the final tiers", due Wed Nov 11; and "Share the updated budget view" (44:30), due Fri Nov 13.
 - **New transcript line (34:30):** *"Now that legal's clear, I'll update the pricing model with the final tiers by Wednesday."*
 
 ### Aryan (`aryan`): QA engineer
 - **Attends (changed):** Nov 6 only, his first meeting in the series.
-- **Owns:** "Write the payment flow test plan", due Thu Nov 12.
+- **Owns:** "Write the payment flow test plan", due Thu Nov 12; and "Set up the staging test accounts for the payment run" (29:25), due Fri Nov 13.
 - **New transcript line (28:50):** *"I'll write up the payment flow test plan so the estimate has something to work from."* This fits his Slack message in the prototype, "Starting on the payment flow test plan."
 
 ### Riley Park (`riley`, synthetic): new to the series

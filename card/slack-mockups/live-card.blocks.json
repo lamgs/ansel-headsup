@@ -5,22 +5,35 @@
       "type": "section",
       "text": {
         "type": "mrkdwn",
-        "text": "*30 min · Weekly Product Sync*\nYou own *Forecast update* (<https://lamgs.github.io/ansel-headsup/#t/a2|14:32>) · 5 more items from last week"
+        "text": "*30 min · Weekly Product Sync*\nYou own 2 items · <https://lamgs.github.io/ansel-headsup/#ansel/wps-1106/actions/|8 more from the team> last week\n• *Forecast update* (<https://lamgs.github.io/ansel-headsup/#t/a2|14:32>)\n• *Dashboard link* (<https://lamgs.github.io/ansel-headsup/#t/a8|45:50>)"
       }
     },
     {
       "type": "actions",
       "elements": [
         {
-          "type": "button",
-          "action_id": "hu_done:a2",
-          "text": {
+          "type": "static_select",
+          "action_id": "hu_pick",
+          "placeholder": {
             "type": "plain_text",
-            "text": "✓",
-            "emoji": true
+            "text": "✓ Mark done"
           },
-          "value": "{\"p\":\"gabriel\",\"s\":\"wps\",\"st\":1794578400000,\"j\":\"https://zoom.us/j/123\"}",
-          "accessibility_label": "Mark done: Forecast update"
+          "options": [
+            {
+              "text": {
+                "type": "plain_text",
+                "text": "Forecast update"
+              },
+              "value": "done:a2"
+            },
+            {
+              "text": {
+                "type": "plain_text",
+                "text": "Dashboard link"
+              },
+              "value": "done:a8"
+            }
+          ]
         },
         {
           "type": "button",

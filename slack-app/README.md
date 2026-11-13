@@ -173,15 +173,17 @@ Layout (condensed, chosen in [`../card/slack-mockups/`](../card/slack-mockups/RE
 
 ```
 30 min · Weekly Product Sync
-You own Forecast update (14:32) · 5 more items from last week
-[✓] [Join Zoom] [Open in Ansel] [Mute series] [Not useful]
+You own 2 items · 8 more from the team last week
+• Forecast update (14:32)
+• Dashboard link (45:50)
+[✓ Mark done ▾] [Join Zoom] [Open in Ansel] [Mute series] [Not useful]
 ```
 
-Only the timestamp is a link: it opens that moment in last meeting's transcript (the prototype's short `#t/<itemId>` link). If you own several items, the line reads "You own 3 items · …" and each item gets a checkbox (up to 3, then "+N more of yours in Ansel") with the timestamp link as its note; Slack caps checkbox labels and notes at 75 characters, link address included. Everything else (other people's items, Not right) is in Ansel.
+Only the timestamps are links (each opens that moment in last meeting's transcript, via the prototype's short `#t/<itemId>` link), and "8 more from the team" links to the meeting's Action items tab. With exactly one item of yours, the line reads "You own **Forecast update** (14:32) · 5 more items from last week" and the dropdown is a ✓ button. Up to 3 of your items are listed, then "+N more of yours in Ansel". Everything else (other people's items, Not right) is in Ansel.
 
 | Control | Behavior | Event |
 |---|---|---|
-| ✓ (one item of yours) / checkboxes (several) | Marks your item done (struck through, ✓ turns green); tap or untick to undo | `mark_done` ★ / `mark_done_undone` |
+| ✓ Mark done dropdown (several items) / ✓ button (one item) | Marks the chosen item done (struck through, _Done_); pick "Undo: …" or tap the green ✓ again to undo | `mark_done` ★ / `mark_done_undone` |
 | Join Zoom / Join now | Opens the meeting link; the green button; removed after the meeting ends | `join_tap` (with `joinedPrepared`: true if something was marked done first) |
 | Open in Ansel | Opens last meeting's summary in the hosted prototype (default), or replies privately with the summary if `PROTOTYPE_URL=off` | `open_last_meeting` |
 | Mute series / Undo | Collapses the card to one line (Join stays) and stops future cards for the series | `mute_series` / `mute_undone` |

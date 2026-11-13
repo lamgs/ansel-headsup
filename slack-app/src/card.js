@@ -3,9 +3,9 @@
 //   *30 min · Weekly Product Sync*
 //   You own Forecast update (14:32) · 5 more items from last week     (one item of yours; 14:32 is the link)
 //   [✓] [Join Zoom] [Open in Ansel] [Mute series] [Not useful]
-// Several items of yours: "You own 3 items · …" and a checkbox per item (up to 3; ticked = done) with the
-// timestamp link as its note. Slack caps checkbox labels and notes at 75 characters, link address included,
-// so links use the prototype's short #t/<itemId> form.
+// Several items of yours: "You own 2 items · 8 more from the team last week", then one line per item
+// ("• Forecast update (14:32)"), and a "✓ Mark done" dropdown in place of the ✓ button. Timestamps use the
+// prototype's short #t/<itemId> link; "8 more…" links to the meeting's Action items tab.
 
 export const NOT_USEFUL_REASONS = [['already_knew', 'Already knew this'], ['wrong_meeting', 'Wrong meeting'], ['bad_timing', 'Bad timing']]
 const SOON_MS = 5 * 60000
@@ -33,8 +33,8 @@ const btn = (action_id, text, value, extra = {}) => ({ type: 'button', action_id
 const md = (text) => ({ type: 'mrkdwn', text })
 const ctxBlock = (text) => ({ type: 'context', elements: [md(text)] })
 
-export const MAX_CHECKBOXES = 3
-export const OPTION_LIMIT = 75 // Slack's limit for a checkbox label or note
+export const MAX_LISTED = 3 // items of yours listed on the card; the rest are "+N more of yours in Ansel"
+export const OPTION_LIMIT = 75 // Slack's limit for a menu option's text
 
 /** Short transcript link (#t/<itemId>); the prototype opens that item's moment in its meeting. */
 export const shortTranscriptLink = (prototypeUrl, itemId) => (prototypeUrl ? `${prototypeUrl.replace(/#.*$/, '')}#t/${itemId}` : null)
@@ -68,40 +68,27 @@ export function buildCard(entry, { nowMs = Date.now(), prototypeUrl = '' } = {})
   const othersCount = items.length - mine.length + (data.actionItems.moreCount || 0)
   const isDone = (it) => ui.done[it.id] ?? !!it.done
   const plural = (n, word) => `${n} ${word}${n === 1 ? '' : 's'}`
-  const fit = (text) => (text.length <= OPTION_LIMIT ? text : `${text.slice(0, OPTION_LIMIT - 1)}…`)
-
   const stampLink = (it) => {
     const url = shortTranscriptLink(prototypeUrl, it.id)
     return url ? `<${url}|${fmtStamp(it.seconds)}>` : fmtStamp(it.seconds)
   }
+  // "5 more items" links to the meeting's Action items tab in Ansel, where those items are listed.
+  const teamUrl = deepLink(prototypeUrl, { instanceId: data.lastMeeting.meetingId, tab: 'actions' })
+  const team = (text) => (teamUrl ? `<${teamUrl}|${text}>` : text)
+  const named = (it) => `${isDone(it) ? `~${it.text}~` : `*${it.text}*`} (${stampLink(it)})${isDone(it) ? ' · _Done_' : ''}`
 
   let line
-  if (mine.length === 0) line = `${plural(othersCount, 'action item')} from last week, none assigned to you`
-  else if (mine.length === 1) {
-    const it = mine[0]
-    line = `You own ${isDone(it) ? `~${it.text}~` : `*${it.text}*`} (${stampLink(it)})${isDone(it) ? ' · _Done_' : ''}${othersCount ? ` · ${othersCount} more item${othersCount === 1 ? '' : 's'} from last week` : ''}`
-  } else line = `You own ${mine.length} items${othersCount ? ` · ${othersCount} more from the team last week` : ''}`
+  if (mine.length === 0) line = `${team(plural(othersCount, 'action item'))} from last week, none assigned to you`
+  else if (mine.length === 1) line = `You own ${named(mine[0])}${othersCount ? ` · ${team(`${othersCount} more item${othersCount === 1 ? '' : 's'}`)} from last week` : ''}`
+  else {
+    const shown = mine.slice(0, MAX_LISTED)
+    line = [`You own ${mine.length} items${othersCount ? ` · ${team(`${othersCount} more from the team`)} last week` : ''}`,
+      ...shown.map((it) => `• ${named(it)}`),
+      ...(mine.length > shown.length ? [`• ${team(`+${mine.length - shown.length} more of yours in Ansel`)}`] : [])].join('\n')
+  }
   if (state === 'ended') line += '\n_Meeting ended · new summary in about 6 min_'
 
   const blocks = [{ type: 'section', text: md(`*${hero} · ${m.title}*\n${line}`) }]
-
-  if (mine.length > 1) {
-    const shown = mine.slice(0, MAX_CHECKBOXES)
-    const option = (it) => {
-      const name = it.text.slice(0, OPTION_LIMIT - 4)
-      const url = shortTranscriptLink(prototypeUrl, it.id)
-      const stamp = fmtStamp(it.seconds)
-      const note = url && `<${url}|${stamp} ↗>`.length <= OPTION_LIMIT ? `<${url}|${stamp} ↗>` : stamp
-      return { text: md(isDone(it) ? `~${name}~` : `*${name}*`), description: md(fit(note)), value: it.id }
-    }
-    const checked = shown.filter(isDone).map(option)
-    blocks.push({ type: 'actions', elements: [{ type: 'checkboxes', action_id: 'hu_check', options: shown.map(option), ...(checked.length ? { initial_options: checked } : {}) }] })
-    if (mine.length > shown.length) {
-      const url = deepLink(prototypeUrl, { instanceId: data.lastMeeting.meetingId, tab: 'summary' })
-      const more = `+${mine.length - shown.length} more of yours in Ansel`
-      blocks.push(ctxBlock(url ? `<${url}|${more}>` : more))
-    }
-  }
 
   if (ui.notUseful) {
     blocks.push(ui.notUseful.reason
@@ -116,6 +103,11 @@ export function buildCard(entry, { nowMs = Date.now(), prototypeUrl = '' } = {})
     row.push(isDone(it)
       ? btn(`hu_done_undo:${it.id}`, '✓', meta, { style: 'primary', accessibility_label: `Done: ${it.text}. Tap to undo`.slice(0, 75) })
       : btn(`hu_done:${it.id}`, '✓', meta, { accessibility_label: `Mark done: ${it.text}`.slice(0, 75) }))
+  } else if (mine.length > 1) {
+    // Several items: a "✓ Mark done" dropdown of the listed items (done ones offer Undo).
+    const opt = (text, value) => ({ text: { type: 'plain_text', text: text.slice(0, OPTION_LIMIT) }, value })
+    row.push({ type: 'static_select', action_id: 'hu_pick', placeholder: { type: 'plain_text', text: '✓ Mark done' },
+      options: mine.slice(0, MAX_LISTED).map((it) => (isDone(it) ? opt(`Undo: ${it.text}`, `undo:${it.id}`) : opt(it.text, `done:${it.id}`))) })
   }
   if (join) row.push(join)
   const summaryUrl = deepLink(prototypeUrl, { instanceId: data.lastMeeting.meetingId, tab: 'summary' })

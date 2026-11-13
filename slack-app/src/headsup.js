@@ -4,7 +4,7 @@ import { TRANSCRIPTS } from '../../src/data/transcripts.js'
 import { shortDate } from '../../src/logic/buildHeadsUp.js'
 import { buildCardData } from '../../src/logic/buildCardData.js'
 import { buildWorld } from '../../src/logic/world.js'
-import { buildCard, cardState, MAX_CHECKBOXES } from './card.js'
+import { buildCard, cardState } from './card.js'
 
 export function pilotLog(event, persona, detail = '') {
   const t = new Date().toLocaleTimeString('en-US', { hour12: false })
@@ -116,7 +116,7 @@ export function createHeadsUp({ client, config, access, log = pilotLog }) {
   const itemById = (entry, id) => entry.data.actionItems.items.find((i) => i.id === id)
 
   /**
-   * Handle a card control (action_id "hu_<act>[:<item>][:<reason>]", or "hu_check" for the checkboxes).
+   * Handle a card control (action_id "hu_<act>[:<item>][:<reason>]", or "hu_pick" for the Mark done dropdown).
    * Updates the card, logs the contract event and returns a private reply to show the user, if any.
    */
   async function handleAction(body, action) {
@@ -135,17 +135,12 @@ export function createHeadsUp({ client, config, access, log = pilotLog }) {
         return action.url ? null : summaryText(entry.data.lastMeeting.meetingId)
       case 'done': ui.done[a1] = true; ui.tapped = true; ev('mark_done', `★ ${it?.text}`); break
       case 'done_undo': ui.done[a1] = false; ev('mark_done_undone', it?.text); break
-      case 'check': {
-        // Checkboxes report every ticked box; compare with the card to find what changed.
-        const ticked = new Set((action.selected_options ?? []).map((o) => o.value))
-        const mineShown = entry.data.actionItems.items.filter((i) => i.owner.id === entry.data.viewer.id).slice(0, MAX_CHECKBOXES)
-        for (const item of mineShown) {
-          const was = ui.done[item.id] ?? !!item.done
-          const now = ticked.has(item.id)
-          if (was === now) continue
-          ui.done[item.id] = now
-          if (now) { ui.tapped = true; ev('mark_done', `★ ${item.text}`) } else ev('mark_done_undone', item.text)
-        }
+      case 'pick': {
+        // "✓ Mark done" dropdown: value is "done:<itemId>" or "undo:<itemId>"
+        const [what, id] = (action.selected_option?.value ?? '').split(':')
+        const item = itemById(entry, id)
+        if (!item || item.owner.id !== entry.data.viewer.id) return null
+        if (what === 'done') { ui.done[id] = true; ui.tapped = true; ev('mark_done', `★ ${item.text}`) } else { ui.done[id] = false; ev('mark_done_undone', item.text) }
         break
       }
       case 'mute': ui.muted = true; muted[`${persona}:${entry.sid}`] = true; ev('mute_series', title); break
