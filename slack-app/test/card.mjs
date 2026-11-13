@@ -1,6 +1,7 @@
 // Offline checks for the Slack Heads-Up card (condensed layout, card/slack-mockups):
-//   *30 min · Weekly Product Sync*
-//   *You own 3 items* · <8 more from the team> last week      ("8 more…" links to the Action items tab)
+//   ⏰ 30 min · Weekly Product Sync                           (header block)
+//   [faces] Starts 2:00 PM · Zoom · 5 attendees              (context block)
+//   📌 *You own 3 items* · <8 more from the team> last week      ("8 more…" links to the Action items tab)
 //   • Forecast update (<Nov 6 · 14:32>)                     (only the date and timestamp are a link)
 //   • Pricing FAQ (<Oct 30 · 24:10>)                        (still open from an earlier meeting)
 //   [Join Zoom] [Open in Ansel] [Mute Series]
@@ -8,7 +9,7 @@
 // With one item of yours: "*You own 1 item* · 5 more from the team last week", then the item on its own line. Marking done is in Ansel.
 // Fake Slack client: no tokens or network. Run: node test/card.mjs
 import assert from 'node:assert/strict'
-import { buildCard, cardState, fmtStamp, MAX_LISTED } from '../src/card.js'
+import { avatarUrl, buildCard, cardState, fmtStamp, MAX_LISTED } from '../src/card.js'
 import { createHeadsUp } from '../src/headsup.js'
 import { createAccessControl } from '../src/access.js'
 import { SEED } from '../../src/data/seed.js'
@@ -37,6 +38,8 @@ const ACTIONS = `${P}#ansel/wps-1106/actions/?as=gabriel&start=${S}`
 const elements = (m) => m.blocks.flatMap((b) => (b.type === 'actions' ? b.elements : b.accessory ? [b.accessory] : []))
 const labels = (m) => m.blocks.filter((b) => b.type === 'actions').map((b) => b.elements.map((e) => e.text?.text ?? e.type).join(' | '))
 const button = (m, id) => elements(m).find((e) => e.action_id === id)
+const body = (m) => m.blocks.find((b) => b.type === 'section').text.text
+const head = (m) => m.blocks.find((b) => b.type === 'header')?.text.text
 const lastUpdate = () => calls.filter(([k]) => k === 'update').at(-1)[1]
 const at = (msg) => ({ channel: { id: msg.channel }, message: { ts: msg.ts, blocks: msg.m.blocks } })
 const press = (msg, id, url, h = hu) => h.handleAction({ ...at(msg), actions: [{ value: button(msg.m, 'hu_mute').value }] }, { action_id: id, url })
@@ -49,16 +52,25 @@ for (const p of ['gabriel', 'alicia', 'rishabh', 'varun', 'aryan']) {
   const r = await hu.post({ persona: p, sid: 'wps', slackUser: `${p}@acme.example`, startMs: start })
   assert.equal(r.posted, true, p)
   const c = calls.filter(([k]) => k === 'post').at(-1)[1]
-  texts[p] = c.blocks[0].text.text
+  texts[p] = body(c)
   const own = (date) => `\\n\u2002• [^*]+ \\(<[^|]*#t\\/a\\d+\\?as=${p}&start=\\d+\\|${date} · \\d+:\\d\\d>\\)`
-  const re = `\\n\\*You own ${carried[p] ? 3 : 2} items\\* · <.*\\|8 more from the team> last week${own('Nov 6')}${own('Nov 6')}${carried[p] ? own(carried[p]) : ''}$`
+  const re = `^📌 \\*You own ${carried[p] ? 3 : 2} items\\* · <.*\\|8 more from the team> last week${own('Nov 6')}${own('Nov 6')}${carried[p] ? own(carried[p]) : ''}$`
   assert.match(texts[p], new RegExp(re), p)
 }
-console.log(Object.entries(texts).map(([p, t]) => `${p}: ${t.split('\n').slice(2, carried[p] ? 5 : 4).join(' / ').replace(/<[^|]+\|/g, '<')}`).join('\n'))
+console.log(Object.entries(texts).map(([p, t]) => `${p}: ${t.split('\n').slice(1, carried[p] ? 4 : 3).join(' / ').replace(/<[^|]+\|/g, '<')}`).join('\n'))
 const card = calls.find(([k, m]) => k === 'post' && m.channel === 'D_UGABRIEL01')[1]
-assert.equal(card.blocks.length, 3)
-assert.deepEqual(card.blocks[2], { type: 'context', elements: [{ type: 'mrkdwn', text: 'Open in Ansel to make changes.' }] })
-assert.equal(card.blocks[0].text.text, `*30 min · Weekly Product Sync*\n*You own 3 items* · <${ACTIONS}|8 more from the team> last week\n\u2002• Forecast update (<${P}#t/a2?as=gabriel&start=${S}|Nov 6 · 14:32>)\n\u2002• Dashboard link (<${P}#t/a8?as=gabriel&start=${S}|Nov 6 · 45:50>)\n\u2002• Pricing FAQ (<${P}#t/a15?as=gabriel&start=${S}|Oct 30 · 24:10>)`)
+assert.deepEqual(card.blocks.map((b) => b.type), ['header', 'context', 'section', 'actions', 'context'])
+assert.deepEqual(card.blocks[4], { type: 'context', elements: [{ type: 'mrkdwn', text: 'Open in Ansel to make changes.' }] })
+assert.deepEqual(card.blocks[0], { type: 'header', text: { type: 'plain_text', text: '⏰ 30 min · Weekly Product Sync', emoji: true } })
+// Attendee line: a face per invitee (hosted with the prototype), then time, platform and head count
+const faces = card.blocks[1].elements.filter((e) => e.type === 'image')
+assert.deepEqual(faces.map((e) => e.image_url), ['alicia', 'gabriel', 'rishabh', 'varun', 'aryan'].map((id) => `${P}slack/avatars/${id}.png`))
+assert.deepEqual(faces.map((e) => e.alt_text), ['Alicia', 'Gabriel', 'Rishabh', 'Varun', 'Aryan'].map((n) => SEED.people.find((x) => x.name.startsWith(n)).name))
+assert.match(card.blocks[1].elements.at(-1).text, /^Starts <!date\^\d+\^\{time\}\|.+> · Zoom · 5 attendees$/)
+assert.equal(avatarUrl('https://lamgs.github.io/ansel-headsup', 'varun'), 'https://lamgs.github.io/ansel-headsup/slack/avatars/varun.png')
+assert.equal(avatarUrl('https://x.example/app/index.html#headsup', 'varun'), 'https://x.example/app/slack/avatars/varun.png')
+assert.equal(avatarUrl('', 'varun'), null)
+assert.equal(body(card), `📌 *You own 3 items* · <${ACTIONS}|8 more from the team> last week\n\u2002• Forecast update (<${P}#t/a2?as=gabriel&start=${S}|Nov 6 · 14:32>)\n\u2002• Dashboard link (<${P}#t/a8?as=gabriel&start=${S}|Nov 6 · 45:50>)\n\u2002• Pricing FAQ (<${P}#t/a15?as=gabriel&start=${S}|Oct 30 · 24:10>)`)
 assert.ok(!/Still Open|Decided/.test(JSON.stringify(card)), 'no Still Open / Decided on the Slack card')
 assert.equal(labels(card)[0], 'Join Zoom | Open in Ansel | Mute Series')
 assert.ok(!JSON.stringify(card).includes('Mark done') && !JSON.stringify(card).includes('static_select'))
@@ -73,9 +85,9 @@ let m
 // 3. Buttons: Mute (with Undo), Open in Ansel, Join; no Not Useful
 assert.equal(button(card, 'hu_nu'), undefined, 'no Not Useful on the Slack card')
 await press(msg, 'hu_mute'); m = lastUpdate()
-assert.match(m.blocks[0].text.text, /^\*Muted Weekly Product Sync\*\nYou won't get Heads-Up for this series\. Starts in 30 min$/); assert.equal(labels(m)[0], 'Join Zoom | Undo')
+assert.match(body(m), /^\*Muted Weekly Product Sync\*\nYou won't get Heads-Up for this series\. Starts in 30 min$/); assert.equal(labels(m)[0], 'Join Zoom | Undo')
 assert.equal((await hu.post({ persona: 'gabriel', sid: 'wps', slackUser: 'gabriel@acme.example', startMs: start })).result.reason, 'Series muted')
-await press(msg, 'hu_mute_undo'); assert.equal(lastUpdate().blocks.length, 3)
+await press(msg, 'hu_mute_undo'); assert.equal(lastUpdate().blocks.length, 5)
 // Slack's click payload has no url for link buttons: the app must check the card's own button
 assert.equal(await press(msg, 'hu_open_last'), null, 'a linked Open in Ansel opens the prototype and sends no message')
 const unlinked = JSON.parse(JSON.stringify(msg.m)); delete button(unlinked, 'hu_open_last').url
@@ -91,7 +103,7 @@ console.log('ok  buttons + events')
 let r
 const all4 = hu.evaluate('gabriel', 'wps', { startMs: start }).result.data
 const noneMine = buildCard({ persona: 'gabriel', sid: 'wps', startMs: start, joinUrl: config.demoJoinUrl, data: { ...all4, actionItems: { items: all4.actionItems.items.filter((i) => i.owner.id !== 'gabriel'), moreCount: 0 } }, ui: { muted: false } }, { nowMs: Date.now(), prototypeUrl: P })
-assert.match(noneMine.blocks[0].text.text, /from last week, none assigned to you(\n|$)/)
+assert.match(body(noneMine), /from last week, none assigned to you(\n|$)/)
 assert.equal(labels(noneMine)[0], 'Join Zoom | Open in Ansel | Mute Series')
 assert.equal((await hu.post({ persona: 'gabriel', sid: 'dr', slackUser: 'gabriel@acme.example', startMs: start })).result.reason, 'No record of last meeting')
 const w0 = buildWorld()
@@ -102,7 +114,7 @@ assert.equal(buildCardData({ ...w0.person('gabriel'), slack: false }, SEED.serie
 // Links carry the recipient's persona, so the prototype opens as whoever clicks
 const forAlicia = buildCard({ persona: 'alicia', sid: 'wps', startMs: start, joinUrl: config.demoJoinUrl, data: hu.evaluate('alicia', 'wps', { startMs: start }).result.data, ui: { muted: false } }, { nowMs: Date.now(), prototypeUrl: P })
 assert.equal(button(forAlicia, 'hu_open_last').url, `${P}#headsup?as=alicia&start=${S}`)
-assert.ok(forAlicia.blocks[0].text.text.includes(`${P}#t/a3?as=alicia&start=${S}|`), 'timestamps carry the recipient')
+assert.ok(body(forAlicia).includes(`${P}#t/a3?as=alicia&start=${S}|`), 'timestamps carry the recipient')
 assert.ok(!JSON.stringify(forAlicia.blocks).includes('as=gabriel'))
 console.log('ok  who gets a card')
 
@@ -127,29 +139,31 @@ const base = hu.evaluate('gabriel', 'wps', { startMs: start }).result.data
 const entryWith = (items, moreCount = 0) => ({ persona: 'gabriel', sid: 'wps', startMs: start, joinUrl: config.demoJoinUrl, data: { ...base, stillOpen: [], decided: [], actionItems: { items, moreCount } }, ui: { muted: false } })
 const others = base.actionItems.items.filter((i) => i.owner.id !== 'gabriel') // 3 shown; the other 5 are in moreCount
 let c = buildCard(entryWith([base.actionItems.items[0], ...others], 2), { nowMs: Date.now(), prototypeUrl: P })
-assert.equal(c.blocks[0].text.text, `*30 min · Weekly Product Sync*\n*You own 1 item* · <${ACTIONS}|5 more from the team> last week\n • Forecast update (<${P}#t/a2?as=gabriel&start=${S}|Nov 6 · 14:32>)`)
+assert.equal(body(c), `📌 *You own 1 item* · <${ACTIONS}|5 more from the team> last week\n • Forecast update (<${P}#t/a2?as=gabriel&start=${S}|Nov 6 · 14:32>)`)
 assert.equal(labels(c)[0], 'Join Zoom | Open in Ansel | Mute Series')
 c = buildCard(entryWith([{ ...base.actionItems.items[0], done: true }, ...others], 2), { nowMs: Date.now(), prototypeUrl: P })
-assert.match(c.blocks[0].text.text, /\*You own 1 item\* · <.*\n • ~Forecast update~ \(<.*\|Nov 6 · 14:32>\) · _Done_$/)
-assert.ok(!c.blocks[0].text.text.includes('Still Open'), 'no Still open / Decided headings when there is nothing to show')
+assert.match(body(c), /\*You own 1 item\* · <.*\n • ~Forecast update~ \(<.*\|Nov 6 · 14:32>\) · _Done_$/)
+assert.ok(!body(c).includes('Still Open'), 'no Still open / Decided headings when there is nothing to show')
 console.log('ok  one item')
 
 // 6. More than MAX_LISTED items of yours: the first three, then "+N more of yours in Ansel"; the dropdown lists the three
 const owned = (id, text, seconds) => ({ id, text, owner: { id: 'gabriel', name: 'Gabriel' }, seconds, t: '' })
 c = buildCard(entryWith([owned('a2', 'Forecast update', 872), owned('x1', 'Interview notes', 1335), owned('x2', 'Dashboard link', 2750), owned('x3', 'Pipeline review', 100), ...others], 1), { nowMs: Date.now(), prototypeUrl: P })
-assert.match(c.blocks[0].text.text, /\*You own 4 items\* · <.*\|4 more from the team> last week\n(\u2002• .*\n){3}\u2002• <.*\|\+1 more of yours in Ansel>$/)
-assert.equal(c.blocks[0].text.text.split('\n').filter((l) => l.startsWith('\u2002• ') && !l.includes('more of yours')).length, MAX_LISTED)
+assert.match(body(c), /\*You own 4 items\* · <.*\|4 more from the team> last week\n(\u2002• .*\n){3}\u2002• <.*\|\+1 more of yours in Ansel>$/)
+assert.equal(body(c).split('\n').filter((l) => l.startsWith('\u2002• ') && !l.includes('more of yours')).length, MAX_LISTED)
 console.log('ok  more than three items')
 
 // 7. Countdown states and links off
 const now = Date.now()
 assert.deepEqual(['posted', 'starting-soon', 'started', 'ended'], [now + 20 * 60000, now + 4 * 60000, now - 60000, now - 51 * 60000].map((s) => cardState(now, s, 50)))
 const at2 = (startMs) => ({ persona: 'gabriel', sid: 'wps', startMs, joinUrl: config.demoJoinUrl, data: hu.evaluate('gabriel', 'wps', { startMs }).result.data, ui: { muted: false } })
-c = buildCard(at2(now + 4 * 60000), { nowMs: now, prototypeUrl: P }); assert.match(c.blocks[0].text.text, /^\*4 min · Weekly Product Sync\*/)
-c = buildCard(at2(now - 60000), { nowMs: now, prototypeUrl: P }); assert.match(c.blocks[0].text.text, /^\*Live · Weekly Product Sync\*/); assert.equal(button(c, 'hu_join').text.text, 'Join now')
-c = buildCard(at2(now - 51 * 60000), { nowMs: now, prototypeUrl: P }); assert.match(c.blocks[0].text.text, /^\*Ended · Weekly Product Sync\*[\s\S]*_Meeting ended · new summary in about 6 min_$/); assert.equal(button(c, 'hu_join'), undefined)
+c = buildCard(at2(now + 4 * 60000), { nowMs: now, prototypeUrl: P }); assert.equal(head(c), '⏰ 4 min · Weekly Product Sync')
+c = buildCard(at2(now - 60000), { nowMs: now, prototypeUrl: P }); assert.equal(head(c), '🔴 Live · Weekly Product Sync'); assert.match(c.blocks[1].elements.at(-1).text, /^Started /); assert.equal(button(c, 'hu_join').text.text, 'Join now')
+c = buildCard(at2(now - 51 * 60000), { nowMs: now, prototypeUrl: P }); assert.equal(head(c), 'Ended · Weekly Product Sync'); assert.match(body(c), /_Meeting ended · new summary in about 6 min_$/); assert.equal(button(c, 'hu_join'), undefined)
 c = buildCard(at2(now + 20 * 60000), { nowMs: now, prototypeUrl: '' })
-assert.equal(c.blocks[0].text.text, '*20 min · Weekly Product Sync*\n*You own 3 items* · 8 more from the team last week\n\u2002• Forecast update (Nov 6 · 14:32)\n\u2002• Dashboard link (Nov 6 · 45:50)\n\u2002• Pricing FAQ (Oct 30 · 24:10)', 'plain text when links are off')
+assert.equal(head(c), '⏰ 20 min · Weekly Product Sync')
+assert.ok(!c.blocks[1].elements.some((e) => e.type === 'image'), 'no faces when links are off')
+assert.equal(body(c), '📌 *You own 3 items* · 8 more from the team last week\n\u2002• Forecast update (Nov 6 · 14:32)\n\u2002• Dashboard link (Nov 6 · 45:50)\n\u2002• Pricing FAQ (Oct 30 · 24:10)', 'plain text when links are off')
 assert.equal(button(c, 'hu_open_last').url, undefined)
 assert.equal(fmtStamp(872), '14:32')
 console.log('ok  countdown states + links off')
@@ -159,3 +173,16 @@ const hu3 = createHeadsUp({ client, config, access, log })
 await press({ channel: 'D8', ts: '8', m: card }, 'hu_mute', undefined, hu3)
 assert.equal(hu3.evaluate('gabriel', 'wps').result.reason, 'Series muted')
 console.log('ok  restart-safe actions')
+
+// 9. Slack can't fetch the faces (prototype not deployed yet): the card is sent again without them
+const sent = []
+let failOnce = true
+const flaky = { ...client, chat: { ...client.chat, postMessage: async (m) => {
+  if (failOnce && m.blocks.some((b) => b.type === 'context' && b.elements.some((e) => e.type === 'image'))) { failOnce = false; const e = new Error('An API error occurred: invalid_blocks'); e.data = { error: 'invalid_blocks' }; throw e }
+  sent.push(m); return { ts: '99' } } } }
+const hu4 = createHeadsUp({ client: flaky, config, access, log })
+assert.equal((await hu4.post({ persona: 'gabriel', sid: 'wps', slackUser: 'gabriel@acme.example', startMs: start })).posted, true)
+assert.equal(sent.length, 1)
+assert.ok(!sent[0].blocks[1].elements.some((e) => e.type === 'image'), 'resent without faces')
+assert.match(sent[0].blocks[1].elements.at(-1).text, /· 5 attendees$/)
+console.log('ok  falls back without faces')

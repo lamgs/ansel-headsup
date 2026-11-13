@@ -48,6 +48,8 @@ The About page text, the Home tab and the event subscriptions come from [`manife
 3. If Slack shows a banner asking to **reinstall** the app, click it and approve. The existing tokens keep working.
 4. Restart or update the service so it runs the matching code (`sudo /opt/ansel-headsup/slack-app/deploy/setup-vm.sh` on the VM).
 
+The bot's picture isn't in the manifest: under **Basic Information** → **Display Information**, upload [`../public/slack/ansel-icon.png`](../public/slack/ansel-icon.png) (512×512, Ansel's "A" on its indigo) as the app icon and set the background colour to `#3B3F9E`.
+
 The **Home** tab is drawn by the service each time someone opens it: what Heads-Up is, that person's persona, calendar status and next scheduled Heads-Up, a separate **Demo only** section with the **Ping me** and **Ping everyone** buttons, and the everyday commands. People not on the allowlist see only a notice.
 
 ## Local configuration
@@ -171,16 +173,19 @@ Create a recurring event titled **Weekly Product Sync**, with a Meet, Teams or Z
 
 The card matches [`../card/heads-up-card.js`](../card/heads-up-card.js) and logs the same event names as [`../card/CONTRACT.md`](../card/CONTRACT.md) §4 (to the console, as `[pilot]` lines; ★ marks value actions). Every change updates the card in place and has an Undo.
 
-Layout (condensed, chosen in [`../card/slack-mockups/`](../card/slack-mockups/README.md): `condensed/B3-minimal.png` and `condensed/M2-checkboxes.png`): one text block, one row of buttons and a small grey note.
+Layout (condensed, chosen in [`../card/slack-mockups/`](../card/slack-mockups/README.md): `condensed/B3-minimal.png` and `condensed/M2-checkboxes.png`, with a demo polish): a header, an attendee line, one text block, one row of buttons and a small grey note.
 
 ```
-30 min · Weekly Product Sync
-*You own 2 items* · 8 more from the team last week
+⏰ 30 min · Weekly Product Sync               (header block: large type; 🔴 Live, then Ended)
+[faces] Starts 2:00 PM · Zoom · 5 attendees   (small grey context line)
+📌 *You own 2 items* · 8 more from the team last week
   • Forecast update (14:32)
   • Dashboard link (45:50)
 [Join Zoom] [Open in Ansel] [Mute Series]
 Open in Ansel to make changes.                (small grey text)
 ```
+
+The attendee faces are images hosted with the prototype on GitHub Pages (`public/slack/avatars/<persona>.png` → `<PROTOTYPE_URL>slack/avatars/<persona>.png`). Slack fetches them when it posts the message, so **deploy the prototype before the VM**: merge to main, wait for the Pages deploy, then run `setup-vm.sh`. If Slack still can't fetch them it rejects the message (`invalid_blocks`); the service then sends the card again without faces and logs a warning, so a card always goes out.
 
 Every link into the prototype carries the recipient's persona (`…#headsup?as=alicia`, `…#t/a5?as=alicia`), so Ansel opens as whoever clicks: each message is built for one person. Demo only: a real product would use the signed-in user. Messages posted before this change have no `?as=` and open as the prototype's default persona (Varun). Links also carry the meeting's real start (`&start=<epoch seconds>`): the prototype sets its clock so the countdown matches the Slack card, and opening the link again later picks up where the countdown is instead of resetting to 1:25 PM.
 

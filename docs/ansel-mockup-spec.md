@@ -84,6 +84,10 @@ Layout sketch (the player is audio only):
 - Answers only appear where the person can open the Nov 6 record (Aryan without the direct share sees none). "What do I owe" is offered to Gabriel only. The thread resets when the persona changes.
 - Transcript: the speaker's avatar and name sit on the same line as their first line of dialogue, in a fixed column; consecutive lines from the same speaker leave it blank.
 
+**Slack message demo polish (branch `rishabh/ansel-polish-12`)**
+- The Slack card opens with a header block ("⏰ 30 min · Weekly Product Sync"; 🔴 when live) and a grey attendee line: invitee faces, start time, platform and head count. "📌" marks *You own N items*. Buttons and links are unchanged.
+- Faces are PNGs in `public/slack/avatars/`, served from GitHub Pages; the app icon is `public/slack/ansel-icon.png`. If Slack can't fetch the faces, the service resends the card without them.
+
 **Meetings page as three columns; demo readability (branch `rishabh/ansel-polish-10`)**
 - Three collapsible columns: the left menu (collapses to an icon rail), the meeting series, and the selected series' Heads-Up card. A collapsed column becomes a thin labelled strip; click it to bring the column back.
 - The instruction line and the card's "Heads-Up · …" heading and description are gone; the series row says which card is showing.
