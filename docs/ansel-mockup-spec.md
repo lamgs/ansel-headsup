@@ -84,6 +84,11 @@ Layout sketch (the player is audio only):
 - Answers only appear where the person can open the Nov 6 record (Aryan without the direct share sees none). "What do I owe" is offered to Gabriel only. The thread resets when the persona changes.
 - Transcript: the speaker's avatar and name sit on the same line as their first line of dialogue, in a fixed column; consecutive lines from the same speaker leave it blank.
 
+**The Summary is the Heads-Up card (branch `rishabh/summary-card`)**
+- The latest meeting's (Nov 6) **Summary tab shows the full Heads-Up card** in place of the summary. Every link to that Summary (old Slack messages, `#headsup`, Home's upcoming meeting, the upcoming page) lands on the card; no VM update needed.
+- The full summary (overview, For you, decisions, open questions, action items, themes, edit history) stays below the card under **Show full meeting summary**, collapsed. It opens when the card's **Open last meeting** is tapped or something links to one of its items (e.g. the mock card's `Edited` badge).
+- Card taps: ▶ opens the transcript; **+N more** opens the Action items tab. Older meetings (Oct 23, Oct 30) keep the regular Summary. The upcoming page links to the card instead of showing a second copy.
+
 **Slack's Open in Ansel opens the card (branch `rishabh/open-in-ansel-card`)**
 - The real Slack message's **Open in Ansel** button now links to `#headsup` (the full Heads-Up card) instead of the Summary. From the card, **Open last meeting** goes on to the Summary; ▶ timestamps still open the transcript. This supersedes the "Open last meeting stays on the Summary" decision below for the Slack button.
 

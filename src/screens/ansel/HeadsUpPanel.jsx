@@ -66,8 +66,11 @@ export default function HeadsUpPanel({ series }) {
           dispatch({ type: 'OPEN_ANSEL', nav: { instanceId: last, tab: 'transcript', highlight: item ? { t: item.t, n: Date.now() } : null, panelItem: payload.itemId } })
           break
         case 'open_last_meeting':
+          // The card sits on that meeting's Summary, so open the full summary below it.
+          dispatch({ type: 'OPEN_ANSEL', nav: { instanceId: last, tab: 'summary', showFullSummary: Date.now() } })
+          break
         case 'more_tap':
-          dispatch({ type: 'OPEN_ANSEL', nav: { instanceId: last, tab: 'summary' } })
+          dispatch({ type: 'OPEN_ANSEL', nav: { instanceId: last, tab: 'actions' } })
           break
         case 'mark_done':
           fromCard.current = true
