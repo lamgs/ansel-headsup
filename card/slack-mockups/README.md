@@ -21,3 +21,7 @@ The images are approximations drawn outside Slack (stand-in font; spacing and bu
 **Built: B · Minimal, one row** (`condensed/B3-minimal.*`, with `condensed/M2-checkboxes.*` when you own several items; this is what `slack-app/src/card.js` now sends): one text block (title, and your item as a link to its transcript moment) and one row of buttons: ✓ Mark done, Join Zoom, Open in Ansel, Mute series, Not useful. (`B2-minimal.*` was the earlier stacked-buttons version.)
 
 **Several items of your own** (previews): `condensed/M1-dropdown.*` lists each of your items as a link and puts a "Mark done" dropdown in the button row; `condensed/M2-checkboxes.*` gives each item a checkbox (ticked = done). With one item, the card keeps the single ✓ button.
+
+## Transcript note previews (not built)
+
+`transcript/` shows the item's transcript moment as text instead of a button, so it adds no padding: **A** `T1-timestamp` ("14:32 in transcript" as the link in the sentence), **B** `T2-quote` (the quoted line inside the same block, with 14:32 as the link), **C** `T3-several` (with several items, a small grey "14:32 · quoted line" under each checkbox).
