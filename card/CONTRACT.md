@@ -1,6 +1,6 @@
 # Heads-Up Card · Integration Contract
 
-**Contract version:** 2.1 (2.1 adds the viewer's still-open items from earlier meetings and tags every item with the meeting it came from. 2.0 replaced the sections with one Action items table; Following, sharing and the Decided section are gone.)
+**Contract version:** 2.3 (2.3 adds the optional `openQuestions` list: questions still unresolved from the last few meetings. 2.1 adds the viewer's still-open items from earlier meetings and tags every item with the meeting it came from. 2.0 replaced the sections with one Action items table; Following, sharing and the Decided section are gone.)
 
 **Files in `/card`:** `heads-up-card.js` (the card), `heads-up-log.js` (the event log), `demo-data.js` (sample data), `index.html` (the final page: the card in an Ansel message, no controls), `demo.html` (testing page with controls and the event log), `CONTRACT.md` (this file), `README.md`.
 
@@ -105,13 +105,16 @@ Setting `card.data` again re-renders from the new data. If it is the same viewer
 | (status) | Status shows only on the viewer's own items: YOURS, Mark done or "✓ Done", and the green row. Other people's rows never show open or done |
 | `item.seconds` | Position in the transcript of the item's meeting (`item.meetingId`, else last meeting); shown as mm:ss on the ▶ button |
 | `item.summary` | Optional, one short line under the task. Take it from Ansel's existing meeting summary, so the card adds no new AI processing. No due dates: those get set in the meeting |
-| (embedded, 2.2) | With `<heads-up-card embedded>` and more than 6 items, the card shows 6 (yours first) and a **Show N more / Show fewer** toggle instead of linking out; the host can open it expanded with `card.expanded = true`. Pass every item and `moreCount: 0` |
+| (embedded, 2.3) | With `<heads-up-card embedded>` the card shows every item it is given, in stacked cards: **Your Action Items**, then **Open Questions**, then **Team**. Team folds to its heading and starts closed; tapping the heading opens it, and the host can open it with `card.expanded = true`. Pass every item and `moreCount: 0` |
+| (embedded, 2.3) | Hovering or focusing ▶ shows the meeting date and timestamp ("Nov 6 · 14:32") straight away, as a tooltip with no delay |
 | (embedded, 2.2) | Embedded action items are two stacked cards, **Your action items · N** and **Team · N**, rows split by a hairline with borderless icon buttons on the right. Rows use icon buttons (▶ with date and time in its tooltip, ✓ Mark done, ✎ Edit), tint your own rows with `--mine-bg` with no name or YOURS tag (they sit under Your action items), and drop **Not right** from other people's items. Standalone rendering is unchanged |
+| (embedded, 2.3) | Every embedded row (action items and open questions) starts with the date of the meeting it comes from (`item.dateLabel`) as a small calendar stack, "NOV" over "6", so the dates line up down the card; the date and the row's buttons are centred vertically. Open questions show no "You're tagged" or "Unresolved since" tags when embedded (standalone keeps them). Headings read **Your Action Items**, **Open Questions**, **Team**. The embedded footer has only **Mute Series** (no Open last meeting or Not useful). Standalone rows keep the date on the ▶ button |
 | `item.editable` | 2.2. Optional. `true` shows **Edit** on the row and fires `edit_tap` (payload `itemId`, `section`, `meetingId`); on the viewer's own items it replaces Not right. The app decides who can edit (Ansel: the item's owner or the organizer) and records the change |
 | `item.edited` | 2.2. Optional text, e.g. "Edited by Gabriel · Nov 13 · was …". Shows an **Edited** tag on the row with that text as its tooltip |
 | `item.done` | Optional, viewer's items only; `true` shows the row as done (green background, "✓ Done"). Ignored on other people's items |
 | `actionItems.moreCount` | Shows "+N more in Ansel" under the table when above 0 |
 | `item.meetingId`, `item.date`, `item.dateLabel` | 2.1. The meeting the item comes from (`"wps-1030"`, `"2026-10-30"`, `"Oct 30"`). The Slack card and the `<heads-up-card>` element show the date next to every timestamp: "Nov 6 · 14:32" / "▶ Nov 6 · 14:32", and `timestamp_tap` carries the item's own `meetingId`. Without them, read the item as from `lastMeeting` (the element shows "▶ 14:32") |
+| `openQuestions.items` | 2.3. Optional. Every open question still unresolved from last meeting and the earlier meetings the viewer attended (same window as carried-over items). Each: `id`, `text`, `seconds`, `t`, `meetingId`, `date`, `dateLabel`, `stakeholders` (`[{ id, name }]`), and optionally `mine` (viewer is a stakeholder: "You're tagged", listed first), `carriedOver` (raised before last meeting: "Unresolved since Oct 30", or "Still unresolved" next to the date tag when embedded), `context` (one line from the meeting summary), `edited`. The card shows them under the action items as **Open questions · N**, each with ▶ only. Resolved questions are left off. The Slack card doesn't show them |
 | `item.carriedOver` | 2.1. `true` on the viewer's own items that are still open from an earlier meeting (up to 3 earlier recorded meetings they attended, inside retention). They come after the viewer's last-meeting items. Done items and other people's items never carry over |
 
 Everyone on the invite gets a card and sees every action item, because invitees can already open last meeting's summary. The card adds no access.
@@ -144,14 +147,14 @@ Every event is `headsup:action`, cancelable, with this `e.detail`:
 | `card_shown` | Card first renders | `state` | | — |
 | `card_suppressed` | A holdout user's card is withheld | `reason: "holdout"` | | — |
 | `state_changed` | Posted → starting soon → started → ended | `from`, `to` | | — |
-| `timestamp_tap` | ▶ on any action item | `itemId`, `section` (`actionItems`), `seconds`, `meetingId` | ★ | `transcriptUrl&t=seconds` |
+| `timestamp_tap` | ▶ on any action item or open question | `itemId`, `section` (`actionItems` or `openQuestions`), `seconds`, `meetingId` | ★ | `transcriptUrl&t=seconds` |
 | `mark_done` | Mark done on one of the viewer's own items (the row turns green, the button shows "✓ Done") | `itemId` | ★ | — |
 | `mark_done_undone` | "✓ Done" tapped again | `itemId` | | — |
 | `item_flagged` | Not right on any action item | `itemId`, `section`, `ownerId` | | — |
 | `item_flag_reason` | Reason picked after Not right | `itemId`, `reason`: `wrong_owner` / `not_real` / `already_done` | | — |
 | `item_flag_undone` | "Flagged" tapped again | `itemId` | | — |
 | `more_tap` | "+N more in Ansel" | `section`, `moreCount` | | `lastMeeting.url&section=…` |
-| `more_toggled` | Embedded only: "Show N more" / "Show fewer" (the app passed every item, so the card expands in place) | `section`, `expanded` | | — |
+| `team_toggled` | Embedded only: the Team heading opens or closes the team's action items (2.3; replaces `more_toggled`) | `expanded` | | — |
 | `join_tap` | Join Zoom / Join now | `platform`, `joinedPrepared` (true if ▶ or Mark done came first) | | `joinUrl` (new tab) |
 | `open_last_meeting` | Open last meeting | `meetingId` | | `lastMeeting.url` |
 | `mute_series` | Mute series | `seriesId` | | — |

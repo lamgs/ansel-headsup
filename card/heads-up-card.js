@@ -1,5 +1,5 @@
 /*
- * Heads-Up card · contract 2.0
+ * Heads-Up card · contract 2.0 (+ optional 2.1–2.3 fields)
  * A plain-JavaScript custom element: <heads-up-card>. No dependencies, no build step.
  * See CONTRACT.md for the data it reads and the events it fires.
  *
@@ -15,13 +15,13 @@
   const SOON_MS = 5 * MIN; // Join turns primary at 5 minutes out
   const TIMELINE = ['posted', 'starting-soon', 'started', 'ended'];
 
-  const DEFAULT_ROW_LIMIT = 6;
   // Icons for embedded mode (an app such as Ansel): play, mark done, done, edit.
   const svg = (d, fill = 'none') => `<svg width="16" height="16" viewBox="0 0 24 24" fill="${fill}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
   const ICON = {
     play: svg('<polygon points="7 4 20 12 7 20 7 4"/>', 'currentColor'),
     check: svg('<path d="M20 6 9 17l-5-5"/>'),
     done: svg('<circle cx="12" cy="12" r="10"/><path d="m8 12 3 3 5-6"/>'),
+    chevron: svg('<path d="m9 18 6-6-6-6"/>'),
     edit: svg('<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/>'),
   };
   const FLAG_REASONS = [
@@ -173,6 +173,16 @@
     .context { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 6px; font-size: 13px; line-height: 1.38; color: var(--quiet); }
     .more { margin-top: 8px; }
 
+    /* Open questions (2.3): unresolved from the last few meetings */
+    .qs { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line); }
+    .qs-h { font-size: 13px; font-weight: 700; color: var(--quiet); margin-bottom: 4px; }
+    .r.q .rail { background: var(--soon); opacity: .45; }
+    .r.q.q-stale .rail { opacity: 1; }
+    .tag { display: inline-block; font-size: 11px; font-weight: 700; border-radius: 4px; padding: 0 5px; margin-left: 4px; vertical-align: 1px; white-space: nowrap; }
+    .tag.stale { color: var(--soon); background: color-mix(in srgb, var(--soon) 12%, transparent); }
+    .tag.date { color: var(--quiet); font-weight: 600; border: 1px solid var(--line); background: var(--surface); font-variant-numeric: tabular-nums; }
+    .tag.you { color: var(--ansel); background: color-mix(in srgb, var(--ansel) 12%, transparent); }
+
     /* Footer */
     .bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 14px; }
     .foot { flex-wrap: nowrap; align-items: flex-start; margin-top: 8px; }
@@ -236,12 +246,34 @@
     :host([embedded]) .stack-h { padding: 9px 14px; font-size: 14px; font-weight: 600; color: var(--quiet); border-bottom: 1px solid var(--line); }
     :host([embedded]) .mine-stack .stack-h { color: var(--ansel); border-bottom-color: color-mix(in srgb, var(--ansel) 20%, transparent); }
     :host([embedded]) .stack-h .n { font-weight: 500; font-variant-numeric: tabular-nums; }
+    /* Team folds to its heading */
+    :host([embedded]) .stack-toggle { display: flex; align-items: center; gap: 6px; width: 100%; border: 0; border-bottom: 1px solid transparent;
+      background: none; font: inherit; font-size: 14px; font-weight: 600; text-align: left; cursor: pointer; }
+    :host([embedded]) .team-stack.open .stack-toggle { border-bottom-color: var(--line); }
+    :host([embedded]) .stack-toggle:hover { color: var(--ink); background: color-mix(in srgb, var(--ink) 4%, transparent); }
+    :host([embedded]) .chev { display: inline-flex; transition: transform 150ms var(--ease); }
+    :host([embedded]) .team-stack.open .chev { transform: rotate(90deg); }
+    /* ▶ tooltip: shows the meeting date and timestamp the moment you hover or focus, no delay */
+    :host([embedded]) .btn.tip { position: relative; }
+    :host([embedded]) .btn.tip::after { content: attr(data-tip); position: absolute; right: 0; bottom: calc(100% + 4px);
+      padding: 3px 8px; border-radius: 6px; background: var(--ink); color: var(--surface); font-size: 13px; font-weight: 600;
+      line-height: 1.4; white-space: nowrap; font-variant-numeric: tabular-nums; pointer-events: none; opacity: 0; z-index: 2; }
+    :host([embedded]) .btn.tip:hover::after, :host([embedded]) .btn.tip:focus-visible::after { opacity: 1; }
+    :host([embedded]) .stack.q-stack { border-color: color-mix(in srgb, var(--soon) 30%, var(--line)); }
+    :host([embedded]) .q-stack .stack-h { color: var(--soon); }
+    :host([embedded]) .r.q.q-stale { box-shadow: inset 3px 0 0 var(--soon); }
+    :host([embedded]) .tag { font-size: 12px; }
     :host([embedded]) .stack .rows { gap: 0; }
-    :host([embedded]) .r { grid-template-columns: minmax(0, 1fr) auto; column-gap: 12px; padding: 12px 10px 12px 14px; border-radius: 0; }
+    :host([embedded]) .r { grid-template-columns: 3em minmax(0, 1fr) auto; column-gap: 12px; padding: 12px 10px 12px 14px; border-radius: 0; }
     :host([embedded]) .r + .r { border-top: 1px solid var(--line); }
     :host([embedded]) .mine-stack .r + .r { border-top-color: color-mix(in srgb, var(--ansel) 14%, transparent); }
     :host([embedded]) .rail { display: none; }
-    :host([embedded]) .acts { grid-column: 2; align-self: start; justify-content: flex-end; flex-wrap: nowrap; gap: 2px; }
+    /* Date column and buttons are centred vertically in the row */
+    :host([embedded]) .dcol { align-self: center; }
+    :host([embedded]) .cal { display: block; text-align: center; line-height: 1.05; }
+    :host([embedded]) .cal .mo { display: block; font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--quiet); }
+    :host([embedded]) .cal .dy { display: block; font-size: 19px; font-weight: 700; color: var(--ink); font-variant-numeric: tabular-nums; }
+    :host([embedded]) .acts { grid-column: 3; align-self: center; justify-content: flex-end; flex-wrap: nowrap; gap: 2px; }
     :host([embedded]) .ask { grid-column: 1 / -1; }
     :host([embedded]) .r.mine { background: none; }
     :host([embedded]) .r.mine.is-done { background: var(--done-bg); }
@@ -359,8 +391,7 @@
 
     get now() { return new Date(this._nowMs()); }
 
-    // Embedded mode shows the first DEFAULT_ROW_LIMIT rows with "Show N more"; setting expanded = true
-    // opens the full list (e.g. when a link asks for every action item).
+    // Embedded: the Team stack is closed by default; expanded = true opens it.
     get expanded() { return !!this._ui.showAll; }
     set expanded(value) { this._ui.showAll = !!value; this._render(); }
 
@@ -406,7 +437,7 @@
         muted: false,
         notUseful: null,        // null, or { reason }
         whyOpen: false,
-        showAll: false,         // embedded: rows beyond the limit are shown
+        showAll: false,         // embedded: the Team stack is open
         seeded: false,
       };
     }
@@ -603,16 +634,27 @@
 
     // ▶ mm:ss, or ▶ Nov 6 · mm:ss when the item carries its meeting's date (items can come from
     // different meetings in the series, e.g. carried over from an earlier one).
-    _playButton(item) {
+    _playButton(item, section = 'actionItems') {
       const date = item.dateLabel ? `${item.dateLabel} · ` : '';
       const spokenDate = item.dateLabel ? ` from ${item.dateLabel}` : '';
       if (this.hasAttribute('embedded')) {
         // Embedded: just a play icon; the date and time show on hover.
-        return `<button class="btn icon" data-act="play" data-section="actionItems" data-item="${esc(item.id)}" data-key="play-${esc(item.id)}"
-          title="${esc(date)}${esc(fmtStamp(item.seconds))}" aria-label="Play transcript${esc(spokenDate)} at ${esc(spokenStamp(item.seconds))}: ${esc(item.text)}">${ICON.play}</button>`;
+        return `<button class="btn icon tip" data-act="play" data-section="${section}" data-item="${esc(item.id)}" data-key="play-${esc(item.id)}"
+          data-tip="${esc(date)}${esc(fmtStamp(item.seconds))}" aria-label="Play transcript${esc(spokenDate)} at ${esc(spokenStamp(item.seconds))}: ${esc(item.text)}">${ICON.play}</button>`;
       }
-      return `<button class="btn" data-act="play" data-section="actionItems" data-item="${esc(item.id)}" data-key="play-${esc(item.id)}"
+      return `<button class="btn" data-act="play" data-section="${section}" data-item="${esc(item.id)}" data-key="play-${esc(item.id)}"
         aria-label="Play transcript${esc(spokenDate)} at ${esc(spokenStamp(item.seconds))}: ${esc(item.text)}">▶ ${esc(date)}${esc(fmtStamp(item.seconds))}</button>`;
+    }
+
+    // Embedded: the date of the item's meeting as a small calendar stack in the row's first
+    // column, so the dates line up down the card. Standalone rows show the date on the ▶ button instead.
+    _dateCol(item) {
+      if (!this.hasAttribute('embedded')) return '';
+      // A small calendar page: the month above the day ("NOV" over "6").
+      const [mo, day] = String(item.dateLabel || '').split(' ');
+      const tag = item.dateLabel ? `<span class="cal" title="From the ${esc(item.dateLabel)} meeting" aria-label="${esc(item.dateLabel)}">
+        <span class="mo" aria-hidden="true">${esc(mo)}</span><span class="dy" aria-hidden="true">${esc(day || '')}</span></span>` : '';
+      return `<span class="dcol">${tag}</span>`;
     }
 
     // One action item. Status (YOURS, Mark done / ✓ Done, the green row) shows only on the viewer's own items.
@@ -673,7 +715,7 @@
         </div>` : '';
 
       const cls = ['r', mine ? 'mine' : '', done ? 'is-done' : '', flag ? 'is-flagged' : ''].join(' ').replace(/\s+/g, ' ').trim();
-      return `<div class="${cls}" role="listitem"><span class="rail" aria-hidden="true"></span>
+      return `<div class="${cls}" role="listitem"><span class="rail" aria-hidden="true"></span>${this._dateCol(it)}
         <div class="t"><span class="task">${esc(it.text)}</span>${it.edited ? ` <span class="edited" title="${esc(it.edited)}">Edited</span>` : ''}${who}${summary}</div>
         <div class="acts">${acts.join('')}</div>${ask}</div>`;
     }
@@ -688,31 +730,63 @@
         ? `<div class="context more"><button class="link" data-act="more" data-section="actionItems" data-key="more-actionItems"
             aria-label="${more} more action items in Ansel">+${more} more in Ansel</button></div>`
         : '';
-      if (!rows.length) return `<div class="context">No action items from last week.</div>${moreLine}`;
-      // Embedded (inside an app that has every item): expand in place instead of linking out.
-      let shownMine = mine, shownOthers = others, toggle = '';
-      if (this.hasAttribute('embedded') && rows.length > DEFAULT_ROW_LIMIT) {
-        const hidden = rows.length - DEFAULT_ROW_LIMIT;
-        if (!this._ui.showAll) {
-          shownMine = mine.slice(0, DEFAULT_ROW_LIMIT);
-          shownOthers = others.slice(0, Math.max(0, DEFAULT_ROW_LIMIT - shownMine.length));
-        }
-        toggle = `<div class="context more"><button class="link" data-act="more-toggle" data-key="more-toggle" aria-expanded="${this._ui.showAll}">${
-          this._ui.showAll ? 'Show fewer' : `Show ${hidden} more`}</button></div>`;
-      }
       if (this.hasAttribute('embedded')) {
-        // Embedded: two stacked cards, yours first, each with a heading and count.
-        const stack = (items, isMine, title, total) => (items.length
-          ? `<section class="stack${isMine ? ' mine-stack' : ''}" aria-label="${title}"><div class="stack-h">${title} <span class="n">· ${total}</span></div>
-              <div class="rows" role="list">${items.map((it) => this._rowHtml(it, isMine)).join('')}</div></section>` : '');
-        return `<div class="stacks">${stack(shownMine, true, 'Your action items', mine.length)}${stack(shownOthers, false, 'Team', others.length)}</div>`
-          + toggle + moreLine;
+        // Embedded: stacked cards. Your action items, then Open questions, then Team, which folds
+        // closed to its heading (closed by default; card.expanded = true opens it).
+        const rowsOf = (items, isMine) => `<div class="rows" role="list">${items.map((it) => this._rowHtml(it, isMine)).join('')}</div>`;
+        const yours = mine.length ? `<section class="stack mine-stack" aria-label="Your Action Items"><div class="stack-h">Your Action Items <span class="n">· ${mine.length}</span></div>
+            ${rowsOf(mine, true)}</section>` : '';
+        const open = !!this._ui.showAll;
+        const team = others.length ? `<section class="stack team-stack${open ? ' open' : ''}" aria-label="Team">
+            <button class="stack-h stack-toggle" data-act="team-toggle" data-key="team-toggle" aria-expanded="${open}" aria-controls="team-rows">
+              <span class="chev" aria-hidden="true">${ICON.chevron}</span>Team <span class="n">· ${others.length}</span></button>
+            <div id="team-rows" ${open ? '' : 'hidden'}>${rowsOf(others, false)}</div></section>` : '';
+        const none = rows.length ? '' : '<div class="context">No action items from last week.</div>';
+        return `${none}<div class="stacks">${yours}${this._questionsHtml(d)}${team}</div>${moreLine}`;
       }
+      if (!rows.length) return `<div class="context">No action items from last week.</div>${moreLine}`;
       const list = (items, isMine, extra, label) => (items.length
         ? `<div class="rows${extra}" role="list" aria-label="${label}">${items.map((it) => this._rowHtml(it, isMine)).join('')}</div>` : '');
-      return list(shownMine, true, '', 'Your action items')
-        + list(shownOthers, false, shownMine.length ? ' others' : '', "Everyone else's action items")
-        + toggle + moreLine;
+      return list(mine, true, '', 'Your action items')
+        + list(others, false, mine.length ? ' others' : '', "Everyone else's action items")
+        + moreLine;
+    }
+
+    // Open questions (2.3): unresolved questions from the last few meetings. Ones the viewer is tagged
+    // on come first; ones raised before last meeting are flagged "Unresolved since <date>".
+    _questions(d) {
+      const items = ((d.openQuestions && d.openQuestions.items) || []).filter((q) => q && q.id);
+      return [...items.filter((q) => q.mine), ...items.filter((q) => !q.mine)];
+    }
+
+    _questionRowHtml(q) {
+      const people = (q.stakeholders || []).map((p) => p.name).filter(Boolean);
+      // Embedded: just the date column; standalone rows flag older and tagged questions in words.
+      const emb = this.hasAttribute('embedded');
+      const tags = [
+        !emb && q.carriedOver ? `<span class="tag stale" title="Raised ${esc(q.dateLabel || 'earlier')} and not resolved since">Unresolved since ${esc(q.dateLabel || 'earlier')}</span>` : '',
+        !emb && q.mine ? '<span class="tag you">You\'re tagged</span>' : '',
+        q.edited ? '<span class="edited">Edited</span>' : '',
+      ].join('');
+      const who = people.length ? `<span class="who">${q.context ? ' · ' : ''}${esc(people.join(', '))}</span>` : '';
+      const sub = q.context || who ? `<span class="summary">${q.context ? esc(q.context) : ''}${who}</span>` : '';
+      const cls = ['r', 'q', q.mine ? 'q-mine' : '', q.carriedOver ? 'q-stale' : ''].join(' ').replace(/\s+/g, ' ').trim();
+      return `<div class="${cls}" role="listitem"><span class="rail" aria-hidden="true"></span>${this._dateCol(q)}
+        <div class="t"><span class="task">${esc(q.text)}</span> ${tags}${sub}</div>
+        <div class="acts">${this._playButton(q, 'openQuestions')}</div></div>`;
+    }
+
+    _questionsHtml(d) {
+      const qs = this._questions(d);
+      if (!qs.length) return '';
+      const stale = qs.filter((q) => q.carriedOver).length;
+      const note = stale ? ` <span class="n">· ${stale} from earlier meetings</span>` : '';
+      if (this.hasAttribute('embedded')) {
+        return `<section class="stack q-stack" aria-label="Open Questions"><div class="stack-h">Open Questions <span class="n">· ${qs.length}</span>${note}</div>
+          <div class="rows" role="list">${qs.map((q) => this._questionRowHtml(q)).join('')}</div></section>`;
+      }
+      return `<div class="qs"><div class="qs-h">Open questions · ${qs.length}${stale ? ` (${stale} from earlier meetings)` : ''}</div>
+        <div class="rows" role="list" aria-label="Open questions">${qs.map((q) => this._questionRowHtml(q)).join('')}</div></div>`;
     }
 
     _cardHtml(d, state, now) {
@@ -721,11 +795,14 @@
       const inner = `
         ${this._clockHtml(d, state, now)}
         ${this._rowsHtml(d)}
+        ${this.hasAttribute('embedded') ? '' : this._questionsHtml(d)}
         ${ui.notUseful ? this._notUsefulHtml() : ''}
-        <div class="bar">
-          <button data-act="open-last" data-key="open-last" class="btn">Open last meeting</button>
+        <div class="bar">${this.hasAttribute('embedded')
+          // Embedded (Ansel): the app already has the meeting open, so only Mute Series.
+          ? '<button data-act="mute" data-key="mute" class="btn">Mute Series</button>'
+          : `<button data-act="open-last" data-key="open-last" class="btn">Open last meeting</button>
           <button data-act="mute" data-key="mute" class="btn">Mute series</button>
-          ${ui.notUseful ? '' : '<button data-act="not-useful" data-key="not-useful" class="btn">Not useful</button>'}
+          ${ui.notUseful ? '' : '<button data-act="not-useful" data-key="not-useful" class="btn">Not useful</button>'}`}
         </div>
         <div class="context foot">${LOCK}<span>Only you can see this. Built from ${esc(d.lastMeeting.label || "last week's recording")},
           which everyone on the invite can open, with no new AI processing.</span></div>
@@ -763,7 +840,9 @@
     // ---------- actions ----------
 
     _findItem(id) {
-      return this._allItems(this._data).find((x) => x.item.id === id) || null;
+      return this._allItems(this._data).find((x) => x.item.id === id)
+        || this._questions(this._data).map((item) => ({ section: 'openQuestions', item })).find((x) => x.item.id === id)
+        || null;
     }
 
     _onAct(act, ds) {
@@ -820,10 +899,10 @@
           this._rerender(`flag-${ds.item}`, 'Flag removed.');
           this._emit('item_flag_undone', { itemId: ds.item });
           break;
-        case 'more-toggle':
+        case 'team-toggle':
           ui.showAll = !ui.showAll;
-          this._rerender('more-toggle', ui.showAll ? 'Showing every action item.' : 'Showing fewer action items.');
-          this._emit('more_toggled', { section: 'actionItems', expanded: ui.showAll });
+          this._rerender('team-toggle', ui.showAll ? "Showing the team's action items." : "Team's action items hidden.");
+          this._emit('team_toggled', { expanded: ui.showAll });
           break;
         case 'more': {
           const sec = d.actionItems || {};

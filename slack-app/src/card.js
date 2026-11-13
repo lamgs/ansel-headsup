@@ -46,6 +46,10 @@ export const MAX_LISTED = 3 // items of yours listed on the card; the rest are "
  * person, so whoever clicks it is that person, and the prototype opens as them (demo only: a real product
  * would use the signed-in user).
  */
+// &start=<epoch seconds> is the meeting's real start, so the prototype's countdown runs from the
+// moment the card was sent and reopening a link picks up where the countdown is, instead of resetting it.
+export const withStart = (url, startMs) => (url && startMs ? `${url}${url.includes('?') ? '&' : '?'}start=${Math.floor(startMs / 1000)}` : url)
+
 export const withPersona = (url, persona) => (url && persona ? `${url}${url.includes('?') ? '&' : '?'}as=${encodeURIComponent(persona)}` : url)
 
 export const headsUpLink = (prototypeUrl) => (prototypeUrl ? `${prototypeUrl.replace(/#.*$/, '')}#headsup` : null)
@@ -60,7 +64,7 @@ export function buildCard(entry, { nowMs = Date.now(), prototypeUrl = '' } = {})
   const { data, ui } = entry
   const m = data.meeting
   const meta = JSON.stringify({ p: entry.persona, s: entry.sid, st: entry.startMs, j: entry.joinUrl })
-  const as = (url) => withPersona(url, entry.persona)
+  const as = (url) => withStart(withPersona(url, entry.persona), entry.startMs)
   const state = cardState(nowMs, entry.startMs, m.durationMinutes)
   const mins = Math.max(1, Math.ceil((entry.startMs - nowMs) / 60000))
   const join = state === 'ended' || !m.joinUrl ? null

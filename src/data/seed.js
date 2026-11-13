@@ -39,7 +39,11 @@ export const SEED = {
     {
       id: 'wps-1030', series: 'wps', date: '2026-10-30', recorded: true, attendees: ['alicia', 'gabriel', 'rishabh'],
       decisions: [{ id: 'd2', text: 'Beta waitlist closes Nov 15', t: '05:40', priority: 2 }],
-      openQuestions: [{ id: 'q1', text: 'Do we need legal review for new pricing?', t: '19:22', stakeholders: ['alicia', 'varun'], status: 'resolved', resolvedIn: 'wps-1106' }],
+      openQuestions: [
+        { id: 'q1', text: 'Do we need legal review for new pricing?', t: '19:22', stakeholders: ['alicia', 'varun'], status: 'resolved', resolvedIn: 'wps-1106' },
+        // Raised and never answered (not picked up on Nov 6), so the Heads-Up card flags it as unresolved.
+        { id: 'q3', text: 'Who handles support escalations after launch?', t: '26:05', stakeholders: ['gabriel', 'rishabh'], status: 'open' },
+      ],
       actionItems: [
         { id: 'a1', text: 'Pull conversion data from dashboard', owner: 'gabriel', due: '2026-11-03', t: '22:15', status: 'done' },
         // Still open a week later, so they carry over onto their owners' Heads-Up cards.
@@ -48,7 +52,7 @@ export const SEED = {
       ],
       themes: [
         { id: 'th-1030-1', title: 'Status & beta waitlist', start: '00:06', end: '09:30', items: ['a14', 'd2'] },
-        { id: 'th-1030-2', title: 'Pricing legal & conversion data', start: '14:45', end: '31:40', items: ['q1', 'a1', 'a15'] },
+        { id: 'th-1030-2', title: 'Pricing legal & conversion data', start: '14:45', end: '31:40', items: ['q1', 'a1', 'a15', 'q3'] },
       ],
     },
     {

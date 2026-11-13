@@ -12,10 +12,11 @@ export const SUMMARIES = {
     },
   },
   'wps-1030': {
-    overview: 'The beta waitlist closes Nov 15. Varun is checking whether the new pricing needs legal review. Gabriel will draft a pricing FAQ for support, and Rishabh will fix the flaky payments tests.',
+    overview: 'The beta waitlist closes Nov 15. Varun is checking whether the new pricing needs legal review. Gabriel will draft a pricing FAQ for support, and Rishabh will fix the flaky payments tests. Who handles support escalations after launch is still open.',
     context: {
       d2: 'Announced at the start of the meeting.',
       q1: 'Answered on Nov 6: no separate review needed.',
+      q3: 'Not picked up on Nov 6. Gabriel and Rishabh to propose an owner.',
     },
   },
   'wps-1023': {

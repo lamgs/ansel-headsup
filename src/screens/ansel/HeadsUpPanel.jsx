@@ -7,6 +7,7 @@ import { BellRing } from 'lucide-react'
 import '../../../card/heads-up-card.js'
 import { useStore } from '../../state/store.jsx'
 import { DEMO_DATE } from '../../data/seed.js'
+import { SUMMARIES } from '../../data/summaries.js'
 import { buildCardData } from '../../logic/buildCardData.js'
 import { triggerSec } from '../../logic/buildHeadsUp.js'
 import { fmtClock } from '../../components/ui.jsx'
@@ -19,6 +20,8 @@ const secOnDemoDay = (sec) => {
   const [y, m, d] = DEMO_DATE.split('-').map(Number)
   return new Date(y, m - 1, d, 0, 0, sec).getTime()
 }
+// One context line per open question, from each meeting's written summary.
+const QUESTION_CONTEXT = Object.assign({}, ...Object.values(SUMMARIES).map((x) => x.context || {}))
 const hhmm = (s) => { const [h, m] = s.split(':').map(Number); return h * 3600 + m * 60 }
 
 export default function HeadsUpPanel({ series }) {
@@ -30,7 +33,7 @@ export default function HeadsUpPanel({ series }) {
 
   // The card shows its own muted view, so build its data as if nothing were muted.
   const result = useMemo(
-    () => buildCardData(user, series, { ...world, isMuted: () => false }, { startMs: secOnDemoDay(startSec), joinUrl: JOIN_URL, maxRows: Infinity, keepMarkedDone: true }),
+    () => buildCardData(user, series, { ...world, isMuted: () => false }, { startMs: secOnDemoDay(startSec), joinUrl: JOIN_URL, maxRows: Infinity, keepMarkedDone: true, questionContext: QUESTION_CONTEXT }),
     [user, series, world, startSec],
   )
   // Edit (contract 2.2) for the item's owner or the organizer; Edited tag for tracked changes.
@@ -77,9 +80,10 @@ export default function HeadsUpPanel({ series }) {
       e.preventDefault()
       const last = data?.lastMeeting.meetingId
       const item = data?.actionItems.items.find((i) => i.id === payload.itemId)
+        || data?.openQuestions?.items.find((q) => q.id === payload.itemId)
       switch (action) {
         case 'timestamp_tap':
-          // Open the meeting the item was said in (carried-over items come from earlier meetings).
+          // Open the meeting the item or open question was said in (carried-over ones come from earlier meetings).
           dispatch({ type: 'OPEN_ANSEL', nav: { instanceId: item?.meetingId || payload.meetingId || last, tab: 'transcript', highlight: item ? { t: item.t, n: Date.now() } : null, selectedItem: payload.itemId ?? null } })
           break
         case 'open_last_meeting':
