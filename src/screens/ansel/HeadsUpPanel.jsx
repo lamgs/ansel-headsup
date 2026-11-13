@@ -30,7 +30,7 @@ export default function HeadsUpPanel({ series }) {
 
   // The card shows its own muted view, so build its data as if nothing were muted.
   const result = useMemo(
-    () => buildCardData(user, series, { ...world, isMuted: () => false }, { startMs: secOnDemoDay(startSec), joinUrl: JOIN_URL, maxRows: Infinity }),
+    () => buildCardData(user, series, { ...world, isMuted: () => false }, { startMs: secOnDemoDay(startSec), joinUrl: JOIN_URL, maxRows: Infinity, keepMarkedDone: true }),
     [user, series, world, startSec],
   )
   // Edit (contract 2.2) for the item's owner or the organizer; Edited tag for tracked changes.

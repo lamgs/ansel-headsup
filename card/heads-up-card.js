@@ -623,9 +623,8 @@
       const flag = ui.flagged.get(it.id);
 
       const emb = this.hasAttribute('embedded');
-      // Embedded: your rows name you like everyone else's ("· Varun (you)"); the tint marks them, so no YOURS tag.
-      const who = !mine ? ` <span class="who">· ${esc(it.owner.name)}</span>`
-        : emb ? ` <span class="who">· ${esc(it.owner.name)} (you)</span>` : '';
+      // Your rows carry no name: embedded, they sit under "Your action items"; elsewhere the YOURS tag marks them.
+      const who = !mine ? ` <span class="who">· ${esc(it.owner.name)}</span>` : '';
       const summary = it.summary ? `<span class="summary">${esc(it.summary)}</span>` : '';
 
       const acts = [];
