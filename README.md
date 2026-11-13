@@ -31,7 +31,7 @@ The real Slack card's ▶ and **Open last meeting** buttons link here by default
 2. Open the Ansel DM and scan the card. Tap **▶ 14:32**: the Ansel transcript opens on Alicia's line (highlighted for 3 s) with the item panel.
 3. **Mark done** (or On track / New date / Reassign). Back in Slack, the line reads "✓ Forecast update — marked done".
 4. **Join** shows the unchanged recording notice, then the call with the Ansel Notetaker tile.
-5. Open **Behind the scenes** and switch personas (Alicia, Rishabh, Varun, Aryan, Riley, Leo) to see each card or skip reason, the items considered and the cost line.
+5. Open **Behind the scenes** and switch personas (Gabriel, Alicia, Rishabh, Varun, Aryan) to see each card, the items considered and the cost line.
 6. As **Alicia**, edit a Decision or Open question in Ansel → Summary (✎). It becomes a tracked change, and Gabriel's card shows **Edited** on that line.
 7. **Setup & governance**: G1–G4. Ticking the G3 share checkbox adds a direct-share row to the G4 audit log.
 8. End on the **Pilot log**.

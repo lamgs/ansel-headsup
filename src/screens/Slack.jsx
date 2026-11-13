@@ -8,7 +8,7 @@ const CHANNELS = {
   product: [
     ['alicia', 'Fri Nov 13 · 10:02 AM', 'Reminder: launch checklist doc is updated. Comments welcome before the sync.'],
     ['alicia', '10:15 AM', 'Pricing page copy v3 is in the shared folder.'],
-    ['varun', '11:40 AM', 'October actuals are posted in the finance folder.'],
+    ['varun', '11:40 AM', 'Billing service release notes are posted in the eng folder.'],
   ],
   'eng-standup': [
     ['rishabh', '9:30 AM', 'Payments: two flaky tests left in staging. Looking at them today.'],

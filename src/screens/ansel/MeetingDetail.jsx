@@ -156,7 +156,7 @@ function ShareDialog({ inst, series, onClose }) {
   const { state } = useStore()
   const nip = useNip()
   const isOrganizer = state.persona === series.organizer
-  const direct = state.share && inst.id === 'wps-1106' ? ['riley'] : []
+  const direct = state.share && inst.id === 'wps-1106' // Governance G3: shared with a new teammate
   return (
     <Modal onClose={onClose}>
       <div className="p-5">
@@ -174,12 +174,13 @@ function ShareDialog({ inst, series, onClose }) {
               <span className="text-xs text-slate-500">{p === series.organizer ? 'Organizer' : 'Attendee'}</span>
             </li>
           ))}
-          {direct.map((p) => (
-            <li key={p} className="flex items-center gap-2">
-              <Avatar id={p} size="xs" /><span className="flex-1">{personName(p)}</span>
+          {direct && (
+            <li className="flex items-center gap-2">
+              <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-slate-300 text-[9px] font-semibold text-white dark:bg-slate-600">+</span>
+              <span className="flex-1">New teammate</span>
               <span className="text-xs text-emerald-700 dark:text-emerald-400">Direct share</span>
             </li>
-          ))}
+          )}
         </ul>
         <div className="mt-4 flex items-center gap-2 rounded-md bg-slate-50 p-3 text-sm dark:bg-slate-800">
           <Users size={15} className="text-slate-500" aria-hidden />

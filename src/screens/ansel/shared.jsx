@@ -49,7 +49,7 @@ export function citedByTime(inst) {
 }
 
 export const canSee = (state, inst) =>
-  inst.attendees.includes(state.persona) || (state.persona === 'riley' && !!state.share && inst.id === 'wps-1106')
+  inst.attendees.includes(state.persona)
 
 export const lineKey = (instId, t) => `line:${instId}:${t}`
 

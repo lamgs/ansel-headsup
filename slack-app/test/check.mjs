@@ -21,7 +21,7 @@ const client = {
 const config = { prototypeUrl: 'https://demo.example/headsup/', demoJoinUrl: 'https://meet.google.com/abc-defg-hij', reminderMinutes: 30, seriesMap: 'Weekly Product Sync=wps,Design Review=dr' }
 const logs = []
 const log = (...a) => logs.push(a)
-const access = createAccessControl({ client, allowedUsers: ['gabriel@acme.example', 'U12345678', 'UGABRIEL01', 'UARYAN001', 'URILEY001'], log })
+const access = createAccessControl({ client, allowedUsers: ['gabriel@acme.example', 'U12345678', 'UGABRIEL01', 'UARYAN001'], log })
 const hu = createHeadsUp({ client, config, access, log })
 
 assert.equal(await access.isAllowed('gabriel@acme.example'), true)
@@ -77,7 +77,7 @@ console.log('ok  ICS parsing:', occ.length, 'occurrences')
 calls.length = 0; logs.length = 0
 const sched = createScheduler({
   headsUp: createHeadsUp({ client, config, access, log }), config, log,
-  users: { gabriel: 'UGABRIEL01', leo: 'U12345678' },
+  users: { gabriel: 'UGABRIEL01' },
   load: (o) => loadOccurrences({ ...o, text: ics }),
 })
 config.icsUrl = 'fake://ics'
@@ -85,7 +85,6 @@ await sched.tick(); await sched.tick()
 const events = logs.map(([e, p, d]) => `${e} ${p} ${d}`)
 console.log(events.join('\n'))
 assert.equal(calls.filter(([k]) => k === 'post').length, 1, 'Gabriel gets exactly one card')
-assert.ok(events.some((e) => e.startsWith('card_skipped leo Weekly Product Sync: External guest')))
 assert.ok(events.some((e) => e.includes('not a recurring meeting')))
 console.log('ok  scheduler')
 
