@@ -62,7 +62,7 @@ Times in *(mm:ss)* are where the item is said in the Nov 6 transcript; the card'
 - **Change:** no longer in the holdout group.
 
 ### Varun (`varun`): software engineer
-- **Default persona** in the prototype and for `/headsup demo` and **Ping me**.
+- **Default persona** in the prototype and for `/headsup demo` and **Ping me**. Links in a Slack message open the prototype as that message's recipient (`?as=<persona>`), so the default only applies when opening the site directly.
 - **Attends:** Oct 23 and Nov 6 (not Oct 30).
 - **In the story:** owns billing and the pricing config; raised "Do we need legal review for new pricing?", answered at the Nov 6 meeting (33:10).
 - **Owns:** "Update the pricing config with the final tiers", due Wed Nov 11; and "Share the updated metrics view" (44:30), due Fri Nov 13.

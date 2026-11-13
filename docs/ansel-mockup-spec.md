@@ -84,6 +84,10 @@ Layout sketch (the player is audio only):
 - Answers only appear where the person can open the Nov 6 record (Aryan without the direct share sees none). "What do I owe" is offered to Gabriel only. The thread resets when the persona changes.
 - Transcript: the speaker's avatar and name sit on the same line as their first line of dialogue, in a fixed column; consecutive lines from the same speaker leave it blank.
 
+**Slack links open Ansel as the recipient (branch `rishabh/ansel-polish-9`)**
+- Each Slack message is built for one person, so every link into the prototype carries `?as=<persona>` (Open in Ansel, timestamps, "N more from the team"). The prototype switches to that person before opening the page; links without it (older messages, typing the address) keep the current persona.
+- Demo-only shortcut: anyone with a forwarded link sees Ansel as that person. A real product would use the signed-in user.
+
 **Series list expands in place; no Action items tab (branch `rishabh/ansel-polish-8`)**
 - The card in Ansel gets every item: it shows 6 (yours first) and **Show N more / Show fewer** expands in place, instead of "+N more in Ansel" linking out (the standalone pages and Slack keep the link).
 - The meeting screen has **Transcript · Summary** only; a meeting's own items are in the Summary's action item table.
