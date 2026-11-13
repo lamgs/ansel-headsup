@@ -23,3 +23,17 @@ body { @apply bg-white text-slate-900 dark:bg-slate-950 dark:text-slate-100 anti
 
 @keyframes slidein { from { transform: translateY(8px); opacity: 0 } to { transform: none; opacity: 1 } }
 .slidein { animation: slidein 200ms ease-out; }
+
+/* The Heads-Up card (card/heads-up-card.js) embedded in Ansel: Ansel's palette instead of Slack's. */
+heads-up-card[embedded] {
+  --ink: #0f172a; --quiet: #64748b; --line: #e2e8f0; --link: #3B3F9E;
+  --ansel: #3B3F9E; --green: #3B3F9E; --soon: #b45309; --live: #047857;
+  --done-bg: #ecfdf5; --row-hover: transparent;
+  --surface: #ffffff; --on-accent: #ffffff; --btn-line: #cbd5e1; --track: #e2e8f0; --rail: #cbd5e1;
+}
+.dark heads-up-card[embedded] {
+  --ink: #f1f5f9; --quiet: #94a3b8; --line: #1e293b; --link: #9A9EE0;
+  --ansel: #9A9EE0; --green: #7B80D6; --soon: #fbbf24; --live: #34d399;
+  --done-bg: rgb(16 185 129 / 0.12);
+  --surface: #1e293b; --on-accent: #0b1020; --btn-line: #334155; --track: #1e293b; --rail: #334155;
+}
