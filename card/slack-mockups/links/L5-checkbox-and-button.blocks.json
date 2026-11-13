@@ -1,0 +1,160 @@
+{
+  "blocks": [
+    {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": "*30 min · Weekly Product Sync*\nYou own 3 items · 5 more from the team last week"
+      }
+    },
+    {
+      "type": "actions",
+      "block_id": "item_a2",
+      "elements": [
+        {
+          "type": "checkboxes",
+          "action_id": "hu_check:a2",
+          "options": [
+            {
+              "text": {
+                "type": "mrkdwn",
+                "text": "*Forecast update*"
+              },
+              "description": {
+                "type": "mrkdwn",
+                "text": "“Can you update the Q1 forecast with the new numbers?”"
+              },
+              "value": "a2"
+            }
+          ]
+        },
+        {
+          "type": "button",
+          "action_id": "hu_play:a2",
+          "text": {
+            "type": "plain_text",
+            "text": "14:32"
+          },
+          "url": "https://lamgs.github.io/ansel-headsup/#ansel/wps-1106/transcript/14:32/a2"
+        }
+      ]
+    },
+    {
+      "type": "actions",
+      "block_id": "item_x1",
+      "elements": [
+        {
+          "type": "checkboxes",
+          "action_id": "hu_check:x1",
+          "options": [
+            {
+              "text": {
+                "type": "mrkdwn",
+                "text": "*Customer interview notes*"
+              },
+              "description": {
+                "type": "mrkdwn",
+                "text": "“Share the notes before we set pricing.”"
+              },
+              "value": "x1"
+            }
+          ]
+        },
+        {
+          "type": "button",
+          "action_id": "hu_play:x1",
+          "text": {
+            "type": "plain_text",
+            "text": "22:15"
+          },
+          "url": "https://lamgs.github.io/ansel-headsup/#ansel/wps-1106/transcript/22:15/x1"
+        }
+      ]
+    },
+    {
+      "type": "actions",
+      "block_id": "item_x2",
+      "elements": [
+        {
+          "type": "checkboxes",
+          "action_id": "hu_check:x2",
+          "options": [
+            {
+              "text": {
+                "type": "mrkdwn",
+                "text": "~Dashboard link~"
+              },
+              "description": {
+                "type": "mrkdwn",
+                "text": "“Drop the dashboard link in the doc.”"
+              },
+              "value": "x2"
+            }
+          ],
+          "initial_options": [
+            {
+              "text": {
+                "type": "mrkdwn",
+                "text": "~Dashboard link~"
+              },
+              "description": {
+                "type": "mrkdwn",
+                "text": "“Drop the dashboard link in the doc.”"
+              },
+              "value": "x2"
+            }
+          ]
+        },
+        {
+          "type": "button",
+          "action_id": "hu_play:x2",
+          "text": {
+            "type": "plain_text",
+            "text": "9:40"
+          },
+          "url": "https://lamgs.github.io/ansel-headsup/#ansel/wps-1106/transcript/9:40/x2"
+        }
+      ]
+    },
+    {
+      "type": "actions",
+      "elements": [
+        {
+          "type": "button",
+          "action_id": "hu_join",
+          "text": {
+            "type": "plain_text",
+            "text": "Join Zoom"
+          },
+          "style": "primary",
+          "url": "https://zoom.us/j/0"
+        },
+        {
+          "type": "button",
+          "action_id": "hu_open_last",
+          "text": {
+            "type": "plain_text",
+            "text": "Open in Ansel"
+          },
+          "url": "https://lamgs.github.io/ansel-headsup/"
+        },
+        {
+          "type": "button",
+          "action_id": "hu_mute",
+          "text": {
+            "type": "plain_text",
+            "text": "Mute series"
+          }
+        },
+        {
+          "type": "button",
+          "action_id": "hu_nu",
+          "text": {
+            "type": "plain_text",
+            "text": "Not useful"
+          }
+        }
+      ]
+    }
+  ]
+}
