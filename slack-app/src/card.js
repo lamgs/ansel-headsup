@@ -123,7 +123,7 @@ export function buildCard(entry, { nowMs = Date.now(), prototypeUrl = '' } = {})
   if (join) row.push(join)
   // Open in Ansel opens the full Heads-Up card; the card's Open last meeting leads on to the Summary.
   const cardUrl = headsUpLink(prototypeUrl)
-  row.push(btn('hu_open_last', 'Open in Ansel', meta, cardUrl ? { url: cardUrl } : {}))
+  row.push(btn('hu_open_last', 'Open in Ansel', meta, { style: 'primary', ...(cardUrl ? { url: cardUrl } : {}) }))
   row.push(btn('hu_mute', 'Mute Series', meta))
   row.push(btn('hu_nu', 'Not Useful', meta))
   blocks.push({ type: 'actions', elements: row })

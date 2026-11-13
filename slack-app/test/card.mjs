@@ -60,7 +60,7 @@ assert.equal(labels(card)[0], 'Join Zoom | Open in Ansel | Mute Series | Not Use
 assert.ok(!JSON.stringify(card).includes('Mark done') && !JSON.stringify(card).includes('static_select'))
 assert.deepEqual([button(card, 'hu_join').style, button(card, 'hu_join').url], ['primary', 'https://zoom.us/j/123'])
 assert.equal(button(card, 'hu_open_last').url, `${P}#headsup`, 'Open in Ansel opens the full Heads-Up card')
-assert.equal(elements(card).filter((e) => e.style === 'primary').length, 1)
+assert.deepEqual(elements(card).filter((e) => e.style === 'primary').map((e) => e.action_id), ['hu_join', 'hu_open_last'], 'Join and Open in Ansel are green')
 console.log('ok  two items each: layout')
 
 const msg = { channel: 'D_UGABRIEL01', ts: String(calls.findIndex(([k, m]) => k === 'post' && m.channel === 'D_UGABRIEL01') + 1), m: card }
