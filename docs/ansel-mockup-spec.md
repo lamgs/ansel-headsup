@@ -84,6 +84,13 @@ Layout sketch (the player is audio only):
 - Answers only appear where the person can open the Nov 6 record (Aryan without the direct share sees none). "What do I owe" is offered to Gabriel only. The thread resets when the persona changes.
 - Transcript: the speaker's avatar and name sit on the same line as their first line of dialogue, in a fixed column; consecutive lines from the same speaker leave it blank.
 
+**Heads-Up card in Ansel (branch `rishabh/ansel-polish-4`)**
+- Slack can only show a basic Heads-Up, so the full card lives in Ansel on the upcoming meeting's page (Nov 13 · upcoming). Links: `#headsup` or `#ansel/upcoming`; Home's "Weekly Product Sync · 2:00 PM" also opens it.
+- It is Varun's `<heads-up-card>` from `card/`, loaded unchanged apart from a container query for its narrow layout. Data comes from `buildCardData` (the same as the Slack app), built as if nothing were muted so the card can show its own muted view.
+- The card's clock follows the prototype clock: before the reminder (1:30 PM) the page says when it arrives; at 2:00 it goes Live.
+- Taps: ▶ opens the transcript at that line with the item panel; Open last meeting and "+N more" open the Summary; Mark done / Undo update the item everywhere in Ansel (and items marked done in Ansel show on the card); Join opens the join flow; Mute and Not useful use the existing state; other events go to the Pilot log.
+- The Summary stays the meeting record (decisions, questions, themes); the card covers action items only.
+
 **Cast and panel pass (branch `rishabh/ansel-polish-2`)**
 - Alex Kim and Sam Ortiz are removed from the cast. Alex's transcript lines are reassigned by context (Alicia presents the pricing page, Varun asks about pricing tiers, Aryan has the screen and audio lines), his action item a3 moves to Alicia, and Alicia organizes Design Review. See `profiles.md`.
 - The transcript's right-hand panel (Summary / Action items / Comments tabs) is removed; the transcript uses the full width. The item panel (Mark done / On track / New date / Reassign) still opens for an action item, e.g. from the card's ▶ 14:32.

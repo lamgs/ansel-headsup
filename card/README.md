@@ -1,6 +1,8 @@
 # Heads-Up card (standalone)
 
-A standalone version of the pre-meeting Heads-Up card, built as a plain-JavaScript custom element: `<heads-up-card>`. It is **not wired into the React prototype**; `src/screens/HeadsUpCard.jsx` is unchanged. It sits in its own folder so the team can compare it with the existing card and pick what to keep.
+A standalone version of the pre-meeting Heads-Up card, built as a plain-JavaScript custom element: `<heads-up-card>`. The **Ansel app in the React prototype shows it** on the upcoming meeting's page (`src/screens/ansel/HeadsUpPanel.jsx`, link `#headsup`), fed from `src/logic/buildCardData.js`, because a Slack message can only carry a basic version. The prototype's mocked Slack screen still uses `src/screens/HeadsUpCard.jsx`.
+
+The card switches to its narrow layout when the window **or the card itself** is under 560 px wide (a container query), so it fits beside Ansel's sidebar.
 
 It arrives when the user's Outlook reminder fires and brings back last meeting's action items from Ansel, each with its owner. It counts down to the meeting and has a Join button. This is the **functional build**: every state, button and event works, with plain styling.
 

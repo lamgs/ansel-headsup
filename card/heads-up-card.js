@@ -104,6 +104,7 @@
       --green: #007A5A; --ansel: #1E4F8C; --soon: #A85F00; --live: #1A7F4B; --done-bg: #EAF5EF; --row-hover: #F8F8F8;
       --ease: cubic-bezier(.2, .8, .2, 1);
       display: block; max-width: 780px; color: var(--ink);
+      container-type: inline-size; /* lets the narrow layout follow the card's own width, e.g. inside Ansel */
       font: 15px/1.46668 Lato, "Helvetica Neue", Helvetica, Arial, sans-serif;
       -webkit-font-smoothing: antialiased;
     }
@@ -198,6 +199,18 @@
 
     /* Phones: Join drops under the timer at full width; buttons wrap under each task; 44px targets */
     @media (max-width: 560px) {
+      .msg { padding: 8px 12px; }
+      .att { padding-left: 10px; }
+      .clock { grid-template-columns: auto minmax(0, 1fr); row-gap: 12px; }
+      .clock .join { grid-column: 1 / -1; justify-content: center; }
+      .track { margin-top: 0; }
+      .big { font-size: 44px; min-width: 86px; }
+      .big.live, .big.ended { font-size: 34px; }
+      .r { grid-template-columns: 4px minmax(0, 1fr); }
+      .acts { grid-column: 2; justify-content: flex-start; }
+    }
+    /* Same layout when the card itself is narrow (embedded in a sidebar or panel), whatever the window width */
+    @container (max-width: 560px) {
       .msg { padding: 8px 12px; }
       .att { padding-left: 10px; }
       .clock { grid-template-columns: auto minmax(0, 1fr); row-gap: 12px; }

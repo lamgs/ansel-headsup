@@ -101,6 +101,13 @@ function reducer(s, a) {
       n = addLog(n, s.persona, 'item_acted_on', `${a.id}: ${a.label}`)
       return addToast(n, 'Saved. Alicia will see this in the meeting record.')
     }
+    case 'CLEAR_ITEM_UPDATE': {
+      // Undo of Mark done from the Heads-Up card: the item goes back to its seed state.
+      if (!s.itemUpdates[a.id]) return s
+      const itemUpdates = { ...s.itemUpdates }
+      delete itemUpdates[a.id]
+      return addLog({ ...s, itemUpdates }, s.persona, 'item_acted_on', `${a.id}: ${a.label || 'undone'}`)
+    }
     case 'EDIT': {
       const n = { ...s, edits: { ...s.edits, [a.id]: { text: a.text, by: s.persona, on: DEMO_DATE, atSec: s.clock } } }
       return addToast(n, 'Saved as a tracked change. Attendees see who edited and the original.')
@@ -158,8 +165,10 @@ export function StoreProvider({ children }) {
         const item = inst && [...inst.actionItems, ...inst.decisions, ...inst.openQuestions].find((x) => x.id === parts[1])
         if (item) parts.splice(0, 2, 'ansel', inst.id, 'transcript', item.t, item.id)
       }
+      // #headsup is a short alias for the upcoming meeting's Heads-Up card in Ansel.
+      if (parts[0] === 'headsup') parts.splice(0, parts.length, 'ansel', 'upcoming')
       const [root, instanceId, tab = 'summary', t, panelItem] = parts
-      if (root !== 'ansel' || !SEED.instances.some((i) => i.id === instanceId)) return
+      if (root !== 'ansel' || !(instanceId === 'upcoming' || SEED.instances.some((i) => i.id === instanceId))) return
       dispatch({ type: 'AT_LEAST_CLOCK', sec: 13.5 * 3600 })
       dispatch({ type: 'OPEN_ANSEL', nav: { instanceId, tab, highlight: t ? { t, n: Date.now() } : null, panelItem: panelItem || null } })
     }
