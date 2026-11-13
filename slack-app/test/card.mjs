@@ -70,8 +70,10 @@ await press(msg, 'hu_mute'); m = lastUpdate()
 assert.match(m.blocks[0].text.text, /^\*Muted Weekly Product Sync\*\nYou won't get Heads-Up for this series\. Starts in 30 min$/); assert.equal(labels(m)[0], 'Join Zoom | Undo')
 assert.equal((await hu.post({ persona: 'gabriel', sid: 'wps', slackUser: 'gabriel@acme.example', startMs: start })).result.reason, 'Series muted')
 await press(msg, 'hu_mute_undo'); assert.equal(lastUpdate().blocks.length, 2)
-assert.equal(await press(msg, 'hu_open_last', `${P}#x`), null)
-assert.match(await press(msg, 'hu_open_last'), /\*Action items\*/, 'without a prototype link, Open in Ansel replies with the summary')
+// Slack's click payload has no url for link buttons: the app must check the card's own button
+assert.equal(await press(msg, 'hu_open_last'), null, 'a linked Open in Ansel opens the prototype and sends no message')
+const unlinked = JSON.parse(JSON.stringify(msg.m)); delete button(unlinked, 'hu_open_last').url
+assert.match(await press({ ...msg, m: unlinked }, 'hu_open_last'), /\*Action items\*/, 'without a prototype link, Open in Ansel replies with the summary')
 await press(msg, 'hu_join')
 const ev = logs.map(([e, , d]) => `${e} ${d}`)
 for (const e of ['card_shown', 'not_useful', 'not_useful_reason', 'not_useful_undone', 'mute_series', 'mute_undone', 'open_last_meeting']) assert.ok(ev.some((x) => x.startsWith(e + ' ')), e)
