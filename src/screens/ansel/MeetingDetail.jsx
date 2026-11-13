@@ -11,6 +11,7 @@ import TranscriptTab from './TranscriptTab.jsx'
 import SummaryTab from './SummaryTab.jsx'
 import ActionItemsTab from './ActionItemsTab.jsx'
 import ItemPanel from './ItemPanel.jsx'
+import HeadsUpPanel from './HeadsUpPanel.jsx'
 
 const TABS = [
   ['transcript', 'Transcript', FileText],
@@ -125,10 +126,13 @@ function AccessBadge() {
 }
 
 function Upcoming({ series }) {
-  const { state, world } = useStore()
   return (
-    <div className="max-w-2xl space-y-4 p-6 text-sm text-slate-600 dark:text-slate-300">
-      <p>Fri Nov 13 · 2:00 PM. Ansel will join as a visible participant, record and transcribe as usual. Heads-Up posts in Slack {world.person(state.persona).reminderMinutes} minutes before for eligible attendees.</p>
+    <div className="max-w-3xl space-y-4 p-6 text-sm text-slate-600 dark:text-slate-300">
+      <section aria-label="Heads-Up">
+        <h2 className="mb-2 text-sm font-semibold text-slate-600 dark:text-slate-300">Your Heads-Up</h2>
+        <HeadsUpPanel series={series} />
+      </section>
+      <p>Fri Nov 13 · 2:00 PM. Ansel will join as a visible participant, record and transcribe as usual. A short version of this Heads-Up also posts in Slack, with a link back here.</p>
       <div className="rounded-lg border border-slate-200 p-4 dark:border-slate-800">
         <div className="flex items-center gap-2 font-medium text-slate-800 dark:text-slate-100">
           <Radio size={15} aria-hidden />Live summary
