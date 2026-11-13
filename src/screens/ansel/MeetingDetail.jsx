@@ -11,7 +11,6 @@ import TranscriptTab from './TranscriptTab.jsx'
 import SummaryTab from './SummaryTab.jsx'
 import ActionItemsTab from './ActionItemsTab.jsx'
 import ItemPanel from './ItemPanel.jsx'
-import { latestMeetingId } from './SummaryTab.jsx'
 
 const TABS = [
   ['transcript', 'Transcript', FileText],
@@ -129,10 +128,10 @@ function Upcoming({ series }) {
   const { dispatch } = useStore()
   return (
     <div className="max-w-3xl space-y-4 p-6 text-sm text-slate-600 dark:text-slate-300">
-      <button onClick={() => dispatch({ type: 'OPEN_ANSEL', nav: { instanceId: latestMeetingId(series), tab: 'summary' } })}
+      <button onClick={() => dispatch({ type: 'OPEN_ANSEL', nav: { view: 'list', seriesId: series.id } })}
         className="flex w-full items-center gap-3 rounded-xl border border-ansel/30 bg-ansel-50/60 p-4 text-left hover:border-ansel/60 dark:border-ansel-300/30 dark:bg-ansel/10">
         <BellRing size={18} className="text-ansel dark:text-ansel-300" aria-hidden />
-        <span className="flex-1"><span className="block font-medium text-slate-800 dark:text-slate-100">Your Heads-Up for this meeting</span><span className="text-xs text-slate-500">Built from the last meeting's record. Opens on its Summary.</span></span>
+        <span className="flex-1"><span className="block font-medium text-slate-800 dark:text-slate-100">Your Heads-Up for this meeting</span><span className="text-xs text-slate-500">Built from this series' recent meetings. Opens on the Meetings page.</span></span>
         <span className="text-xs font-medium text-ansel dark:text-ansel-300">Open</span>
       </button>
       <p>Fri Nov 13 · 2:00 PM. Ansel will join as a visible participant, record and transcribe as usual. A short version of the Heads-Up also posts in Slack, with a link to the full card.</p>

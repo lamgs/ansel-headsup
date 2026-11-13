@@ -5,7 +5,8 @@ import { CalendarDays, House, MessageSquare, Search, Settings, ShieldCheck, Exte
 import { useStore } from '../state/store.jsx'
 import { Avatar, personName } from '../components/ui.jsx'
 import MeetingDetail from './ansel/MeetingDetail.jsx'
-import { HomePage, MeetingList, SearchPage, SettingsPage } from './ansel/Pages.jsx'
+import { HomePage, SearchPage, SettingsPage } from './ansel/Pages.jsx'
+import { MeetingList } from './ansel/MeetingsPage.jsx'
 import AskAnselChat from './ansel/AskAnselChat.jsx'
 
 const NAV = [
