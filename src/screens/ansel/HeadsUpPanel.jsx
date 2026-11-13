@@ -63,7 +63,8 @@ export default function HeadsUpPanel({ series }) {
       const item = data?.actionItems.items.find((i) => i.id === payload.itemId)
       switch (action) {
         case 'timestamp_tap':
-          dispatch({ type: 'OPEN_ANSEL', nav: { instanceId: last, tab: 'transcript', highlight: item ? { t: item.t, n: Date.now() } : null, panelItem: payload.itemId } })
+          // Open the meeting the item was said in (carried-over items come from earlier meetings).
+          dispatch({ type: 'OPEN_ANSEL', nav: { instanceId: item?.meetingId || payload.meetingId || last, tab: 'transcript', highlight: item ? { t: item.t, n: Date.now() } : null, panelItem: payload.itemId } })
           break
         case 'open_last_meeting':
           dispatch({ type: 'OPEN_ANSEL', nav: { instanceId: last, tab: 'summary', seriesId: series.id } })
