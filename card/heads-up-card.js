@@ -180,6 +180,7 @@
     .r.q.q-stale .rail { opacity: 1; }
     .tag { display: inline-block; font-size: 11px; font-weight: 700; border-radius: 4px; padding: 0 5px; margin-left: 4px; vertical-align: 1px; white-space: nowrap; }
     .tag.stale { color: var(--soon); background: color-mix(in srgb, var(--soon) 12%, transparent); }
+    .tag.date { color: var(--quiet); font-weight: 600; border: 1px solid var(--line); background: var(--surface); font-variant-numeric: tabular-nums; }
     .tag.you { color: var(--ansel); background: color-mix(in srgb, var(--ansel) 12%, transparent); }
 
     /* Footer */
@@ -628,6 +629,13 @@
         aria-label="Play transcript${esc(spokenDate)} at ${esc(spokenStamp(item.seconds))}: ${esc(item.text)}">▶ ${esc(date)}${esc(fmtStamp(item.seconds))}</button>`;
     }
 
+    // Embedded: a small tag with the date of the meeting the item comes from ("Nov 6"). Standalone
+    // rows show the date on the ▶ button instead.
+    _dateTag(item) {
+      if (!this.hasAttribute('embedded') || !item.dateLabel) return '';
+      return ` <span class="tag date" title="From the ${esc(item.dateLabel)} meeting">${esc(item.dateLabel)}</span>`;
+    }
+
     // One action item. Status (YOURS, Mark done / ✓ Done, the green row) shows only on the viewer's own items.
     _rowHtml(it, mine) {
       const ui = this._ui;
@@ -687,7 +695,7 @@
 
       const cls = ['r', mine ? 'mine' : '', done ? 'is-done' : '', flag ? 'is-flagged' : ''].join(' ').replace(/\s+/g, ' ').trim();
       return `<div class="${cls}" role="listitem"><span class="rail" aria-hidden="true"></span>
-        <div class="t"><span class="task">${esc(it.text)}</span>${it.edited ? ` <span class="edited" title="${esc(it.edited)}">Edited</span>` : ''}${who}${summary}</div>
+        <div class="t"><span class="task">${esc(it.text)}</span>${this._dateTag(it)}${it.edited ? ` <span class="edited" title="${esc(it.edited)}">Edited</span>` : ''}${who}${summary}</div>
         <div class="acts">${acts.join('')}</div>${ask}</div>`;
     }
 
@@ -737,8 +745,11 @@
 
     _questionRowHtml(q) {
       const people = (q.stakeholders || []).map((p) => p.name).filter(Boolean);
+      // Embedded rows already carry the meeting date tag, so the stale tag just says it's still open.
+      const staleText = this._dateTag(q) ? 'Still unresolved' : `Unresolved since ${esc(q.dateLabel || 'earlier')}`;
       const tags = [
-        q.carriedOver ? `<span class="tag stale" title="Raised ${esc(q.dateLabel || 'earlier')} and not resolved since">Unresolved since ${esc(q.dateLabel || 'earlier')}</span>` : '',
+        this._dateTag(q),
+        q.carriedOver ? `<span class="tag stale" title="Raised ${esc(q.dateLabel || 'earlier')} and not resolved since">${staleText}</span>` : '',
         q.mine ? '<span class="tag you">You\'re tagged</span>' : '',
         q.edited ? '<span class="edited">Edited</span>' : '',
       ].join('');

@@ -12,7 +12,7 @@ It arrives when the user's Outlook reminder fires and brings back last meeting's
 
 - **Countdown design:** a large timer (minutes to start, amber in the last 5, "Live" once started) with **Join Zoom** on the same line, and a time bar.
 - **Every action item from last meeting,** each with a one-line summary from Ansel's existing meeting summary. The viewer's own items come first with a YOURS label; a line separates everyone else's, which show the owner's name and no status.
-- **Open questions** (contract 2.3, optional): questions still unresolved from the last few meetings, under the action items. Ones you're tagged on come first; older ones are flagged "Unresolved since <date>".
+- **Open questions** (contract 2.3, optional): questions still unresolved from the last few meetings, under the action items. Ones you're tagged on come first; older ones are flagged as still unresolved. Embedded rows also carry a small tag with their meeting's date.
 - **Mark done** on the viewer's own items: the row turns green and the button reads "✓ Done" (tap it again to undo).
 - **Not right** on every open row, with an optional reason (wrong owner, not a real item, already done) for owner-accuracy tracking.
 - **Why am I seeing this?** and a trust footer: only you can see this, built from last week's recording, which everyone on the invite can open, with no new AI processing.
