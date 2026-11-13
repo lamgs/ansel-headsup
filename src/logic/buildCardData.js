@@ -66,8 +66,10 @@ export function buildCardData(user, series, world, opts = {}) {
   })
   const all = last.actionItems.map((a) => row(a, last))
   // Still open from earlier meetings and yours: newest meeting first, each in meeting order.
+  // An item marked done since the card went out (a.update) stays on it as done, so the row
+  // doesn't vanish when you tap Mark done and you can still undo it.
   const carried = earlier.flatMap((inst) => inst.actionItems
-    .filter((a) => a.owner === user.id && a.status !== 'done')
+    .filter((a) => a.owner === user.id && (a.status !== 'done' || a.update?.kind === 'done'))
     .map((a) => row(a, inst)))
   // The viewer's own items first (last meeting, then carried over), then everyone else's from the last meeting.
   const ordered = [...all.filter((i) => i.owner.id === user.id), ...carried, ...all.filter((i) => i.owner.id !== user.id)]
