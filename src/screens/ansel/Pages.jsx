@@ -28,7 +28,7 @@ export function HomePage() {
     <Page title={`Good afternoon, ${firstName(state.persona)}`} sub="Fri Nov 13">
       <h2 className="mb-2 text-xs font-bold uppercase tracking-wider text-slate-500">Coming up today</h2>
       <div className="space-y-2">
-        <button onClick={() => openMeeting(dispatch, 'upcoming')} className="block w-full text-left">
+        <button onClick={() => openMeeting(dispatch, 'wps-1106')} className="block w-full text-left">
         <Card className="flex items-center gap-3 hover:border-ansel/40 dark:hover:border-ansel-300/40">
           <CalendarDays size={18} className="text-ansel dark:text-ansel-300" aria-hidden />
           <div className="flex-1"><div className="font-medium">Weekly Product Sync · 2:00 PM</div><div className="text-xs text-slate-500">Recurring · Ansel will join and record · open your Heads-Up</div></div>
