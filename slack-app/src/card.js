@@ -34,6 +34,8 @@ const btn = (action_id, text, value, extra = {}) => ({ type: 'button', action_id
 const md = (text) => ({ type: 'mrkdwn', text })
 const ctxBlock = (text) => ({ type: 'context', elements: [md(text)] })
 
+// Bullets are indented with an em space (Slack trims ordinary leading spaces).
+const BULLET = '\u2003• '
 export const MAX_LISTED = 3 // items of yours listed on the card; the rest are "+N more of yours in Ansel"
 
 /** Short transcript link (#t/<itemId>); the prototype opens that item's moment in its meeting. */
@@ -83,13 +85,13 @@ export function buildCard(entry, { nowMs = Date.now(), prototypeUrl = '' } = {})
   else {
     const shown = mine.slice(0, MAX_LISTED)
     line = [`You own *${mine.length}* items${othersCount ? ` · ${team(`${othersCount} more from the team`)} last week` : ''}`,
-      ...shown.map((it) => `• ${named(it, false)}`),
-      ...(mine.length > shown.length ? [`• ${team(`+${mine.length - shown.length} more of yours in Ansel`)}`] : [])].join('\n')
+      ...shown.map((it) => `${BULLET}${named(it, false)}`),
+      ...(mine.length > shown.length ? [`${BULLET}${team(`+${mine.length - shown.length} more of yours in Ansel`)}`] : [])].join('\n')
   }
   // Still open / Decided, in the same bullet format: "• Launch date: Mar 3 or Mar 10? (27:05)"
   const note = (it) => {
     const url = shortTranscriptLink(prototypeUrl, it.id)
-    return `• ${it.text} (${url ? `<${url}|${it.t.replace(/^0/, '')}>` : it.t.replace(/^0/, '')})`
+    return `${BULLET}${it.text} (${url ? `<${url}|${it.t.replace(/^0/, '')}>` : it.t.replace(/^0/, '')})`
   }
   if (data.stillOpen?.length) line += `\n*Still Open*\n${data.stillOpen.map(note).join('\n')}`
   if (data.decided?.length) line += `\n*Decided*\n${data.decided.map(note).join('\n')}`
