@@ -185,6 +185,8 @@ Decided
 [Join Zoom] [Open in Ansel] [Mute Series] [Not Useful]
 ```
 
+Every link into the prototype carries the recipient's persona (`…#headsup?as=alicia`, `…#t/a5?as=alicia`), so Ansel opens as whoever clicks: each message is built for one person. Demo only: a real product would use the signed-in user. Messages posted before this change have no `?as=` and open as the prototype's default persona (Varun).
+
 Only the timestamps are links (each opens that moment in its meeting's transcript, via the prototype's short `#t/<itemId>` link), and each names the meeting's date: "Forecast update (Nov 6 · 14:32)". "8 more from the team" links to the meeting's `…/actions/` address, which Ansel now opens as the Heads-Up card on the Meetings page with every item shown (there's no Action items tab any more). Your items that are still open from earlier meetings (up to 3 earlier recorded meetings you attended) come after last meeting's, with their own date, e.g. "Pricing FAQ (Oct 30 · 24:10)"; done items and other people's older items don't carry over. With exactly one item of yours, the line reads "You own **Forecast update** (Nov 6 · 14:32) · 5 more items from last week". Marking items done happens in Ansel, not on the card; items already done there show struck through. Up to 3 of your items are listed, then "+N more of yours in Ansel". Below them, *Still Open* shows one open question (one you're a stakeholder on, else the last meeting's) and *Decided* the last meeting's top decision, picked as in the prototype, each with a linked timestamp; a heading is left out when it has nothing to show. Everything else (other people's items, Not right) is in Ansel.
 
 | Control | Behavior | Event |

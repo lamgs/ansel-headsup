@@ -41,6 +41,13 @@ export const MAX_LISTED = 3 // items of yours listed on the card; the rest are "
 
 /** Short transcript link (#t/<itemId>); the prototype opens that item's moment in its meeting. */
 /** The full Heads-Up card in Ansel (#headsup); Slack can only carry a basic version. */
+/**
+ * Add the recipient's persona to a prototype link: …#t/a2 → …#t/a2?as=alicia. Each message is built for one
+ * person, so whoever clicks it is that person, and the prototype opens as them (demo only: a real product
+ * would use the signed-in user).
+ */
+export const withPersona = (url, persona) => (url && persona ? `${url}${url.includes('?') ? '&' : '?'}as=${encodeURIComponent(persona)}` : url)
+
 export const headsUpLink = (prototypeUrl) => (prototypeUrl ? `${prototypeUrl.replace(/#.*$/, '')}#headsup` : null)
 
 export const shortTranscriptLink = (prototypeUrl, itemId) => (prototypeUrl ? `${prototypeUrl.replace(/#.*$/, '')}#t/${itemId}` : null)
@@ -53,6 +60,7 @@ export function buildCard(entry, { nowMs = Date.now(), prototypeUrl = '' } = {})
   const { data, ui } = entry
   const m = data.meeting
   const meta = JSON.stringify({ p: entry.persona, s: entry.sid, st: entry.startMs, j: entry.joinUrl })
+  const as = (url) => withPersona(url, entry.persona)
   const state = cardState(nowMs, entry.startMs, m.durationMinutes)
   const mins = Math.max(1, Math.ceil((entry.startMs - nowMs) / 60000))
   const join = state === 'ended' || !m.joinUrl ? null
@@ -77,12 +85,12 @@ export function buildCard(entry, { nowMs = Date.now(), prototypeUrl = '' } = {})
   // Each timestamp names the meeting it's from: "Nov 6 · 14:32".
   const stamp = (it, mmss) => [it.dateLabel ?? data.lastMeeting.dateLabel, mmss].filter(Boolean).join(' · ')
   const stampLink = (it) => {
-    const url = shortTranscriptLink(prototypeUrl, it.id)
+    const url = as(shortTranscriptLink(prototypeUrl, it.id))
     const label = stamp(it, fmtStamp(it.seconds))
     return url ? `<${url}|${label}>` : label
   }
   // "5 more items" links to the meeting's Action items tab in Ansel, where those items are listed.
-  const teamUrl = deepLink(prototypeUrl, { instanceId: data.lastMeeting.meetingId, tab: 'actions' })
+  const teamUrl = as(deepLink(prototypeUrl, { instanceId: data.lastMeeting.meetingId, tab: 'actions' }))
   const team = (text) => (teamUrl ? `<${teamUrl}|${text}>` : text)
   const named = (it, bold = true) => `${isDone(it) ? `~${it.text}~` : bold ? `*${it.text}*` : it.text} (${stampLink(it)})${isDone(it) ? ' · _Done_' : ''}`
 
@@ -97,7 +105,7 @@ export function buildCard(entry, { nowMs = Date.now(), prototypeUrl = '' } = {})
   }
   // Still open / Decided, in the same bullet format: "• Launch date: Mar 3 or Mar 10? (27:05)"
   const note = (it) => {
-    const url = shortTranscriptLink(prototypeUrl, it.id)
+    const url = as(shortTranscriptLink(prototypeUrl, it.id))
     const label = stamp(it, it.t.replace(/^0/, ''))
     return `${BULLET}${it.text} (${url ? `<${url}|${label}>` : label})`
   }
@@ -122,7 +130,7 @@ export function buildCard(entry, { nowMs = Date.now(), prototypeUrl = '' } = {})
   const row = []
   if (join) row.push(join)
   // Open in Ansel opens the full Heads-Up card; the card's Open last meeting leads on to the Summary.
-  const cardUrl = headsUpLink(prototypeUrl)
+  const cardUrl = as(headsUpLink(prototypeUrl))
   row.push(btn('hu_open_last', 'Open in Ansel', meta, { style: 'primary', ...(cardUrl ? { url: cardUrl } : {}) }))
   row.push(btn('hu_mute', 'Mute Series', meta))
   row.push(btn('hu_nu', 'Not Useful', meta))

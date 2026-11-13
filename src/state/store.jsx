@@ -167,11 +167,15 @@ export function StoreProvider({ children }) {
     const t = setInterval(() => dispatch({ type: 'TICK' }), 1000)
     return () => clearInterval(t)
   }, [])
-  // Deep links from the Slack app: #ansel/<instanceId>/<tab>/<mm:ss>/<itemId>, or the short
+  // Deep links from the Slack app: #ansel/<instanceId>/<tab>/<mm:ss>/<itemId>, #headsup, or the short
   // #t/<itemId> (opens that item's moment in its meeting's transcript; short enough for Slack checkbox notes).
   useEffect(() => {
     const open = () => {
-      const parts = decodeURIComponent(location.hash.slice(1)).split('/')
+      // ?as=<persona> (added by the Slack app for each message's recipient) opens the prototype as that person.
+      const [path, query = ''] = decodeURIComponent(location.hash.slice(1)).split('?')
+      const as = new URLSearchParams(query).get('as')
+      if (as && SEED.people.some((p) => p.id === as)) dispatch({ type: 'SET_PERSONA', id: as })
+      const parts = path.split('/')
       if (parts[0] === 't') {
         const inst = SEED.instances.find((i) => [...i.actionItems, ...i.decisions, ...i.openQuestions].some((x) => x.id === parts[1]))
         const item = inst && [...inst.actionItems, ...inst.decisions, ...inst.openQuestions].find((x) => x.id === parts[1])
