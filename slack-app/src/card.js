@@ -1,7 +1,9 @@
 // Slack Block Kit version of the Heads-Up card, contract 2.0 data (card/CONTRACT.md), in the team's chosen
-// condensed layout (card/slack-mockups/condensed, B3 + M2): one text block and one row of buttons.
-//   *30 min · Weekly Product Sync*
-//   *You own 1 item* · 5 more from the team last week
+// condensed layout (card/slack-mockups/condensed, B3 + M2) with a demo polish: a header block, an
+// attendee line, one text block and one row of buttons.
+//   ⏰ 30 min · Weekly Product Sync                                    (header block: large type)
+//   [faces] Starts 2:00 PM · Zoom · 5 attendees                       (small grey context line)
+//   📌 *You own 1 item* · 5 more from the team last week
 //   • Forecast update (Nov 6 · 14:32)                                  (the timestamp is the link)
 //   [Join Zoom] [Open in Ansel] [Mute Series]
 //   Open in Ansel to make changes.                                    (small grey text)
@@ -54,13 +56,25 @@ export const withPersona = (url, persona) => (url && persona ? `${url}${url.incl
 
 export const headsUpLink = (prototypeUrl) => (prototypeUrl ? `${prototypeUrl.replace(/#.*$/, '')}#headsup` : null)
 
+/**
+ * Attendee photo hosted with the prototype (public/slack/avatars/<id>.png on GitHub Pages).
+ * Slack fetches it when the message is posted, so the prototype must be deployed first.
+ */
+export function avatarUrl(prototypeUrl, id) {
+  if (!prototypeUrl) return null
+  let base = prototypeUrl.replace(/[#?].*$/, '')
+  if (!base.endsWith('/') && !/\.[a-z]+$/i.test(base)) base += '/'
+  try { return new URL(`slack/avatars/${encodeURIComponent(id)}.png`, base).href } catch { return null }
+}
+const MAX_FACES = 9 // a context block holds 10 elements: up to 9 faces plus the text
+
 export const shortTranscriptLink = (prototypeUrl, itemId) => (prototypeUrl ? `${prototypeUrl.replace(/#.*$/, '')}#t/${itemId}` : null)
 
 /**
  * entry: { persona, sid, startMs, joinUrl, postMs, data (contract 2.1), ui: { muted } }
  * Every button carries the meta needed to rebuild the card after a restart.
  */
-export function buildCard(entry, { nowMs = Date.now(), prototypeUrl = '' } = {}) {
+export function buildCard(entry, { nowMs = Date.now(), prototypeUrl = '', avatars = true } = {}) {
   const { data, ui } = entry
   const m = data.meeting
   const meta = JSON.stringify({ p: entry.persona, s: entry.sid, st: entry.startMs, j: entry.joinUrl })
@@ -102,15 +116,24 @@ export function buildCard(entry, { nowMs = Date.now(), prototypeUrl = '' } = {})
   if (mine.length === 0) line = `${team(plural(othersCount, 'action item'))} from last week, none assigned to you`
   else {
     const shown = mine.slice(0, MAX_LISTED)
-    line = [`*You own ${plural(mine.length, 'item')}*${othersCount ? ` · ${team(`${othersCount} more from the team`)} last week` : ''}`,
+    line = [`📌 *You own ${plural(mine.length, 'item')}*${othersCount ? ` · ${team(`${othersCount} more from the team`)} last week` : ''}`,
       ...shown.map((it) => `${BULLET}${named(it)}`),
       ...(mine.length > shown.length ? [`${BULLET}${team(`+${mine.length - shown.length} more of yours in Ansel`)}`] : [])].join('\n')
   }
   if (state === 'ended') line += '\n_Meeting ended · new summary in about 6 min_'
 
-  const body = `*${hero} · ${m.title}*\n${line}`
+  // Header: large type. ⏰ while counting down, 🔴 once it's live, nothing once it's ended.
+  const icon = state === 'started' ? '🔴 ' : state === 'ended' ? '' : '⏰ '
+  const header = { type: 'header', text: { type: 'plain_text', text: `${icon}${hero} · ${m.title}`.slice(0, 150), emoji: true } }
 
-  const blocks = [{ type: 'section', text: md(body) }]
+  // Attendee line: faces (when the prototype hosts them), then start time, platform and head count.
+  const people = data.attendees ?? []
+  const faces = avatars ? people.slice(0, MAX_FACES).map((p) => ({ id: p.id, url: avatarUrl(prototypeUrl, p.id), name: p.name }))
+    .filter((f) => f.url).map((f) => ({ type: 'image', image_url: f.url, alt_text: f.name })) : []
+  const when = state === 'started' ? `Started ${slackTime(entry.startMs)}` : state === 'ended' ? `Ended · started ${slackTime(entry.startMs)}` : `Starts ${slackTime(entry.startMs)}`
+  const details = [when, m.platform && m.platform !== 'meeting' ? m.platform : null, people.length ? plural(people.length, 'attendee') : null].filter(Boolean).join(' · ')
+
+  const blocks = [header, { type: 'context', elements: [...faces, md(details)] }, { type: 'section', text: md(line) }]
 
   const row = []
   if (join) row.push(join)

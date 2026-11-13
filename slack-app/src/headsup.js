@@ -41,6 +41,8 @@ export function createHeadsUp({ client, config, access, log = pilotLog }) {
         .map(({ id, text, t, instanceId }) => ({ id, text, t, meetingId: instanceId, dateLabel: shortDate(world.instance(instanceId).date) }))
       result.data.stillOpen = pick('open')
       result.data.decided = pick('decided')
+      // Attendees (the series invite) for the card's attendee line. Slack-only addition, like the two above.
+      result.data.attendees = series.invitees.map((id) => ({ id, name: nameOf(id) }))
     }
     return { series, result }
   }
@@ -52,8 +54,18 @@ export function createHeadsUp({ client, config, access, log = pilotLog }) {
   }
 
   const freshUi = () => ({ muted: false })
-  const render = (entry) => buildCard(entry, { nowMs: Date.now(), prototypeUrl: config.prototypeUrl })
-  const update = (entry) => client.chat.update({ channel: entry.channel, ts: entry.ts, ...render(entry) })
+  const render = (entry) => buildCard(entry, { nowMs: Date.now(), prototypeUrl: config.prototypeUrl, avatars: !entry.noFaces })
+  // Slack rejects a message whose images it can't fetch (e.g. the prototype isn't deployed yet):
+  // send it again without the attendee faces, and keep them off for that card.
+  const withFallback = async (entry, send) => {
+    try { return await send() } catch (e) {
+      if (entry.noFaces || !/invalid_blocks|downloading image failed/i.test(`${e.data?.error ?? ''} ${JSON.stringify(e.data?.response_metadata ?? '')} ${e.message}`)) throw e
+      entry.noFaces = true
+      console.warn('attendee faces failed to load; sending the card without them')
+      return send()
+    }
+  }
+  const update = (entry) => withFallback(entry, () => client.chat.update({ channel: entry.channel, ts: entry.ts, ...render(entry) }))
 
   /** Evaluate and, if eligible, post the card as a DM. Returns { posted, series, result }. */
   async function post({ persona, sid, slackUser, startMs, joinUrl }) {
@@ -71,7 +83,7 @@ export function createHeadsUp({ client, config, access, log = pilotLog }) {
     const { channel } = await client.conversations.open({ users: userId })
     const entry = { channel: channel.id, persona, sid, startMs, joinUrl: result.data.meeting.joinUrl, postMs: Date.now(), data: result.data, ui: freshUi() }
     entry.lastState = cardState(Date.now(), startMs, result.data.meeting.durationMinutes)
-    const res = await client.chat.postMessage({ channel: channel.id, ...render(entry) })
+    const res = await withFallback(entry, () => client.chat.postMessage({ channel: channel.id, ...render(entry) }))
     entry.ts = res.ts
     live.set(`${channel.id}:${res.ts}`, entry)
     log('card_shown', persona, `${series.title} · ${result.data.actionItems.items.length} action items · Slack DM ${userId}`)
