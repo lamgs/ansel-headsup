@@ -6,14 +6,14 @@ import React, { useEffect, useMemo, useRef } from 'react'
 import { BellRing } from 'lucide-react'
 import '../../../card/heads-up-card.js'
 import { useStore } from '../../state/store.jsx'
-import { DEMO_DATE } from '../../data/seed.js'
+import { DEMO_DATE, DEMO_ZOOM_URL } from '../../data/seed.js'
 import { SUMMARIES } from '../../data/summaries.js'
 import { buildCardData } from '../../logic/buildCardData.js'
 import { triggerSec } from '../../logic/buildHeadsUp.js'
 import { fmtClock } from '../../components/ui.jsx'
 import { canEditItem, editNote } from './EditItemDialog.jsx'
 
-const JOIN_URL = 'https://zoom.us/j/0000000000'
+const JOIN_URL = DEMO_ZOOM_URL
 
 /** Local time on the demo day, e.g. secOnDemoDay(14 * 3600) → Fri Nov 13, 2:00 PM. */
 const secOnDemoDay = (sec) => {
