@@ -112,7 +112,7 @@ export function buildCard(entry, { nowMs = Date.now(), prototypeUrl = '' } = {})
   if (ui.notUseful) {
     return { text: `${fallback} (marked not useful)`, blocks: [
       ctxBlock(body),
-      ctxBlock(':no_entry_sign: Marked *Not Useful* · thanks, this helps tune Heads-Up'),
+      ctxBlock('Marked Not Useful'),
       { type: 'actions', elements: [join, btn('hu_nu_undo', 'Undo', meta)].filter(Boolean) },
     ] }
   }
