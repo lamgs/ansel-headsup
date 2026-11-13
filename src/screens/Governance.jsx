@@ -124,6 +124,10 @@ function G4() {
     if (e.event === 'card_posted') rows.push({ sort: e.sec, time: `Nov 13 ${fmtClock(e.sec)}`, text: `Heads-Up delivered to ${personName(e.persona)} · ${e.detail.split(' · ')[0]} · source: Nov 6 record (attendee access)` })
     if (e.event === 'item_acted_on') rows.push({ sort: e.sec, time: `Nov 13 ${fmtClock(e.sec)}`, text: `Action item updated by ${personName(e.persona)} · ${e.detail}` })
   }
+  for (const [id, ed] of Object.entries(state.itemEdits)) {
+    const ev = [...state.log].reverse().find((e) => e.event === 'item_edited' && e.detail.startsWith(`${id}:`))
+    rows.push({ sort: ed.atSec, time: `Nov 13 ${fmtClock(ed.atSec)}`, text: `Action item edited by ${personName(ed.by)} · ${ev ? ev.detail : id} · tracked change, original kept` })
+  }
   for (const [id, ed] of Object.entries(state.edits)) rows.push({ sort: ed.atSec, time: `Nov 13 ${fmtClock(ed.atSec)}`, text: `Tracked change by ${personName(ed.by)} · “${ed.text}” (${id}) · Nov 6 record` })
   if (state.share) rows.push({ sort: state.share.sec, time: `Nov 13 ${fmtClock(state.share.sec)}`, text: 'Direct share by Alicia · Nov 6 notes → new.teammate@acme.com · workspace policy: internal direct share allowed' })
   rows.sort((a, b) => b.sort - a.sort)

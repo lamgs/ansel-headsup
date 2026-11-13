@@ -9,6 +9,7 @@ import { SUMMARIES } from '../../data/summaries.js'
 import { shortDate, longDate } from '../../logic/buildHeadsUp.js'
 import { Avatar, Btn, Ts, firstName, fmtClock, personName } from '../../components/ui.jsx'
 import { StatusPill, jumpTo, toSec } from './shared.jsx'
+import { editNote } from './EditItemDialog.jsx'
 
 const DAY = 86400000
 const days = (a, b) => Math.round((Date.parse(`${a}T00:00:00Z`) - Date.parse(`${b}T00:00:00Z`)) / DAY)
@@ -236,7 +237,7 @@ function ActionTable({ inst, me, flash }) {
           <div key={a.id} id={`sum-${a.id}`}
             className={`${cols} border-b border-slate-100 px-4 py-2.5 text-sm last:border-b-0 dark:border-slate-800/70 ${mine ? 'bg-ansel-50/60 dark:bg-ansel/10' : ''} ${flash === a.id ? 'flash' : ''}`}>
             <span className="flex min-w-0 items-center gap-2"><Avatar id={a.owner} size="xs" /><span className="truncate">{mine ? 'You' : firstName(a.owner)}</span></span>
-            <span className={`min-w-0 ${mine ? 'font-medium' : ''} ${done ? 'text-slate-500 line-through' : ''}`}>{a.text}</span>
+            <span className={`min-w-0 ${mine ? 'font-medium' : ''} ${done ? 'text-slate-500 line-through' : ''}`}>{a.text}{a.itemEdit && <span title={editNote(a)} className="ml-1.5 rounded border border-amber-400 px-1 text-[10px] font-medium text-amber-700 no-underline dark:text-amber-300">Edited</span>}</span>
             <span className={due.overdue ? 'text-amber-700 dark:text-amber-400' : 'text-slate-500'}>{done ? `Due ${shortDate(a.due)}` : due.text}</span>
             <span className="flex items-center justify-end gap-2">
               {(done || a.update) && <StatusPill a={a} />}

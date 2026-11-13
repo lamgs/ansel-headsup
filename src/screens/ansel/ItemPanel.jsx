@@ -7,6 +7,7 @@ import { longDate } from '../../logic/buildHeadsUp.js'
 import { findItem } from '../../logic/world.js'
 import { Btn, Ts, firstName, personName } from '../../components/ui.jsx'
 import { jumpTo, statusText } from './shared.jsx'
+import { canEditItem, editNote } from './EditItemDialog.jsx'
 
 export default function ItemPanel({ id }) {
   const { state, dispatch, world } = useStore()
@@ -36,6 +37,10 @@ export default function ItemPanel({ id }) {
         <div><dt className="inline text-slate-500">Said at: </dt><dd className="inline"><Ts t={a.t} onClick={() => jumpTo(dispatch, a.t, { item: a.id })} /></dd></div>
         <div><dt className="inline text-slate-500">Status: </dt><dd className="inline font-medium">{status}</dd></div>
       </dl>
+      {a.itemEdit && <p className="mt-2 text-xs text-amber-700 dark:text-amber-400">{editNote(a)}</p>}
+      {canEditItem(state.persona, a, inst) && (
+        <Btn className="mt-3 w-full justify-center" onClick={() => dispatch({ type: 'ANSEL_NAV', nav: { editItem: id } })}>Edit details…</Btn>
+      )}
       {mine && a.status !== 'done' && !(a.update?.kind === 'reassign') ? (
         <div className="mt-4 space-y-2">
           <Btn variant="primary" className="w-full justify-center" onClick={() => save({ kind: 'done' }, 'Marked done')}>Mark done</Btn>

@@ -12,6 +12,7 @@ export function initialState(theme = 'light') {
     tab: 'slack',
     drawerOpen: false,
     itemUpdates: {},
+    itemEdits: {},
     edits: {},
     comments: SEED_COMMENTS,
     muted: {},
@@ -108,6 +109,11 @@ function reducer(s, a) {
       delete itemUpdates[a.id]
       return addLog({ ...s, itemUpdates }, s.persona, 'item_acted_on', `${a.id}: ${a.label || 'undone'}`)
     }
+    case 'EDIT_ITEM': {
+      // Audited correction to an action item (wording, owner, due date). Shown as Edited; G4 audit log.
+      const n = { ...s, itemEdits: { ...s.itemEdits, [a.id]: { ...a.changes, by: s.persona, on: DEMO_DATE, atSec: s.clock } } }
+      return addToast(addLog(n, s.persona, 'item_edited', `${a.id}: ${a.label}`), 'Saved as a tracked change. Attendees see who edited and the original.')
+    }
     case 'EDIT': {
       const n = { ...s, edits: { ...s.edits, [a.id]: { text: a.text, by: s.persona, on: DEMO_DATE, atSec: s.clock } } }
       return addToast(n, 'Saved as a tracked change. Attendees see who edited and the original.')
@@ -183,7 +189,7 @@ export function StoreProvider({ children }) {
   useEffect(() => {
     document.documentElement.classList.toggle('dark', state.theme === 'dark')
   }, [state.theme])
-  const world = useMemo(() => buildWorld(state), [state.itemUpdates, state.edits, state.muted, state.reminder])
+  const world = useMemo(() => buildWorld(state), [state.itemUpdates, state.edits, state.muted, state.reminder, state.itemEdits])
   const value = useMemo(() => ({ state, dispatch, world }), [state, world])
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>
 }

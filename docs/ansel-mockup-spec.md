@@ -84,6 +84,12 @@ Layout sketch (the player is audio only):
 - Answers only appear where the person can open the Nov 6 record (Aryan without the direct share sees none). "What do I owe" is offered to Gabriel only. The thread resets when the persona changes.
 - Transcript: the speaker's avatar and name sit on the same line as their first line of dialogue, in a fixed column; consecutive lines from the same speaker leave it blank.
 
+**Edit on the card (branch `rishabh/ansel-polish-8`)**
+- **Slack message:** unchanged here; #22 keeps Not Useful on it as a greyed-out card.
+- **Ansel card rows:** your items show ▶ · Mark done · **Edit** (Edit replaces Not right there); other people's show ▶ · Not right, and the organizer also gets Edit. **Not useful** stays as a footer button beside Open last meeting and Mute series.
+- **Edit** opens a dialog for the wording, owner and due date (also reachable from the item panel's "Edit details…"). Saving is a tracked change: an `Edited` tag with "Edited by … · was …" on the card, Summary and item panel, a Pilot log `item_edited` event, and a G4 audit row. Only the item's owner or the organizer can edit.
+- Card contract 2.2 adds optional `item.editable`, `item.edited` and the `edit_tap` event.
+
 **Heads-Up lives on the Meetings page, per series (branch `rishabh/ansel-polish-6`)**
 - The card belongs to a recurring series, not one meeting (it carries over open items from earlier meetings), so it moves off the Nov 6 Summary.
 - **Meetings page:** one row per series (Weekly Product Sync, Design Review) with cadence, next meeting and a "Heads-Up · N yours" or "No Heads-Up" tag. Selecting a row shows that series' card on the right (stacked below on narrow screens); expanding it lists its meetings (upcoming first, then past), and clicking one opens the existing meeting screen. Design Review shows why it has no card (last meeting had Ansel kept out).

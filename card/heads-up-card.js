@@ -192,6 +192,8 @@
     :focus-visible { outline: 2px solid var(--link); outline-offset: 2px; border-radius: 4px; }
     .btn:focus-visible { border-radius: 14px; }
 
+    .edited { font-size: 11px; font-weight: 700; color: var(--soon); border: 1px solid currentColor; border-radius: 4px; padding: 0 4px; margin-left: 4px; vertical-align: 1px; }
+
     /* Embedded mode (<heads-up-card embedded>): shown inside an app such as Ansel rather than as a
        Slack message. No avatar, name, APP tag, time, blue rail or hover band; the host page's font;
        colours come from the --* variables the host sets. The default (no attribute) is unchanged. */
@@ -582,7 +584,12 @@
           : `<button class="btn" data-act="done" data-item="${id}" data-key="done-${id}" aria-pressed="false"
               aria-label="Mark done: ${esc(it.text)}">Mark done</button>`);
       }
-      if (!done) {
+      // Edit (contract 2.2): shown when the app marks the item editable (e.g. its owner or the
+      // organizer). On your own editable items it replaces Not right: you fix it instead of flagging it.
+      if (it.editable && !flag) {
+        acts.push(`<button class="btn" data-act="edit" data-item="${id}" data-key="edit-${id}" aria-label="Edit: ${esc(it.text)}">Edit</button>`);
+      }
+      if (!done && !(mine && it.editable)) {
         if (flag) {
           const why = flag.reason ? (FLAG_REASONS.find(([r]) => r === flag.reason) || [null, flag.reason])[1].toLowerCase() : null;
           acts.push(`<button class="btn" data-act="flag-undo" data-item="${id}" data-key="flag-undo-${id}" aria-pressed="true"
@@ -601,7 +608,7 @@
 
       const cls = ['r', mine ? 'mine' : '', done ? 'is-done' : '', flag ? 'is-flagged' : ''].join(' ').replace(/\s+/g, ' ').trim();
       return `<div class="${cls}" role="listitem"><span class="rail" aria-hidden="true"></span>
-        <div class="t"><span class="task">${esc(it.text)}</span>${who}${summary}</div>
+        <div class="t"><span class="task">${esc(it.text)}</span>${it.edited ? ` <span class="edited" title="${esc(it.edited)}">Edited</span>` : ''}${who}${summary}</div>
         <div class="acts">${acts.join('')}</div>${ask}</div>`;
     }
 
@@ -704,6 +711,12 @@
           this._rerender(`done-${ds.item}`, 'Mark done undone.');
           this._emit('mark_done_undone', { itemId: ds.item });
           break;
+        case 'edit': {
+          const found = this._findItem(ds.item);
+          if (!found || !found.item.editable) return;
+          this._emit('edit_tap', { itemId: ds.item, section: 'actionItems', meetingId: found.item.meetingId || last.meetingId });
+          break;
+        }
         case 'flag':
           ui.flagged.set(ds.item, { reason: null, section: ds.section, ownerId: ds.owner || null });
           this._rerender(`reason-${ds.item}-wrong_owner`, "Flagged. What's wrong? Choose a reason, or skip.");

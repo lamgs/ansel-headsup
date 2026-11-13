@@ -56,6 +56,14 @@ const r3 = buildHeadsUp(w3.person('gabriel'), SEED.series[0], now, w3)
 assert.ok(r3.items.length <= 3 && !r3.items.some((i) => i.id === 'a2'))
 console.log('ok  mute + done exclusion')
 
+// Edits from the Heads-Up card / item panel: applied over the seed, original kept for the audit trail
+const we = buildWorld({ itemEdits: { a2: { text: 'Forecast with beta cohort', due: '2026-11-16', by: 'gabriel', on: '2026-11-13', atSec: 0 } } })
+const a2 = we.instance('wps-1106').actionItems.find((x) => x.id === 'a2')
+assert.deepEqual([a2.text, a2.short, a2.due, a2.owner], ['Forecast with beta cohort', 'Forecast with beta cohort', '2026-11-16', 'gabriel'])
+assert.deepEqual(a2.itemEdit.original, { text: 'Update Q1 forecast with new conversion numbers', owner: 'gabriel', due: '2026-11-12' })
+assert.equal(we.instance('wps-1106').actionItems.find((x) => x.id === 'a3').itemEdit, undefined)
+console.log('ok  audited action item edits keep the original')
+
 // Themes: start/end are real transcript lines, ranges are in order and don't overlap,
 // and every linked item is cited inside its theme's range.
 for (const inst of SEED.instances) {

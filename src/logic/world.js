@@ -2,7 +2,7 @@
 import { SEED } from '../data/seed.js'
 
 export function buildWorld(state = {}) {
-  const { itemUpdates = {}, edits = {}, muted = {}, reminder = {} } = state
+  const { itemUpdates = {}, edits = {}, itemEdits = {}, muted = {}, reminder = {} } = state
 
   const applyEdit = (x) => {
     const e = edits[x.id]
@@ -17,11 +17,24 @@ export function buildWorld(state = {}) {
     openQuestions: inst.openQuestions.map(applyEdit),
     actionItems: inst.actionItems.map((a) => {
       const u = itemUpdates[a.id]
-      if (!u) return a
-      const next = { ...a, update: u, confirmed: true }
-      if (u.kind === 'done') next.status = 'done'
-      if (u.kind === 'new_date') next.due = u.due
-      if (u.kind === 'reassign') next.owner = u.owner
+      let next = a
+      if (u) {
+        next = { ...a, update: u, confirmed: true }
+        if (u.kind === 'done') next.status = 'done'
+        if (u.kind === 'new_date') next.due = u.due
+        if (u.kind === 'reassign') next.owner = u.owner
+      }
+      // Edit from the Heads-Up card or item panel: a tracked change that keeps the original.
+      const e = itemEdits[a.id]
+      if (e) {
+        next = {
+          ...next,
+          ...(e.text ? { text: e.text, short: e.text } : {}),
+          ...(e.owner ? { owner: e.owner } : {}),
+          ...(e.due ? { due: e.due } : {}),
+          itemEdit: { by: e.by, on: e.on, atSec: e.atSec, original: { text: a.text, owner: a.owner, due: a.due } },
+        }
+      }
       return next
     }),
   }))
