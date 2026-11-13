@@ -30,7 +30,7 @@ export default function HeadsUpPanel({ series }) {
 
   // The card shows its own muted view, so build its data as if nothing were muted.
   const result = useMemo(
-    () => buildCardData(user, series, { ...world, isMuted: () => false }, { startMs: secOnDemoDay(startSec), joinUrl: JOIN_URL }),
+    () => buildCardData(user, series, { ...world, isMuted: () => false }, { startMs: secOnDemoDay(startSec), joinUrl: JOIN_URL, maxRows: Infinity }),
     [user, series, world, startSec],
   )
   // Edit (contract 2.2) for the item's owner or the organizer; Edited tag for tracked changes.
@@ -58,6 +58,11 @@ export default function HeadsUpPanel({ series }) {
     lastDone.current = doneKey
   }, [data, doneKey])
 
+  // Links that ask for every action item (e.g. Slack's "N more from the team") open the list expanded.
+  useEffect(() => {
+    if (ref.current && data && state.ansel.expandCard) ref.current.expanded = true
+  }, [state.ansel.expandCard, data])
+
   // Keep the card's countdown on the prototype's clock (Jump to 1:30 PM, +5 min, …).
   useEffect(() => {
     if (ref.current && data) ref.current.now = secOnDemoDay(state.clock)
@@ -79,9 +84,6 @@ export default function HeadsUpPanel({ series }) {
           break
         case 'open_last_meeting':
           dispatch({ type: 'OPEN_ANSEL', nav: { instanceId: last, tab: 'summary', seriesId: series.id } })
-          break
-        case 'more_tap':
-          dispatch({ type: 'OPEN_ANSEL', nav: { instanceId: last, tab: 'actions' } })
           break
         case 'edit_tap':
           dispatch({ type: 'ANSEL_NAV', nav: { editItem: payload.itemId } })

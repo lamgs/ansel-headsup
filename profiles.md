@@ -6,7 +6,7 @@ Who plays which role in the Heads-Up demo. The team's real names are used, but *
 
 ## How a card is built (so edits stay realistic)
 
-**Slack card (current, condensed):** everyone on the Weekly Product Sync invite gets a card. **Each team member owns two items** from the last meeting (Nov 6), listed on the card with their timestamps, e.g. "You own 2 items · 8 more from the team last week · • Forecast update (14:32) · • Dashboard link (45:50)". Only the timestamp is a link (to that moment in the transcript); "8 more from the team" links to the meeting's Action items tab in Ansel. Marking items done happens in Ansel, not on the Slack card. External guests would get no card, but the cast is just the five team members.
+**Slack card (current, condensed):** everyone on the Weekly Product Sync invite gets a card. **Each team member owns two items** from the last meeting (Nov 6), listed on the card with their timestamps, e.g. "You own 2 items · 8 more from the team last week · • Forecast update (14:32) · • Dashboard link (45:50)". Only the timestamp is a link (to that moment in the transcript); "8 more from the team" opens the Heads-Up card on Ansel's Meetings page with every item shown. Marking items done happens in Ansel, not on the Slack card. External guests would get no card, but the cast is just the five team members.
 
 **Prototype card (the React app's own Heads-Up screen):** unchanged, built by `src/logic/buildHeadsUp.js` with the rules below.
 

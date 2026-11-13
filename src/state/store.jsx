@@ -90,7 +90,13 @@ function reducer(s, a) {
     case 'DISMISS_TOAST': return { ...s, toasts: s.toasts.filter((t) => t.id !== a.id) }
     case 'SLACK_CHANNEL': return { ...s, slackChannel: a.id, tab: 'slack' }
     case 'OPEN_ANSEL':
-      return { ...s, tab: 'ansel', ansel: { ...s.ansel, page: 'meetings', view: 'detail', panelItem: null, focusId: null, highlight: null, selectedItem: null, themeId: null, ...a.nav } }
+      // There's no Action items tab: a meeting's items are on its Summary, and the series' items are on
+      // the Meetings page card. Old links to the tab (Slack's "N more from the team") open the card expanded.
+      if (a.nav?.tab === 'actions') {
+        const series = SEED.instances.find((i) => i.id === a.nav.instanceId)?.series ?? 'wps'
+        return { ...s, tab: 'ansel', ansel: { ...s.ansel, page: 'meetings', view: 'list', seriesId: series, expandCard: Date.now(), panelItem: null, focusId: null, highlight: null, selectedItem: null, themeId: null } }
+      }
+      return { ...s, tab: 'ansel', ansel: { ...s.ansel, page: 'meetings', view: 'detail', panelItem: null, focusId: null, highlight: null, selectedItem: null, themeId: null, expandCard: null, ...a.nav } }
     case 'ANSEL_NAV': return { ...s, ansel: { ...s.ansel, ...a.nav } }
     case 'CARD_OPENED': {
       if (s.opened[a.key]) return s

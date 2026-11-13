@@ -319,6 +319,11 @@
 
     get now() { return new Date(this._nowMs()); }
 
+    // Embedded mode shows the first DEFAULT_ROW_LIMIT rows with "Show N more"; setting expanded = true
+    // opens the full list (e.g. when a link asks for every action item).
+    get expanded() { return !!this._ui.showAll; }
+    set expanded(value) { this._ui.showAll = !!value; this._render(); }
+
     set now(value) {
       if (value == null) {
         this._offset = 0;
@@ -361,6 +366,7 @@
         muted: false,
         notUseful: null,        // null, or { reason }
         whyOpen: false,
+        showAll: false,         // embedded: rows beyond the limit are shown
         seeded: false,
       };
     }
@@ -623,11 +629,22 @@
             aria-label="${more} more action items in Ansel">+${more} more in Ansel</button></div>`
         : '';
       if (!rows.length) return `<div class="context">No action items from last week.</div>${moreLine}`;
+      // Embedded (inside an app that has every item): expand in place instead of linking out.
+      let shownMine = mine, shownOthers = others, toggle = '';
+      if (this.hasAttribute('embedded') && rows.length > DEFAULT_ROW_LIMIT) {
+        const hidden = rows.length - DEFAULT_ROW_LIMIT;
+        if (!this._ui.showAll) {
+          shownMine = mine.slice(0, DEFAULT_ROW_LIMIT);
+          shownOthers = others.slice(0, Math.max(0, DEFAULT_ROW_LIMIT - shownMine.length));
+        }
+        toggle = `<div class="context more"><button class="link" data-act="more-toggle" data-key="more-toggle" aria-expanded="${this._ui.showAll}">${
+          this._ui.showAll ? 'Show fewer' : `Show ${hidden} more`}</button></div>`;
+      }
       const list = (items, isMine, extra, label) => (items.length
         ? `<div class="rows${extra}" role="list" aria-label="${label}">${items.map((it) => this._rowHtml(it, isMine)).join('')}</div>` : '');
-      return list(mine, true, '', 'Your action items')
-        + list(others, false, mine.length ? ' others' : '', "Everyone else's action items")
-        + moreLine;
+      return list(shownMine, true, '', 'Your action items')
+        + list(shownOthers, false, shownMine.length ? ' others' : '', "Everyone else's action items")
+        + toggle + moreLine;
     }
 
     _cardHtml(d, state, now) {
@@ -734,6 +751,11 @@
           ui.flagged.delete(ds.item);
           this._rerender(`flag-${ds.item}`, 'Flag removed.');
           this._emit('item_flag_undone', { itemId: ds.item });
+          break;
+        case 'more-toggle':
+          ui.showAll = !ui.showAll;
+          this._rerender('more-toggle', ui.showAll ? 'Showing every action item.' : 'Showing fewer action items.');
+          this._emit('more_toggled', { section: 'actionItems', expanded: ui.showAll });
           break;
         case 'more': {
           const sec = d.actionItems || {};
