@@ -1,9 +1,9 @@
 // Slack Block Kit version of the Heads-Up card, contract 2.0 data (card/CONTRACT.md), in the team's chosen
 // condensed layout (card/slack-mockups/condensed, B3 + M2) with a demo polish: a header block, an
 // attendee line, one text block and one row of buttons.
-//   ⏰ 30 min · Weekly Product Sync                                    (header block: large type)
+//   30 min · Weekly Product Sync                                      (header block: large type)
 //   [faces] Starts 2:00 PM · Zoom · 5 attendees                       (small grey context line)
-//   📌 *You own 1 item* · 5 more from the team last week
+//   *You own 1 item* · 5 more from the team last week
 //   • Forecast update (Nov 6 · 14:32)                                  (the timestamp is the link)
 //   [Join Zoom] [Open in Ansel] [Mute Series]
 //   Open in Ansel to make changes.                                    (small grey text)
@@ -116,15 +116,14 @@ export function buildCard(entry, { nowMs = Date.now(), prototypeUrl = '', avatar
   if (mine.length === 0) line = `${team(plural(othersCount, 'action item'))} from last week, none assigned to you`
   else {
     const shown = mine.slice(0, MAX_LISTED)
-    line = [`📌 *You own ${plural(mine.length, 'item')}*${othersCount ? ` · ${team(`${othersCount} more from the team`)} last week` : ''}`,
+    line = [`*You own ${plural(mine.length, 'item')}*${othersCount ? ` · ${team(`${othersCount} more from the team`)} last week` : ''}`,
       ...shown.map((it) => `${BULLET}${named(it)}`),
       ...(mine.length > shown.length ? [`${BULLET}${team(`+${mine.length - shown.length} more of yours in Ansel`)}`] : [])].join('\n')
   }
   if (state === 'ended') line += '\n_Meeting ended · new summary in about 6 min_'
 
-  // Header: large type. ⏰ while counting down, 🔴 once it's live, nothing once it's ended.
-  const icon = state === 'started' ? '🔴 ' : state === 'ended' ? '' : '⏰ '
-  const header = { type: 'header', text: { type: 'plain_text', text: `${icon}${hero} · ${m.title}`.slice(0, 150), emoji: true } }
+  // Header: large type, no icons.
+  const header = { type: 'header', text: { type: 'plain_text', text: `${hero} · ${m.title}`.slice(0, 150), emoji: true } }
 
   // Attendee line: faces (when the prototype hosts them), then start time, platform and head count.
   const people = data.attendees ?? []

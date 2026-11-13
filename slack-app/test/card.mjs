@@ -1,7 +1,7 @@
 // Offline checks for the Slack Heads-Up card (condensed layout, card/slack-mockups):
-//   ⏰ 30 min · Weekly Product Sync                           (header block)
+//   30 min · Weekly Product Sync                             (header block)
 //   [faces] Starts 2:00 PM · Zoom · 5 attendees              (context block)
-//   📌 *You own 3 items* · <8 more from the team> last week      ("8 more…" links to the Action items tab)
+//   *You own 3 items* · <8 more from the team> last week      ("8 more…" links to the Action items tab)
 //   • Forecast update (<Nov 6 · 14:32>)                     (only the date and timestamp are a link)
 //   • Pricing FAQ (<Oct 30 · 24:10>)                        (still open from an earlier meeting)
 //   [Join Zoom] [Open in Ansel] [Mute Series]
@@ -54,14 +54,14 @@ for (const p of ['gabriel', 'alicia', 'rishabh', 'varun', 'aryan']) {
   const c = calls.filter(([k]) => k === 'post').at(-1)[1]
   texts[p] = body(c)
   const own = (date) => `\\n\u2002• [^*]+ \\(<[^|]*#t\\/a\\d+\\?as=${p}&start=\\d+\\|${date} · \\d+:\\d\\d>\\)`
-  const re = `^📌 \\*You own ${carried[p] ? 3 : 2} items\\* · <.*\\|8 more from the team> last week${own('Nov 6')}${own('Nov 6')}${carried[p] ? own(carried[p]) : ''}$`
+  const re = `^\\*You own ${carried[p] ? 3 : 2} items\\* · <.*\\|8 more from the team> last week${own('Nov 6')}${own('Nov 6')}${carried[p] ? own(carried[p]) : ''}$`
   assert.match(texts[p], new RegExp(re), p)
 }
 console.log(Object.entries(texts).map(([p, t]) => `${p}: ${t.split('\n').slice(1, carried[p] ? 4 : 3).join(' / ').replace(/<[^|]+\|/g, '<')}`).join('\n'))
 const card = calls.find(([k, m]) => k === 'post' && m.channel === 'D_UGABRIEL01')[1]
 assert.deepEqual(card.blocks.map((b) => b.type), ['header', 'context', 'section', 'actions', 'context'])
 assert.deepEqual(card.blocks[4], { type: 'context', elements: [{ type: 'mrkdwn', text: 'Open in Ansel to make changes.' }] })
-assert.deepEqual(card.blocks[0], { type: 'header', text: { type: 'plain_text', text: '⏰ 30 min · Weekly Product Sync', emoji: true } })
+assert.deepEqual(card.blocks[0], { type: 'header', text: { type: 'plain_text', text: '30 min · Weekly Product Sync', emoji: true } })
 // Attendee line: a face per invitee (hosted with the prototype), then time, platform and head count
 const faces = card.blocks[1].elements.filter((e) => e.type === 'image')
 assert.deepEqual(faces.map((e) => e.image_url), ['alicia', 'gabriel', 'rishabh', 'varun', 'aryan'].map((id) => `${P}slack/avatars/${id}.png`))
@@ -70,7 +70,7 @@ assert.match(card.blocks[1].elements.at(-1).text, /^Starts <!date\^\d+\^\{time\}
 assert.equal(avatarUrl('https://lamgs.github.io/ansel-headsup', 'varun'), 'https://lamgs.github.io/ansel-headsup/slack/avatars/varun.png')
 assert.equal(avatarUrl('https://x.example/app/index.html#headsup', 'varun'), 'https://x.example/app/slack/avatars/varun.png')
 assert.equal(avatarUrl('', 'varun'), null)
-assert.equal(body(card), `📌 *You own 3 items* · <${ACTIONS}|8 more from the team> last week\n\u2002• Forecast update (<${P}#t/a2?as=gabriel&start=${S}|Nov 6 · 14:32>)\n\u2002• Dashboard link (<${P}#t/a8?as=gabriel&start=${S}|Nov 6 · 45:50>)\n\u2002• Pricing FAQ (<${P}#t/a15?as=gabriel&start=${S}|Oct 30 · 24:10>)`)
+assert.equal(body(card), `*You own 3 items* · <${ACTIONS}|8 more from the team> last week\n\u2002• Forecast update (<${P}#t/a2?as=gabriel&start=${S}|Nov 6 · 14:32>)\n\u2002• Dashboard link (<${P}#t/a8?as=gabriel&start=${S}|Nov 6 · 45:50>)\n\u2002• Pricing FAQ (<${P}#t/a15?as=gabriel&start=${S}|Oct 30 · 24:10>)`)
 assert.ok(!/Still Open|Decided/.test(JSON.stringify(card)), 'no Still Open / Decided on the Slack card')
 assert.equal(labels(card)[0], 'Join Zoom | Open in Ansel | Mute Series')
 assert.ok(!JSON.stringify(card).includes('Mark done') && !JSON.stringify(card).includes('static_select'))
@@ -139,7 +139,7 @@ const base = hu.evaluate('gabriel', 'wps', { startMs: start }).result.data
 const entryWith = (items, moreCount = 0) => ({ persona: 'gabriel', sid: 'wps', startMs: start, joinUrl: config.demoJoinUrl, data: { ...base, stillOpen: [], decided: [], actionItems: { items, moreCount } }, ui: { muted: false } })
 const others = base.actionItems.items.filter((i) => i.owner.id !== 'gabriel') // 3 shown; the other 5 are in moreCount
 let c = buildCard(entryWith([base.actionItems.items[0], ...others], 2), { nowMs: Date.now(), prototypeUrl: P })
-assert.equal(body(c), `📌 *You own 1 item* · <${ACTIONS}|5 more from the team> last week\n • Forecast update (<${P}#t/a2?as=gabriel&start=${S}|Nov 6 · 14:32>)`)
+assert.equal(body(c), `*You own 1 item* · <${ACTIONS}|5 more from the team> last week\n • Forecast update (<${P}#t/a2?as=gabriel&start=${S}|Nov 6 · 14:32>)`)
 assert.equal(labels(c)[0], 'Join Zoom | Open in Ansel | Mute Series')
 c = buildCard(entryWith([{ ...base.actionItems.items[0], done: true }, ...others], 2), { nowMs: Date.now(), prototypeUrl: P })
 assert.match(body(c), /\*You own 1 item\* · <.*\n • ~Forecast update~ \(<.*\|Nov 6 · 14:32>\) · _Done_$/)
@@ -157,13 +157,13 @@ console.log('ok  more than three items')
 const now = Date.now()
 assert.deepEqual(['posted', 'starting-soon', 'started', 'ended'], [now + 20 * 60000, now + 4 * 60000, now - 60000, now - 51 * 60000].map((s) => cardState(now, s, 50)))
 const at2 = (startMs) => ({ persona: 'gabriel', sid: 'wps', startMs, joinUrl: config.demoJoinUrl, data: hu.evaluate('gabriel', 'wps', { startMs }).result.data, ui: { muted: false } })
-c = buildCard(at2(now + 4 * 60000), { nowMs: now, prototypeUrl: P }); assert.equal(head(c), '⏰ 4 min · Weekly Product Sync')
-c = buildCard(at2(now - 60000), { nowMs: now, prototypeUrl: P }); assert.equal(head(c), '🔴 Live · Weekly Product Sync'); assert.match(c.blocks[1].elements.at(-1).text, /^Started /); assert.equal(button(c, 'hu_join').text.text, 'Join now')
+c = buildCard(at2(now + 4 * 60000), { nowMs: now, prototypeUrl: P }); assert.equal(head(c), '4 min · Weekly Product Sync')
+c = buildCard(at2(now - 60000), { nowMs: now, prototypeUrl: P }); assert.equal(head(c), 'Live · Weekly Product Sync'); assert.match(c.blocks[1].elements.at(-1).text, /^Started /); assert.equal(button(c, 'hu_join').text.text, 'Join now')
 c = buildCard(at2(now - 51 * 60000), { nowMs: now, prototypeUrl: P }); assert.equal(head(c), 'Ended · Weekly Product Sync'); assert.match(body(c), /_Meeting ended · new summary in about 6 min_$/); assert.equal(button(c, 'hu_join'), undefined)
 c = buildCard(at2(now + 20 * 60000), { nowMs: now, prototypeUrl: '' })
-assert.equal(head(c), '⏰ 20 min · Weekly Product Sync')
+assert.equal(head(c), '20 min · Weekly Product Sync')
 assert.ok(!c.blocks[1].elements.some((e) => e.type === 'image'), 'no faces when links are off')
-assert.equal(body(c), '📌 *You own 3 items* · 8 more from the team last week\n\u2002• Forecast update (Nov 6 · 14:32)\n\u2002• Dashboard link (Nov 6 · 45:50)\n\u2002• Pricing FAQ (Oct 30 · 24:10)', 'plain text when links are off')
+assert.equal(body(c), '*You own 3 items* · 8 more from the team last week\n\u2002• Forecast update (Nov 6 · 14:32)\n\u2002• Dashboard link (Nov 6 · 45:50)\n\u2002• Pricing FAQ (Oct 30 · 24:10)', 'plain text when links are off')
 assert.equal(button(c, 'hu_open_last').url, undefined)
 assert.equal(fmtStamp(872), '14:32')
 console.log('ok  countdown states + links off')

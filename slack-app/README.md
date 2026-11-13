@@ -176,9 +176,9 @@ The card matches [`../card/heads-up-card.js`](../card/heads-up-card.js) and logs
 Layout (condensed, chosen in [`../card/slack-mockups/`](../card/slack-mockups/README.md): `condensed/B3-minimal.png` and `condensed/M2-checkboxes.png`, with a demo polish): a header, an attendee line, one text block, one row of buttons and a small grey note.
 
 ```
-⏰ 30 min · Weekly Product Sync               (header block: large type; 🔴 Live, then Ended)
+30 min · Weekly Product Sync                 (header block: large type; Live, then Ended)
 [faces] Starts 2:00 PM · Zoom · 5 attendees   (small grey context line)
-📌 *You own 2 items* · 8 more from the team last week
+*You own 2 items* · 8 more from the team last week
   • Forecast update (14:32)
   • Dashboard link (45:50)
 [Join Zoom] [Open in Ansel] [Mute Series]
