@@ -103,6 +103,11 @@ export function createHeadsUp({ client, config, access, log = pilotLog }) {
     }
   }
 
+  /** The button with this action_id in the message the click came from (its blocks are in the payload). */
+  const buttonInMessage = (body, actionId) => (body.message?.blocks ?? [])
+    .flatMap((b) => (b.type === 'actions' ? b.elements : b.accessory ? [b.accessory] : []))
+    .find((e) => e.action_id === actionId)
+
   /** Find (or rebuild after a restart) the state for the message an action came from. */
   function entryFor(body) {
     const key = `${body.channel.id}:${body.message.ts}`
@@ -138,7 +143,9 @@ export function createHeadsUp({ client, config, access, log = pilotLog }) {
         return null
       case 'open_last':
         ev('open_last_meeting', entry.data.lastMeeting.meetingId)
-        return action.url ? null : summaryText(entry.data.lastMeeting.meetingId)
+        // Slack's click payload doesn't include a link button's url, so look the button up in the card itself.
+        // Only a button without a link (PROTOTYPE_URL=off) replies with the summary.
+        return action.url || buttonInMessage(body, action.action_id)?.url ? null : summaryText(entry.data.lastMeeting.meetingId)
       case 'mute': ui.muted = true; muted[`${persona}:${entry.sid}`] = true; ev('mute_series', title); break
       case 'mute_undo': ui.muted = false; delete muted[`${persona}:${entry.sid}`]; ev('mute_undone', title); break
       case 'nu': ui.notUseful = { reason: null }; ev('not_useful', title); break
