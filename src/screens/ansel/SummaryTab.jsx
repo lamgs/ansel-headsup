@@ -1,15 +1,14 @@
 // Summary tab: "Open last meeting" lands here. Reads top-down: overview, what's yours,
 // decisions and open questions, then every action item and a themes timeline.
 // Every item and theme links into the transcript.
-import React, { useEffect, useRef, useState } from 'react'
-import { ChevronDown, CircleCheck, FileText, MessageSquare, Pencil, User } from 'lucide-react'
+import React, { useEffect, useState } from 'react'
+import { CircleCheck, FileText, MessageSquare, Pencil, User } from 'lucide-react'
 import { useStore } from '../../state/store.jsx'
-import { DEMO_DATE, SEED } from '../../data/seed.js'
+import { DEMO_DATE } from '../../data/seed.js'
 import { SUMMARIES } from '../../data/summaries.js'
 import { shortDate, longDate } from '../../logic/buildHeadsUp.js'
 import { Avatar, Btn, Ts, firstName, fmtClock, personName } from '../../components/ui.jsx'
 import { StatusPill, jumpTo, toSec } from './shared.jsx'
-import HeadsUpPanel from './HeadsUpPanel.jsx'
 
 const DAY = 86400000
 const days = (a, b) => Math.round((Date.parse(`${a}T00:00:00Z`) - Date.parse(`${b}T00:00:00Z`)) / DAY)
@@ -24,50 +23,8 @@ export function dueLabel(a, today = DEMO_DATE) {
   return { text: `Due ${longDate(a.due)}`, overdue: false }
 }
 
-/** The most recent recorded meeting in the series: the one the Heads-Up card is built from. */
-export function latestMeetingId(series) {
-  return SEED.instances
-    .filter((i) => i.series === series.id && i.recorded && i.date < series.nextInstance.date)
-    .sort((x, y) => (x.date < y.date ? 1 : -1))[0]?.id
-}
-
-// The latest meeting's Summary is the Heads-Up card. The full summary (decisions, open questions,
-// action items, themes, edit history) stays below it, collapsed, and opens when something links
-// to one of its items or the card's Open last meeting is tapped. Older meetings keep the summary.
 export default function SummaryTab({ inst, series }) {
-  if (inst.id !== latestMeetingId(series)) return <FullSummary inst={inst} series={series} />
-  return <HeadsUpSummary inst={inst} series={series} />
-}
-
-function HeadsUpSummary({ inst, series }) {
-  const { state, dispatch } = useStore()
-  const { focusId, showFullSummary } = state.ansel
-  const [open, setOpen] = useState(!!focusId || !!showFullSummary)
-  const fullRef = useRef(null)
-  useEffect(() => { if (focusId) setOpen(true) }, [focusId])
-  useEffect(() => {
-    if (!showFullSummary) return
-    setOpen(true)
-    requestAnimationFrame(() => fullRef.current?.scrollIntoView({ block: 'start', behavior: 'smooth' }))
-  }, [showFullSummary])
-  return (
-    <div className="max-w-5xl px-6 py-6">
-      <div className="flex items-center justify-between gap-4">
-        <p className="text-xs text-slate-500">Your Heads-Up for the next {series.title}, from this meeting's record</p>
-        <Btn onClick={() => jumpTo(dispatch, null)}><FileText size={15} aria-hidden />View full transcript</Btn>
-      </div>
-      <div className="mt-4 max-w-[780px]"><HeadsUpPanel series={series} /></div>
-      <div ref={fullRef} className="mt-8 border-t border-slate-200 pt-4 dark:border-slate-800">
-        <button onClick={() => setOpen(!open)} aria-expanded={open}
-          className="inline-flex items-center gap-1.5 text-sm font-semibold text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white">
-          <ChevronDown size={16} className={`transition ${open ? '' : '-rotate-90'}`} aria-hidden />
-          {open ? 'Hide' : 'Show'} full meeting summary
-          <span className="font-normal text-slate-400">· decisions, open questions, action items, themes</span>
-        </button>
-        {open && <FullSummary inst={inst} series={series} embedded />}
-      </div>
-    </div>
-  )
+  return <FullSummary inst={inst} series={series} />
 }
 
 function FullSummary({ inst, series, embedded = false }) {

@@ -66,8 +66,7 @@ export default function HeadsUpPanel({ series }) {
           dispatch({ type: 'OPEN_ANSEL', nav: { instanceId: last, tab: 'transcript', highlight: item ? { t: item.t, n: Date.now() } : null, panelItem: payload.itemId } })
           break
         case 'open_last_meeting':
-          // The card sits on that meeting's Summary, so open the full summary below it.
-          dispatch({ type: 'OPEN_ANSEL', nav: { instanceId: last, tab: 'summary', showFullSummary: Date.now() } })
+          dispatch({ type: 'OPEN_ANSEL', nav: { instanceId: last, tab: 'summary', seriesId: series.id } })
           break
         case 'more_tap':
           dispatch({ type: 'OPEN_ANSEL', nav: { instanceId: last, tab: 'actions' } })
@@ -104,7 +103,8 @@ export default function HeadsUpPanel({ series }) {
   if (!data) {
     return (
       <div className="rounded-xl border border-slate-200 p-4 text-sm text-slate-600 dark:border-slate-800 dark:text-slate-300">
-        No Heads-Up for {user.name}: <b>{result.reason}</b>.
+        No Heads-Up for {series.title}: <b>{result.reason}</b>.
+        {series.note && <span className="mt-1 block text-xs text-slate-500">{series.note.replace(/'Keep Ansel out'/, '“Keep Ansel out”')}.</span>}
       </div>
     )
   }

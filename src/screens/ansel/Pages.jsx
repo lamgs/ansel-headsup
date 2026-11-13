@@ -28,17 +28,19 @@ export function HomePage() {
     <Page title={`Good afternoon, ${firstName(state.persona)}`} sub="Fri Nov 13">
       <h2 className="mb-2 text-xs font-bold uppercase tracking-wider text-slate-500">Coming up today</h2>
       <div className="space-y-2">
-        <button onClick={() => openMeeting(dispatch, 'wps-1106')} className="block w-full text-left">
+        <button onClick={() => dispatch({ type: 'OPEN_ANSEL', nav: { view: 'list', seriesId: 'wps' } })} className="block w-full text-left">
         <Card className="flex items-center gap-3 hover:border-ansel/40 dark:hover:border-ansel-300/40">
           <CalendarDays size={18} className="text-ansel dark:text-ansel-300" aria-hidden />
           <div className="flex-1"><div className="font-medium">Weekly Product Sync · 2:00 PM</div><div className="text-xs text-slate-500">Recurring · Ansel will join and record · open your Heads-Up</div></div>
           {sent && <span className="inline-flex items-center gap-1 rounded-full bg-ansel-50 px-2 py-0.5 text-xs font-medium text-ansel dark:bg-ansel/20 dark:text-ansel-300"><BellRing size={12} aria-hidden />Heads-Up sent in Slack</span>}
         </Card>
         </button>
-        <Card className="flex items-center gap-3">
+        <button onClick={() => dispatch({ type: 'OPEN_ANSEL', nav: { view: 'list', seriesId: 'dr' } })} className="block w-full text-left">
+        <Card className="flex items-center gap-3 hover:border-ansel/40 dark:hover:border-ansel-300/40">
           <CalendarDays size={18} className="text-slate-400" aria-hidden />
           <div className="flex-1"><div className="font-medium">Design Review · 4:00 PM</div><div className="text-xs text-slate-500">Last meeting had Ansel kept out, so there's no record</div></div>
         </Card>
+        </button>
       </div>
       <h2 className="mb-2 mt-8 text-xs font-bold uppercase tracking-wider text-slate-500">Recent meetings</h2>
       <RecentList />
@@ -66,10 +68,6 @@ function RecentList() {
       </div>
     </div>
   )
-}
-
-export function MeetingList() {
-  return <Page title="Meetings" sub="Meetings you attended. Notes are visible to attendees by default."><RecentList /></Page>
 }
 
 export function SearchPage() {

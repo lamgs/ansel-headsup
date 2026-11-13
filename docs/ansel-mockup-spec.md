@@ -84,6 +84,12 @@ Layout sketch (the player is audio only):
 - Answers only appear where the person can open the Nov 6 record (Aryan without the direct share sees none). "What do I owe" is offered to Gabriel only. The thread resets when the persona changes.
 - Transcript: the speaker's avatar and name sit on the same line as their first line of dialogue, in a fixed column; consecutive lines from the same speaker leave it blank.
 
+**Heads-Up lives on the Meetings page, per series (branch `rishabh/ansel-polish-6`)**
+- The card belongs to a recurring series, not one meeting (it carries over open items from earlier meetings), so it moves off the Nov 6 Summary.
+- **Meetings page:** one row per series (Weekly Product Sync, Design Review) with cadence, next meeting and a "Heads-Up · N yours" or "No Heads-Up" tag. Selecting a row shows that series' card on the right (stacked below on narrow screens); expanding it lists its meetings (upcoming first, then past), and clicking one opens the existing meeting screen. Design Review shows why it has no card (last meeting had Ansel kept out).
+- **Summary tab** is the full summary again on every meeting (supersedes the "Summary is the Heads-Up card" pass below).
+- **Links:** `#headsup` (Slack's Open in Ansel) opens the Meetings page with Weekly Product Sync selected; `#headsup/dr` selects Design Review. The card's Open last meeting opens the latest meeting's Summary. Home's coming-up rows and the upcoming meeting page open the Meetings page.
+
 **Card looks native in Ansel (branch `rishabh/ansel-polish-5`)**
 - Ansel shows `<heads-up-card embedded>`: no Slack frame (avatar, APP tag, time, rail), Ansel's font, inside a standard Ansel card. Colours come from CSS variables set in `src/index.css` (indigo accent and Join, slate text and buttons), with dark-mode values. The standalone card pages keep the Slack look.
 

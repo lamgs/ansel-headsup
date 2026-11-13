@@ -24,7 +24,7 @@ export function initialState(theme = 'light') {
     toasts: [],
     share: null, // { sec } when the G3 direct share is ticked
     slackChannel: 'product',
-    ansel: { page: 'meetings', view: 'detail', instanceId: 'wps-1106', tab: 'summary', highlight: null, panelItem: null, focusId: null, selectedItem: null, themeId: null, shareOpen: false, chat: 'closed', chatThread: [], showFullSummary: null },
+    ansel: { page: 'meetings', view: 'detail', instanceId: 'wps-1106', tab: 'summary', highlight: null, panelItem: null, focusId: null, selectedItem: null, themeId: null, shareOpen: false, chat: 'closed', chatThread: [], seriesId: 'wps' },
     join: null, // null | { step: 'notice' | 'call', keptOut, joinedAt }
   }
 }
@@ -89,7 +89,7 @@ function reducer(s, a) {
     case 'DISMISS_TOAST': return { ...s, toasts: s.toasts.filter((t) => t.id !== a.id) }
     case 'SLACK_CHANNEL': return { ...s, slackChannel: a.id, tab: 'slack' }
     case 'OPEN_ANSEL':
-      return { ...s, tab: 'ansel', ansel: { ...s.ansel, page: 'meetings', view: 'detail', panelItem: null, focusId: null, highlight: null, selectedItem: null, themeId: null, showFullSummary: null, ...a.nav } }
+      return { ...s, tab: 'ansel', ansel: { ...s.ansel, page: 'meetings', view: 'detail', panelItem: null, focusId: null, highlight: null, selectedItem: null, themeId: null, ...a.nav } }
     case 'ANSEL_NAV': return { ...s, ansel: { ...s.ansel, ...a.nav } }
     case 'CARD_OPENED': {
       if (s.opened[a.key]) return s
@@ -165,10 +165,11 @@ export function StoreProvider({ children }) {
         const item = inst && [...inst.actionItems, ...inst.decisions, ...inst.openQuestions].find((x) => x.id === parts[1])
         if (item) parts.splice(0, 2, 'ansel', inst.id, 'transcript', item.t, item.id)
       }
-      // #headsup opens the Heads-Up card, which is the latest meeting's Summary.
+      // #headsup opens the Meetings page with Weekly Product Sync's Heads-Up card selected.
       if (parts[0] === 'headsup') {
-        const latest = SEED.instances.filter((i) => i.series === 'wps' && i.recorded).sort((x, y) => (x.date < y.date ? 1 : -1))[0]
-        parts.splice(0, parts.length, 'ansel', latest.id, 'summary')
+        dispatch({ type: 'AT_LEAST_CLOCK', sec: 13.5 * 3600 })
+        dispatch({ type: 'OPEN_ANSEL', nav: { view: 'list', seriesId: parts[1] || 'wps' } })
+        return
       }
       const [root, instanceId, tab = 'summary', t, panelItem] = parts
       if (root !== 'ansel' || !(instanceId === 'upcoming' || SEED.instances.some((i) => i.id === instanceId))) return
