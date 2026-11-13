@@ -1,7 +1,7 @@
 // The one fully active screen: transcript with speaker blocks, cited-line chips,
 // theme dividers and line comments. Player and search are visible but inactive.
 import React, { useEffect, useMemo, useRef, useState } from 'react'
-import { Highlighter, Link2, MessageSquarePlus, PanelRightOpen, Play, Search, SkipBack, SkipForward } from 'lucide-react'
+import { Highlighter, Link2, MessageSquarePlus, Play, Search, SkipBack, SkipForward } from 'lucide-react'
 import { useStore } from '../../state/store.jsx'
 import { TRANSCRIPTS } from '../../data/transcripts.js'
 import { Avatar, Btn, PERSON_COLORS, firstName, mmss } from '../../components/ui.jsx'
@@ -106,10 +106,6 @@ function PlayerBar({ inst, durationSec, posSec }) {
           <input readOnly onClick={nip('Transcript search')} placeholder="Search transcript"
             className="w-44 cursor-pointer rounded-md border border-slate-300 bg-transparent py-1 pl-7 pr-2 text-xs dark:border-slate-600" />
         </div>
-        {!state.ansel.sideOpen && (
-          <button onClick={() => dispatch({ type: 'ANSEL_NAV', nav: { sideOpen: true } })} title="Show summary panel"
-            className="rounded p-1 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800"><PanelRightOpen size={16} /></button>
-        )}
       </div>
       </div>
     </div>
@@ -229,7 +225,13 @@ function Line({ s, inst, items, flash, inTheme, showSpeaker }) {
           <div className="mt-1 flex flex-wrap gap-1.5">
             {items.map((x) => (
               <KindChip key={x.item.id} kind={x.kind} active={x.item.id === state.ansel.selectedItem}
-                onClick={() => dispatch({ type: 'ANSEL_NAV', nav: { selectedItem: x.item.id, themeId: null, sideOpen: true, sideTab: 'summary', panelItem: null } })} />
+                onClick={() => dispatch({
+                  type: 'ANSEL_NAV',
+                  // Action items open their panel; decisions and questions open on the Summary page.
+                  nav: x.kind === 'action'
+                    ? { selectedItem: x.item.id, themeId: null, panelItem: x.item.id }
+                    : { tab: 'summary', focusId: x.item.id, panelItem: null },
+                })} />
             ))}
           </div>
         )}

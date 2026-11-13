@@ -5,6 +5,9 @@ import assert from 'node:assert/strict'
 import { buildCard, cardState, fmtStamp, MAX_CHECKBOXES, OPTION_LIMIT } from '../src/card.js'
 import { createHeadsUp } from '../src/headsup.js'
 import { createAccessControl } from '../src/access.js'
+import { SEED } from '../../src/data/seed.js'
+import { buildWorld } from '../../src/logic/world.js'
+import { buildCardData } from '../../src/logic/buildCardData.js'
 
 const calls = []
 const client = {
@@ -19,7 +22,7 @@ const P = 'https://proto.example/'
 const config = { prototypeUrl: P, demoJoinUrl: 'https://zoom.us/j/123', reminderMinutes: 30 }
 const logs = []
 const log = (...a) => logs.push(a)
-const team = ['gabriel', 'alicia', 'riley', 'sam', 'alex', 'leo'].map((p) => `${p}@acme.example`)
+const team = ['gabriel', 'alicia', 'riley', 'leo'].map((p) => `${p}@acme.example`)
 const access = createAccessControl({ client, allowedUsers: team, log })
 const hu = createHeadsUp({ client, config, access, log })
 const start = Date.now() + 30 * 60000
@@ -47,7 +50,7 @@ assert.equal(elements(card).filter((e) => e.style === 'primary').length, 1)
 console.log('ok  one item: layout')
 
 // 2. Who gets a card (everyone on the invite; not holdout, no-Slack or external); none of yours
-for (const [p, posted, reason] of [['riley', true], ['sam', false, 'Holdout (measured, no card)'], ['alex', false, 'Slack not connected'], ['leo', false, 'External guest']]) {
+for (const [p, posted, reason] of [['riley', true], ['leo', false, 'External guest']]) {
   r = await hu.post({ persona: p, sid: 'wps', slackUser: `${p}@acme.example`, startMs: start })
   assert.equal(r.posted, posted, p); if (!posted) assert.equal(r.result.reason, reason)
 }
@@ -55,6 +58,11 @@ const riley = calls.filter(([k]) => k === 'post').at(-1)[1]
 assert.equal(riley.blocks[0].text.text, '*30 min · Weekly Product Sync*\n6 action items from last week, none assigned to you')
 assert.equal(riley.blocks.length, 2, 'no checkboxes when nothing is yours'); assert.equal(labels(riley)[0], 'Join Zoom | Open in Ansel | Mute series | Not useful')
 assert.equal((await hu.post({ persona: 'gabriel', sid: 'dr', slackUser: 'gabriel@acme.example', startMs: start })).result.reason, 'No record of last meeting')
+// No one in the cast is in the holdout or lacks Slack; check those rules with stand-in users.
+const w0 = buildWorld()
+const holdout = buildCardData({ ...w0.person('gabriel'), holdout: true }, SEED.series[0], w0, { startMs: start })
+assert.deepEqual([holdout.eligible, holdout.reason, holdout.suppressed], [false, 'Holdout (measured, no card)', true])
+assert.equal(buildCardData({ ...w0.person('gabriel'), slack: false }, SEED.series[0], w0, { startMs: start }).eligible, false)
 console.log('ok  who gets a card')
 
 // 3. Buttons: ✓, Mute, Not useful (each with Undo), Open in Ansel, Join
@@ -76,7 +84,7 @@ assert.equal(await press(msg, 'hu_open_last', `${P}#x`), null)
 assert.match(await press(msg, 'hu_open_last'), /\*Action items\*/, 'without a prototype link, Open in Ansel replies with the summary')
 await press(msg, 'hu_join')
 const ev = logs.map(([e, , d]) => `${e} ${d}`)
-for (const e of ['card_shown', 'card_suppressed', 'mark_done', 'mark_done_undone', 'not_useful', 'not_useful_reason', 'not_useful_undone', 'mute_series', 'mute_undone', 'open_last_meeting']) assert.ok(ev.some((x) => x.startsWith(e + ' ')), e)
+for (const e of ['card_shown', 'mark_done', 'mark_done_undone', 'not_useful', 'not_useful_reason', 'not_useful_undone', 'mute_series', 'mute_undone', 'open_last_meeting']) assert.ok(ev.some((x) => x.startsWith(e + ' ')), e)
 assert.ok(ev.includes('join_tap Zoom · joinedPrepared=true'), 'joinedPrepared after ✓')
 console.log('ok  buttons + events')
 
