@@ -1,0 +1,82 @@
+{
+  "blocks": [
+    {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": "*30 min · Weekly Product Sync*\nYou own 1 item · 5 more from the team last week"
+      }
+    },
+    {
+      "type": "actions",
+      "elements": [
+        {
+          "type": "checkboxes",
+          "action_id": "hu_check",
+          "options": [
+            {
+              "text": {
+                "type": "mrkdwn",
+                "text": "*Forecast update*"
+              },
+              "description": {
+                "type": "mrkdwn",
+                "text": "“Can you update the Q1 forecast with the new numbers?”"
+              },
+              "value": "a2"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "context",
+      "elements": [
+        {
+          "type": "mrkdwn",
+          "text": "<https://lamgs.github.io/ansel-headsup/#ansel/wps-1106/transcript/14:32/a2|Transcript 14:32 ↗>"
+        }
+      ]
+    },
+    {
+      "type": "actions",
+      "elements": [
+        {
+          "type": "button",
+          "action_id": "hu_join",
+          "text": {
+            "type": "plain_text",
+            "text": "Join Zoom"
+          },
+          "style": "primary",
+          "url": "https://zoom.us/j/0"
+        },
+        {
+          "type": "button",
+          "action_id": "hu_open_last",
+          "text": {
+            "type": "plain_text",
+            "text": "Open in Ansel"
+          },
+          "url": "https://lamgs.github.io/ansel-headsup/"
+        },
+        {
+          "type": "button",
+          "action_id": "hu_mute",
+          "text": {
+            "type": "plain_text",
+            "text": "Mute series"
+          }
+        },
+        {
+          "type": "button",
+          "action_id": "hu_nu",
+          "text": {
+            "type": "plain_text",
+            "text": "Not useful"
+          }
+        }
+      ]
+    }
+  ]
+}
