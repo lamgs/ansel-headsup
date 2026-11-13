@@ -107,7 +107,7 @@ Setting `card.data` again re-renders from the new data. If it is the same viewer
 | `item.summary` | Optional, one short line under the task. Take it from Ansel's existing meeting summary, so the card adds no new AI processing. No due dates: those get set in the meeting |
 | `item.done` | Optional, viewer's items only; `true` shows the row as done (green background, "✓ Done"). Ignored on other people's items |
 | `actionItems.moreCount` | Shows "+N more in Ansel" under the table when above 0 |
-| `item.meetingId`, `item.date`, `item.dateLabel` | 2.1. The meeting the item comes from (`"wps-1030"`, `"2026-10-30"`, `"Oct 30"`). The Slack card shows the date next to every timestamp: "Nov 6 · 14:32". Without them, read the item as from `lastMeeting` |
+| `item.meetingId`, `item.date`, `item.dateLabel` | 2.1. The meeting the item comes from (`"wps-1030"`, `"2026-10-30"`, `"Oct 30"`). The Slack card and the `<heads-up-card>` element show the date next to every timestamp: "Nov 6 · 14:32" / "▶ Nov 6 · 14:32", and `timestamp_tap` carries the item's own `meetingId`. Without them, read the item as from `lastMeeting` (the element shows "▶ 14:32") |
 | `item.carriedOver` | 2.1. `true` on the viewer's own items that are still open from an earlier meeting (up to 3 earlier recorded meetings they attended, inside retention). They come after the viewer's last-meeting items. Done items and other people's items never carry over |
 
 Everyone on the invite gets a card and sees every action item, because invitees can already open last meeting's summary. The card adds no access.

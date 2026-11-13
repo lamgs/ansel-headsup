@@ -553,9 +553,13 @@
       if (bar) bar.style.width = `${p.pct}%`;
     }
 
+    // ▶ mm:ss, or ▶ Nov 6 · mm:ss when the item carries its meeting's date (items can come from
+    // different meetings in the series, e.g. carried over from an earlier one).
     _playButton(item) {
+      const date = item.dateLabel ? `${item.dateLabel} · ` : '';
+      const spokenDate = item.dateLabel ? ` from ${item.dateLabel}` : '';
       return `<button class="btn" data-act="play" data-section="actionItems" data-item="${esc(item.id)}" data-key="play-${esc(item.id)}"
-        aria-label="Play transcript at ${esc(spokenStamp(item.seconds))}: ${esc(item.text)}">▶ ${esc(fmtStamp(item.seconds))}</button>`;
+        aria-label="Play transcript${esc(spokenDate)} at ${esc(spokenStamp(item.seconds))}: ${esc(item.text)}">▶ ${esc(date)}${esc(fmtStamp(item.seconds))}</button>`;
     }
 
     // One action item. Status (YOURS, Mark done / ✓ Done, the green row) shows only on the viewer's own items.
@@ -683,7 +687,7 @@
           if (!found) return;
           ui.tapped = true;
           this._emit('timestamp_tap',
-            { itemId: found.item.id, section: ds.section, seconds: found.item.seconds, meetingId: last.meetingId },
+            { itemId: found.item.id, section: ds.section, seconds: found.item.seconds, meetingId: found.item.meetingId || last.meetingId },
             withParam(last.transcriptUrl, 't', found.item.seconds), { valueAction: true });
           break;
         }
