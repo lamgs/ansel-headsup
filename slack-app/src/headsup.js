@@ -42,7 +42,7 @@ export function createHeadsUp({ client, config, access, log = pilotLog }) {
     return userIds[ref]
   }
 
-  const freshUi = () => ({ muted: false, notUseful: null })
+  const freshUi = () => ({ muted: false, notUseful: null, expanded: {} })
   const render = (entry) => buildCard(entry, { nowMs: Date.now(), prototypeUrl: config.prototypeUrl })
   const update = (entry) => client.chat.update({ channel: entry.channel, ts: entry.ts, ...render(entry) })
 
@@ -131,6 +131,11 @@ export function createHeadsUp({ client, config, access, log = pilotLog }) {
       case 'open_last':
         ev('open_last_meeting', entry.data.lastMeeting.meetingId)
         return action.url ? null : summaryText(entry.data.lastMeeting.meetingId)
+      case 'expand': // ▸ Details / ▾ Hide on one of your items
+        ui.expanded ??= {}
+        if (ui.expanded[a1]) delete ui.expanded[a1]; else ui.expanded[a1] = true
+        ev(ui.expanded[a1] ? 'item_expanded' : 'item_collapsed', a1)
+        break
       case 'mute': ui.muted = true; muted[`${persona}:${entry.sid}`] = true; ev('mute_series', title); break
       case 'mute_undo': ui.muted = false; delete muted[`${persona}:${entry.sid}`]; ev('mute_undone', title); break
       case 'nu': ui.notUseful = { reason: null }; ev('not_useful', title); break

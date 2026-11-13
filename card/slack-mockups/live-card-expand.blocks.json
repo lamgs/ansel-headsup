@@ -1,0 +1,102 @@
+{
+  "blocks": [
+    {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": "*30 min · Weekly Product Sync*\nYou own 2 items · <https://lamgs.github.io/ansel-headsup/#ansel/wps-1106/actions/|8 more from the team> last week"
+      }
+    },
+    {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": "*Forecast update* (<https://lamgs.github.io/ansel-headsup/#t/a2|14:32>)"
+      },
+      "accessory": {
+        "type": "button",
+        "action_id": "hu_expand:a2",
+        "text": {
+          "type": "plain_text",
+          "text": "▾ Hide",
+          "emoji": true
+        },
+        "value": "{\"p\":\"gabriel\",\"s\":\"wps\",\"st\":1794533850298,\"j\":\"https://zoom.us/j/1\"}"
+      }
+    },
+    {
+      "type": "context",
+      "elements": [
+        {
+          "type": "mrkdwn",
+          "text": "Rerun the Q1 forecast with the new conversion numbers and add it to the shared deck."
+        }
+      ]
+    },
+    {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": "*Dashboard link* (<https://lamgs.github.io/ansel-headsup/#t/a8|45:50>)"
+      },
+      "accessory": {
+        "type": "button",
+        "action_id": "hu_expand:a8",
+        "text": {
+          "type": "plain_text",
+          "text": "▸ Details",
+          "emoji": true
+        },
+        "value": "{\"p\":\"gabriel\",\"s\":\"wps\",\"st\":1794533850298,\"j\":\"https://zoom.us/j/1\"}"
+      }
+    },
+    {
+      "type": "actions",
+      "elements": [
+        {
+          "type": "button",
+          "action_id": "hu_join",
+          "text": {
+            "type": "plain_text",
+            "text": "Join Zoom",
+            "emoji": true
+          },
+          "value": "{\"p\":\"gabriel\",\"s\":\"wps\",\"st\":1794533850298,\"j\":\"https://zoom.us/j/1\"}",
+          "url": "https://zoom.us/j/1",
+          "style": "primary"
+        },
+        {
+          "type": "button",
+          "action_id": "hu_open_last",
+          "text": {
+            "type": "plain_text",
+            "text": "Open in Ansel",
+            "emoji": true
+          },
+          "value": "{\"p\":\"gabriel\",\"s\":\"wps\",\"st\":1794533850298,\"j\":\"https://zoom.us/j/1\"}",
+          "url": "https://lamgs.github.io/ansel-headsup/#ansel/wps-1106/summary/"
+        },
+        {
+          "type": "button",
+          "action_id": "hu_mute",
+          "text": {
+            "type": "plain_text",
+            "text": "Mute series",
+            "emoji": true
+          },
+          "value": "{\"p\":\"gabriel\",\"s\":\"wps\",\"st\":1794533850298,\"j\":\"https://zoom.us/j/1\"}"
+        },
+        {
+          "type": "button",
+          "action_id": "hu_nu",
+          "text": {
+            "type": "plain_text",
+            "text": "Not useful",
+            "emoji": true
+          },
+          "value": "{\"p\":\"gabriel\",\"s\":\"wps\",\"st\":1794533850298,\"j\":\"https://zoom.us/j/1\"}"
+        }
+      ]
+    }
+  ]
+}
