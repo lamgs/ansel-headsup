@@ -1,8 +1,12 @@
-// Heads-Up card data, contract 2.0 (card/CONTRACT.md). Pure: no I/O, no clock reads.
+// Heads-Up card data, contract 2.1 (card/CONTRACT.md). Pure: no I/O, no clock reads.
 // Shapes the seed into what the <heads-up-card> element and the Slack card both render:
-// every action item from the last meeting, each with its owner.
+// every action item from the last meeting, each with its owner, plus the viewer's own items
+// still open from earlier meetings in the series. Every item carries the meeting it came from.
 
 const MAX_ROWS = 6
+const LOOKBACK = 4 // recorded meetings read, latest included (same window as buildHeadsUp)
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+const shortDate = (d) => { const x = new Date(dateMs(d)); return `${MONTHS[x.getUTCMonth()]} ${x.getUTCDate()}` }
 
 const dateMs = (d) => Date.parse(`${d}T00:00:00Z`)
 export const tToSeconds = (t) => t.split(':').map(Number).reduce((acc, n) => acc * 60 + n, 0)
@@ -23,6 +27,8 @@ const durationOf = (series) => Number(series.cadence?.match(/(\d+)\s*min/)?.[1] 
  *  opts: { startMs, joinUrl, reminderMinutes, retentionDays, today }
  * Rules (CONTRACT.md §3): everyone on the invite gets a card; holdout users get none (suppressed);
  * no card if the last meeting wasn't recorded. Muted series, no Slack and external guests also get none.
+ * Earlier meetings: the viewer's own open items from up to LOOKBACK - 1 earlier recorded meetings they
+ * attended, inside retention. Other people's items and done items stay with the latest meeting only.
  */
 export function buildCardData(user, series, world, opts = {}) {
   const no = (reason, extra = {}) => ({ eligible: false, reason, ...extra })
@@ -34,31 +40,44 @@ export function buildCardData(user, series, world, opts = {}) {
   if (!user.slack) return no('Slack not connected')
 
   const today = opts.today ?? series.nextInstance.date
-  const last = world.instances
+  const inRetention = (i) => opts.retentionDays == null || dateMs(today) - dateMs(i.date) <= opts.retentionDays * 86400000
+  const past = world.instances
     .filter((i) => i.series === series.id && i.date < series.nextInstance.date)
-    .sort((a, b) => (a.date < b.date ? 1 : -1))[0]
-  const expired = last && opts.retentionDays != null && dateMs(today) - dateMs(last.date) > opts.retentionDays * 86400000
-  if (!last || !last.recorded || expired) return no('No record of last meeting')
+    .sort((a, b) => (a.date < b.date ? 1 : -1))
+  const last = past[0]
+  if (!last || !last.recorded || !inRetention(last)) return no('No record of last meeting')
+  const earlier = past.slice(1)
+    .filter((i) => i.recorded && inRetention(i) && i.attendees?.includes(user.id))
+    .slice(0, LOOKBACK - 1)
 
   const person = (id) => world.person(id)
-  const all = last.actionItems.map((a) => ({
+  const row = (a, inst) => ({
     id: a.id,
     text: a.short || a.text,
     owner: { id: a.owner, name: person(a.owner)?.name ?? a.owner },
     seconds: tToSeconds(a.t),
     t: a.t,
+    meetingId: inst.id,
+    date: inst.date,
+    dateLabel: shortDate(inst.date),
+    ...(inst.id !== last.id ? { carriedOver: true } : {}),
     ...(a.summary ? { summary: a.summary } : {}),
     ...(a.owner === user.id && a.status === 'done' ? { done: true } : {}),
-  }))
-  // The viewer's own items first, then everyone else's, each in meeting order.
-  const ordered = [...all.filter((i) => i.owner.id === user.id), ...all.filter((i) => i.owner.id !== user.id)]
+  })
+  const all = last.actionItems.map((a) => row(a, last))
+  // Still open from earlier meetings and yours: newest meeting first, each in meeting order.
+  const carried = earlier.flatMap((inst) => inst.actionItems
+    .filter((a) => a.owner === user.id && a.status !== 'done')
+    .map((a) => row(a, inst)))
+  // The viewer's own items first (last meeting, then carried over), then everyone else's from the last meeting.
+  const ordered = [...all.filter((i) => i.owner.id === user.id), ...carried, ...all.filter((i) => i.owner.id !== user.id)]
 
   const joinUrl = opts.joinUrl ?? null
   return {
     eligible: true,
-    reason: 'On the invite: shows every action item from the last meeting.',
+    reason: 'On the invite: shows every action item from the last meeting, plus yours still open from earlier ones.',
     data: {
-      contractVersion: '2.0',
+      contractVersion: '2.1',
       viewer: { id: user.id, name: user.name, inHoldout: false },
       meeting: {
         seriesId: series.id,
@@ -71,7 +90,7 @@ export function buildCardData(user, series, world, opts = {}) {
         platform: platformFor(joinUrl ?? ''),
         joinUrl,
       },
-      lastMeeting: { meetingId: last.id, date: last.date, recorded: true, label: "last week's recording" },
+      lastMeeting: { meetingId: last.id, date: last.date, dateLabel: shortDate(last.date), recorded: true, label: "last week's recording" },
       actionItems: { items: ordered.slice(0, MAX_ROWS), moreCount: Math.max(0, ordered.length - MAX_ROWS) },
     },
   }

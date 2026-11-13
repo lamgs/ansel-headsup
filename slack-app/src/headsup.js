@@ -37,7 +37,8 @@ export function createHeadsUp({ client, config, access, log = pilotLog }) {
       // Still open / Decided: the prototype's picks (one open question you're a stakeholder on, or the latest
       // meeting's; the latest meeting's top decision). Slack-only addition to the contract data.
       const picks = buildHeadsUp(user, series, { date: series.nextInstance.date, sec: 0 }, world).items
-      const pick = (section) => picks.filter((i) => i.section === section).map(({ id, text, t }) => ({ id, text, t }))
+      const pick = (section) => picks.filter((i) => i.section === section)
+        .map(({ id, text, t, instanceId }) => ({ id, text, t, meetingId: instanceId, dateLabel: shortDate(world.instance(instanceId).date) }))
       result.data.stillOpen = pick('open')
       result.data.decided = pick('decided')
     }
@@ -182,8 +183,8 @@ export function createHeadsUp({ client, config, access, log = pilotLog }) {
       const { result } = evaluate(persona, s.id)
       lines.push(`\n*${s.title}*: ${result.eligible ? 'Card' : 'No card'} · ${result.reason}`)
       if (result.data) {
-        for (const i of result.data.actionItems.items) lines.push(`${i.owner.id === persona ? '• *YOURS*' : '•'} ${i.text} · ${i.owner.name}  \`▶ ${i.t}\``)
-        lines.push('`Built from last week\'s recording · no new AI processing · only you see it`')
+        for (const i of result.data.actionItems.items) lines.push(`${i.owner.id === persona ? '• *YOURS*' : '•'} ${i.text} · ${i.owner.name}  \`▶ ${i.dateLabel} · ${i.t}\``)
+        lines.push('`Built from recent recordings · no new AI processing · only you see it`')
       }
     }
     return lines.join('\n')

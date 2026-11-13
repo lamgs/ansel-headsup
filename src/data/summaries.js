@@ -12,14 +12,14 @@ export const SUMMARIES = {
     },
   },
   'wps-1030': {
-    overview: 'The beta waitlist closes Nov 15. Varun is checking whether the new pricing needs legal review.',
+    overview: 'The beta waitlist closes Nov 15. Varun is checking whether the new pricing needs legal review. Gabriel will draft a pricing FAQ for support, and Rishabh will fix the flaky payments tests.',
     context: {
       d2: 'Announced at the start of the meeting.',
       q1: 'Answered on Nov 6: no separate review needed.',
     },
   },
   'wps-1023': {
-    overview: 'Q1 launch scope is locked to payments and the pricing page. Nothing else gets added.',
+    overview: 'Q1 launch scope is locked to payments and the pricing page. Nothing else gets added. Varun will set up error alerts on the billing service, and Alicia will collect beta customer quotes for the pricing page.',
     context: {
       d1: 'QA planning for the payment flow should start early.',
     },

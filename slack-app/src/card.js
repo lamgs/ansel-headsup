@@ -45,7 +45,7 @@ export const headsUpLink = (prototypeUrl) => (prototypeUrl ? `${prototypeUrl.rep
 export const shortTranscriptLink = (prototypeUrl, itemId) => (prototypeUrl ? `${prototypeUrl.replace(/#.*$/, '')}#t/${itemId}` : null)
 
 /**
- * entry: { persona, sid, startMs, joinUrl, postMs, data (contract 2.0), ui: { muted, notUseful } }
+ * entry: { persona, sid, startMs, joinUrl, postMs, data (contract 2.1), ui: { muted, notUseful } }
  * Every button carries the meta needed to rebuild the card after a restart.
  */
 export function buildCard(entry, { nowMs = Date.now(), prototypeUrl = '' } = {}) {
@@ -73,9 +73,12 @@ export function buildCard(entry, { nowMs = Date.now(), prototypeUrl = '' } = {})
   const othersCount = items.length - mine.length + (data.actionItems.moreCount || 0)
   const isDone = (it) => !!it.done // done status comes from Ansel
   const plural = (n, word) => `${n} ${word}${n === 1 ? '' : 's'}`
+  // Each timestamp names the meeting it's from: "Nov 6 · 14:32".
+  const stamp = (it, mmss) => [it.dateLabel ?? data.lastMeeting.dateLabel, mmss].filter(Boolean).join(' · ')
   const stampLink = (it) => {
     const url = shortTranscriptLink(prototypeUrl, it.id)
-    return url ? `<${url}|${fmtStamp(it.seconds)}>` : fmtStamp(it.seconds)
+    const label = stamp(it, fmtStamp(it.seconds))
+    return url ? `<${url}|${label}>` : label
   }
   // "5 more items" links to the meeting's Action items tab in Ansel, where those items are listed.
   const teamUrl = deepLink(prototypeUrl, { instanceId: data.lastMeeting.meetingId, tab: 'actions' })
@@ -94,7 +97,8 @@ export function buildCard(entry, { nowMs = Date.now(), prototypeUrl = '' } = {})
   // Still open / Decided, in the same bullet format: "• Launch date: Mar 3 or Mar 10? (27:05)"
   const note = (it) => {
     const url = shortTranscriptLink(prototypeUrl, it.id)
-    return `${BULLET}${it.text} (${url ? `<${url}|${it.t.replace(/^0/, '')}>` : it.t.replace(/^0/, '')})`
+    const label = stamp(it, it.t.replace(/^0/, ''))
+    return `${BULLET}${it.text} (${url ? `<${url}|${label}>` : label})`
   }
   if (data.stillOpen?.length) line += `\n*Still Open*\n${data.stillOpen.map(note).join('\n')}`
   if (data.decided?.length) line += `\n*Decided*\n${data.decided.map(note).join('\n')}`

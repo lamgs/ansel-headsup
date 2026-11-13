@@ -1,6 +1,6 @@
 # Heads-Up Card · Integration Contract
 
-**Contract version:** 2.0 (2.0 replaced the sections with one Action items table; Following, sharing and the Decided section are gone.)
+**Contract version:** 2.1 (2.1 adds the viewer's still-open items from earlier meetings and tags every item with the meeting it came from. 2.0 replaced the sections with one Action items table; Following, sharing and the Decided section are gone.)
 
 **Files in `/card`:** `heads-up-card.js` (the card), `heads-up-log.js` (the event log), `demo-data.js` (sample data), `index.html` (the final page: the card in an Ansel message, no controls), `demo.html` (testing page with controls and the event log), `CONTRACT.md` (this file), `README.md`.
 
@@ -103,10 +103,12 @@ Setting `card.data` again re-renders from the new data. If it is the same viewer
 | `actionItems.items` | Every action item from last meeting, each with an `owner`. The viewer's own come first, labeled YOURS; a line separates everyone else's. Send up to 6; put the rest in `moreCount` |
 | `item.owner` | Required: `{ id, name }`. Only the owner gets Mark done; everyone gets ▶ and Not right |
 | (status) | Status shows only on the viewer's own items: YOURS, Mark done or "✓ Done", and the green row. Other people's rows never show open or done |
-| `item.seconds` | Position in last meeting's transcript; shown as mm:ss on the ▶ button |
+| `item.seconds` | Position in the transcript of the item's meeting (`item.meetingId`, else last meeting); shown as mm:ss on the ▶ button |
 | `item.summary` | Optional, one short line under the task. Take it from Ansel's existing meeting summary, so the card adds no new AI processing. No due dates: those get set in the meeting |
 | `item.done` | Optional, viewer's items only; `true` shows the row as done (green background, "✓ Done"). Ignored on other people's items |
 | `actionItems.moreCount` | Shows "+N more in Ansel" under the table when above 0 |
+| `item.meetingId`, `item.date`, `item.dateLabel` | 2.1. The meeting the item comes from (`"wps-1030"`, `"2026-10-30"`, `"Oct 30"`). The Slack card shows the date next to every timestamp: "Nov 6 · 14:32". Without them, read the item as from `lastMeeting` |
+| `item.carriedOver` | 2.1. `true` on the viewer's own items that are still open from an earlier meeting (up to 3 earlier recorded meetings they attended, inside retention). They come after the viewer's last-meeting items. Done items and other people's items never carry over |
 
 Everyone on the invite gets a card and sees every action item, because invitees can already open last meeting's summary. The card adds no access.
 

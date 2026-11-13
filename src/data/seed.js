@@ -26,20 +26,29 @@ export const SEED = {
       id: 'wps-1023', series: 'wps', date: '2026-10-23', recorded: true, attendees: ['alicia', 'gabriel', 'rishabh', 'varun'],
       decisions: [{ id: 'd1', text: 'Q1 launch scope locked: payments + pricing page', t: '08:10', priority: 2 }],
       openQuestions: [],
-      actionItems: [],
+      // Still open two weeks later, so they carry over onto their owners' Heads-Up cards.
+      actionItems: [
+        { id: 'a12', text: 'Set up error alerts for the billing service', short: 'Billing service alerts', summary: 'Set up error alerts on the billing service before launch.', owner: 'varun', due: '2026-10-30', t: '04:30', status: 'open' },
+        { id: 'a13', text: 'Collect beta customer quotes for the pricing page', short: 'Beta customer quotes', summary: 'Collect two or three beta customer quotes to use on the pricing page.', owner: 'alicia', due: '2026-11-06', t: '14:40', status: 'open' },
+      ],
       themes: [
-        { id: 'th-1023-1', title: 'Status round-up', start: '00:04', end: '05:02', items: [] },
-        { id: 'th-1023-2', title: 'Q1 scope & pricing sketches', start: '08:10', end: '29:50', items: ['d1'] },
+        { id: 'th-1023-1', title: 'Status round-up', start: '00:04', end: '05:02', items: ['a12'] },
+        { id: 'th-1023-2', title: 'Q1 scope & pricing sketches', start: '08:10', end: '29:50', items: ['d1', 'a13'] },
       ],
     },
     {
       id: 'wps-1030', series: 'wps', date: '2026-10-30', recorded: true, attendees: ['alicia', 'gabriel', 'rishabh'],
       decisions: [{ id: 'd2', text: 'Beta waitlist closes Nov 15', t: '05:40', priority: 2 }],
       openQuestions: [{ id: 'q1', text: 'Do we need legal review for new pricing?', t: '19:22', stakeholders: ['alicia', 'varun'], status: 'resolved', resolvedIn: 'wps-1106' }],
-      actionItems: [{ id: 'a1', text: 'Pull conversion data from dashboard', owner: 'gabriel', due: '2026-11-03', t: '22:15', status: 'done' }],
+      actionItems: [
+        { id: 'a1', text: 'Pull conversion data from dashboard', owner: 'gabriel', due: '2026-11-03', t: '22:15', status: 'done' },
+        // Still open a week later, so they carry over onto their owners' Heads-Up cards.
+        { id: 'a14', text: 'Fix the flaky payments tests', short: 'Flaky payments tests', summary: 'Fix the flaky payments tests before code review closes.', owner: 'rishabh', due: '2026-11-05', t: '02:30', status: 'open' },
+        { id: 'a15', text: 'Draft a pricing FAQ for the support team', short: 'Pricing FAQ', summary: 'Draft a short pricing FAQ the support team can use at launch.', owner: 'gabriel', due: '2026-11-06', t: '24:10', status: 'open' },
+      ],
       themes: [
-        { id: 'th-1030-1', title: 'Status & beta waitlist', start: '00:06', end: '09:30', items: ['d2'] },
-        { id: 'th-1030-2', title: 'Pricing legal & conversion data', start: '14:45', end: '31:40', items: ['q1', 'a1'] },
+        { id: 'th-1030-1', title: 'Status & beta waitlist', start: '00:06', end: '09:30', items: ['a14', 'd2'] },
+        { id: 'th-1030-2', title: 'Pricing legal & conversion data', start: '14:45', end: '31:40', items: ['q1', 'a1', 'a15'] },
       ],
     },
     {
