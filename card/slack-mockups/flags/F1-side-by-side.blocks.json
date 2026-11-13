@@ -1,0 +1,178 @@
+{
+  "blocks": [
+    {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": "*30 min · Weekly Product Sync*\nYou own 3 items · 5 more from the team last week"
+      }
+    },
+    {
+      "type": "actions",
+      "elements": [
+        {
+          "type": "checkboxes",
+          "action_id": "hu_check:a2",
+          "options": [
+            {
+              "text": {
+                "type": "mrkdwn",
+                "text": "*Forecast update*"
+              },
+              "description": {
+                "type": "mrkdwn",
+                "text": "<https://lamgs.github.io/ansel-headsup/#t/a2|14:32 ↗>"
+              },
+              "value": "done"
+            }
+          ]
+        },
+        {
+          "type": "checkboxes",
+          "action_id": "hu_flag:a2",
+          "options": [
+            {
+              "text": {
+                "type": "plain_text",
+                "text": "Not right"
+              },
+              "value": "flag"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "actions",
+      "elements": [
+        {
+          "type": "checkboxes",
+          "action_id": "hu_check:x1",
+          "options": [
+            {
+              "text": {
+                "type": "mrkdwn",
+                "text": "*Customer interview notes*"
+              },
+              "description": {
+                "type": "mrkdwn",
+                "text": "<https://lamgs.github.io/ansel-headsup/#t/x1|22:15 ↗>"
+              },
+              "value": "done"
+            }
+          ]
+        },
+        {
+          "type": "checkboxes",
+          "action_id": "hu_flag:x1",
+          "options": [
+            {
+              "text": {
+                "type": "plain_text",
+                "text": "Not right"
+              },
+              "value": "flag"
+            }
+          ],
+          "initial_options": [
+            {
+              "text": {
+                "type": "plain_text",
+                "text": "Not right"
+              },
+              "value": "flag"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "actions",
+      "elements": [
+        {
+          "type": "checkboxes",
+          "action_id": "hu_check:x2",
+          "options": [
+            {
+              "text": {
+                "type": "mrkdwn",
+                "text": "~Dashboard link~"
+              },
+              "description": {
+                "type": "mrkdwn",
+                "text": "<https://lamgs.github.io/ansel-headsup/#t/x2|9:40 ↗>"
+              },
+              "value": "done"
+            }
+          ],
+          "initial_options": [
+            {
+              "text": {
+                "type": "mrkdwn",
+                "text": "~Dashboard link~"
+              },
+              "description": {
+                "type": "mrkdwn",
+                "text": "<https://lamgs.github.io/ansel-headsup/#t/x2|9:40 ↗>"
+              },
+              "value": "done"
+            }
+          ]
+        },
+        {
+          "type": "checkboxes",
+          "action_id": "hu_flag:x2",
+          "options": [
+            {
+              "text": {
+                "type": "plain_text",
+                "text": "Not right"
+              },
+              "value": "flag"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "actions",
+      "elements": [
+        {
+          "type": "button",
+          "action_id": "hu_join",
+          "text": {
+            "type": "plain_text",
+            "text": "Join Zoom"
+          },
+          "style": "primary",
+          "url": "https://zoom.us/j/0"
+        },
+        {
+          "type": "button",
+          "action_id": "hu_open_last",
+          "text": {
+            "type": "plain_text",
+            "text": "Open in Ansel"
+          },
+          "url": "https://lamgs.github.io/ansel-headsup/"
+        },
+        {
+          "type": "button",
+          "action_id": "hu_mute",
+          "text": {
+            "type": "plain_text",
+            "text": "Mute series"
+          }
+        },
+        {
+          "type": "button",
+          "action_id": "hu_nu",
+          "text": {
+            "type": "plain_text",
+            "text": "Not useful"
+          }
+        }
+      ]
+    }
+  ]
+}

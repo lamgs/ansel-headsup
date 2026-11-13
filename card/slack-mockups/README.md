@@ -31,3 +31,5 @@ The images are approximations drawn outside Slack (stand-in font; spacing and bu
 **Slack's 75-character limit on checkbox labels and notes** (which includes a link's address) means a transcript link can't go inside a checkbox. `links/L6-fits-limits.*` and `links/L6-one-item.*` show option 3 within the limit: the quote under each checkbox, and the "Transcript 14:32 ↗" links on one small line below.
 
 **Built: option 3 without the quote.** A checkbox per item of yours, with a timestamp link (`#t/<itemId>`) as its note; `live-card.png` and `live-card-several.png` are the real output.
+
+**Two boxes per item** (previews, not built): `flags/F1-side-by-side.*` (the item's Done box, then a Not right box beside it, one row per item) and `flags/F2-boxes-on-right.*` (item name and timestamp link on the left, Done and Not right boxes on the right).

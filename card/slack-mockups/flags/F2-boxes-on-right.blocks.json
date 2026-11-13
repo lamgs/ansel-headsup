@@ -1,0 +1,150 @@
+{
+  "blocks": [
+    {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": "*30 min · Weekly Product Sync*\nYou own 3 items · 5 more from the team last week"
+      }
+    },
+    {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": "*Forecast update*\n<https://lamgs.github.io/ansel-headsup/#t/a2|14:32 ↗>"
+      },
+      "accessory": {
+        "type": "checkboxes",
+        "action_id": "hu_item:a2",
+        "options": [
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "Done"
+            },
+            "value": "done"
+          },
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "Not right"
+            },
+            "value": "flag"
+          }
+        ]
+      }
+    },
+    {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": "*Customer interview notes*  _· flagged_\n<https://lamgs.github.io/ansel-headsup/#t/x1|22:15 ↗>"
+      },
+      "accessory": {
+        "type": "checkboxes",
+        "action_id": "hu_item:x1",
+        "options": [
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "Done"
+            },
+            "value": "done"
+          },
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "Not right"
+            },
+            "value": "flag"
+          }
+        ],
+        "initial_options": [
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "Not right"
+            },
+            "value": "flag"
+          }
+        ]
+      }
+    },
+    {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": "~Dashboard link~\n<https://lamgs.github.io/ansel-headsup/#t/x2|9:40 ↗>"
+      },
+      "accessory": {
+        "type": "checkboxes",
+        "action_id": "hu_item:x2",
+        "options": [
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "Done"
+            },
+            "value": "done"
+          },
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "Not right"
+            },
+            "value": "flag"
+          }
+        ],
+        "initial_options": [
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "Done"
+            },
+            "value": "done"
+          }
+        ]
+      }
+    },
+    {
+      "type": "actions",
+      "elements": [
+        {
+          "type": "button",
+          "action_id": "hu_join",
+          "text": {
+            "type": "plain_text",
+            "text": "Join Zoom"
+          },
+          "style": "primary",
+          "url": "https://zoom.us/j/0"
+        },
+        {
+          "type": "button",
+          "action_id": "hu_open_last",
+          "text": {
+            "type": "plain_text",
+            "text": "Open in Ansel"
+          },
+          "url": "https://lamgs.github.io/ansel-headsup/"
+        },
+        {
+          "type": "button",
+          "action_id": "hu_mute",
+          "text": {
+            "type": "plain_text",
+            "text": "Mute series"
+          }
+        },
+        {
+          "type": "button",
+          "action_id": "hu_nu",
+          "text": {
+            "type": "plain_text",
+            "text": "Not useful"
+          }
+        }
+      ]
+    }
+  ]
+}
