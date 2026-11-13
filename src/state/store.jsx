@@ -29,7 +29,7 @@ export function initialState(theme = 'light') {
     share: null, // { sec } when the G3 direct share is ticked
     slackChannel: 'product',
     ansel: { page: 'meetings', view: 'detail', instanceId: 'wps-1106', tab: 'summary', highlight: null, panelItem: null, focusId: null, selectedItem: null, themeId: null, shareOpen: false, chat: 'closed', chatThread: [], seriesId: 'wps' },
-    join: null, // null | { step: 'notice' | 'call', keptOut, joinedAt }
+    join: null, // null | { step: 'notice', sid }: the recording consent dialog is open
   }
 }
 
@@ -171,7 +171,8 @@ function reducer(s, a) {
       const start = hhmmToSec(series.nextInstance.start)
       const diff = Math.round((start - s.clock) / 60)
       const when = Math.abs(start - s.clock) < 60 ? 'on time' : diff > 0 ? `joined ${diff} min before start` : `late, ${-diff} min after start`
-      const n = { ...s, join: { ...s.join, step: 'call', keptOut: a.keptOut } }
+      // The dialog opens the real Zoom room itself; the prototype just logs the join and closes it.
+      const n = { ...s, join: null }
       return addLog(n, s.persona, 'meeting_joined', `${series.title}: ${when}${a.keptOut ? ' · Ansel kept out' : ' · recording consent given'}`)
     }
     case 'JOIN_CLOSE': return { ...s, join: null }
