@@ -2,13 +2,14 @@
 // condensed layout (card/slack-mockups/condensed, B3 + M2): one text block and one row of buttons.
 //   *30 min · Weekly Product Sync*
 //   You own Forecast update (14:32) · 5 more items from last week     (one item of yours; 14:32 is the link)
-//   [Join Zoom] [Open in Ansel] [Mute series] [Not useful]
+//   [Join Zoom] [Open in Ansel] [Mute Series] [Not Useful]
 // Several items of yours: "You own 2 items · 8 more from the team last week", then one line per item
 // ("• Forecast update (14:32)"). Timestamps use the prototype's short #t/<itemId> link; "8 more…" links to the
 // meeting's Action items tab. Marking items done happens in Ansel, not on the card.
 // Then "Still Open" (one open question) and "Decided" (one decision) as bullets with the same timestamp links.
+// Not Useful greys the card out (the same text in a context block, which Slack shows small and grey) with
+// "Marked Not Useful" and an Undo; there's no follow-up question.
 
-export const NOT_USEFUL_REASONS = [['already_knew', 'Already knew this'], ['wrong_meeting', 'Wrong meeting'], ['bad_timing', 'Bad timing']]
 const SOON_MS = 5 * 60000
 
 const fmtTime = (ms) => new Date(ms).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
@@ -104,22 +105,27 @@ export function buildCard(entry, { nowMs = Date.now(), prototypeUrl = '' } = {})
   if (data.decided?.length) line += `\n*Decided*\n${data.decided.map(note).join('\n')}`
   if (state === 'ended') line += '\n_Meeting ended · new summary in about 6 min_'
 
-  const blocks = [{ type: 'section', text: md(`*${hero} · ${m.title}*\n${line}`) }]
+  const body = `*${hero} · ${m.title}*\n${line}`
 
+  // Not Useful: Slack can't grey out a message, so the card's text moves into a context block (small, grey)
+  // and the row shrinks to Join and Undo.
   if (ui.notUseful) {
-    blocks.push(ui.notUseful.reason
-      ? { type: 'section', text: md('Thanks for the feedback.'), accessory: btn('hu_nu_undo', 'Undo', meta) }
-      : { type: 'section', text: md('Thanks. What was off?') },
-    ...(ui.notUseful.reason ? [] : [{ type: 'actions', elements: [...NOT_USEFUL_REASONS.map(([r, label]) => btn(`hu_nu_reason:${r}`, label, meta)), btn('hu_nu_undo', 'Undo', meta)] }]))
+    return { text: `${fallback} (marked not useful)`, blocks: [
+      ctxBlock(body),
+      ctxBlock(':no_entry_sign: Marked *Not Useful* · thanks, this helps tune Heads-Up'),
+      { type: 'actions', elements: [join, btn('hu_nu_undo', 'Undo', meta)].filter(Boolean) },
+    ] }
   }
+
+  const blocks = [{ type: 'section', text: md(body) }]
 
   const row = []
   if (join) row.push(join)
   // Open in Ansel opens the full Heads-Up card; the card's Open last meeting leads on to the Summary.
   const cardUrl = headsUpLink(prototypeUrl)
   row.push(btn('hu_open_last', 'Open in Ansel', meta, cardUrl ? { url: cardUrl } : {}))
-  row.push(btn('hu_mute', 'Mute series', meta))
-  if (!ui.notUseful) row.push(btn('hu_nu', 'Not useful', meta))
+  row.push(btn('hu_mute', 'Mute Series', meta))
+  row.push(btn('hu_nu', 'Not Useful', meta))
   blocks.push({ type: 'actions', elements: row })
   return { text: fallback, blocks }
 }
