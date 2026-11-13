@@ -218,7 +218,7 @@
     :host([embedded]) .btn { font-family: inherit; font-weight: 500; border-radius: 6px; }
     :host([embedded]) .btn.join { font-weight: 600; border-radius: 8px; }
     :host([embedded]) .btn:focus-visible { border-radius: 6px; }
-    /* Embedded layout: every button left-aligned under its text; your rows tinted; larger type for demos */
+    /* Embedded layout: Join left-aligned under the timer; larger type for demos */
     :host([embedded]) { font-size: 16px; }
     :host([embedded]) h2.title { font-size: 19px; }
     :host([embedded]) .sub, :host([embedded]) .t .summary, :host([embedded]) .t .who,
@@ -228,10 +228,28 @@
     :host([embedded]) .btn.icon { width: 32px; padding: 0; justify-content: center; }
     :host([embedded]) .clock { grid-template-columns: auto minmax(0, 1fr); row-gap: 12px; }
     :host([embedded]) .clock .join { grid-column: 1 / -1; justify-self: start; justify-content: center; }
-    :host([embedded]) .r { grid-template-columns: 4px minmax(0, 1fr); padding: 10px 12px; }
-    :host([embedded]) .acts { grid-column: 2; justify-content: flex-start; }
-    :host([embedded]) .r.mine { background: var(--mine-bg, #EEEFFA); }
+    /* Embedded action items: two stacked cards (yours, then the team's); rows touch, split by a
+       hairline; buttons on the right with no borders */
+    :host([embedded]) .stacks { display: flex; flex-direction: column; gap: 12px; }
+    :host([embedded]) .stack { border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+    :host([embedded]) .stack.mine-stack { background: var(--mine-bg, #EEEFFA); border-color: color-mix(in srgb, var(--ansel) 28%, transparent); }
+    :host([embedded]) .stack-h { padding: 9px 14px; font-size: 14px; font-weight: 600; color: var(--quiet); border-bottom: 1px solid var(--line); }
+    :host([embedded]) .mine-stack .stack-h { color: var(--ansel); border-bottom-color: color-mix(in srgb, var(--ansel) 20%, transparent); }
+    :host([embedded]) .stack-h .n { font-weight: 500; font-variant-numeric: tabular-nums; }
+    :host([embedded]) .stack .rows { gap: 0; }
+    :host([embedded]) .r { grid-template-columns: minmax(0, 1fr) auto; column-gap: 12px; padding: 12px 10px 12px 14px; border-radius: 0; }
+    :host([embedded]) .r + .r { border-top: 1px solid var(--line); }
+    :host([embedded]) .mine-stack .r + .r { border-top-color: color-mix(in srgb, var(--ansel) 14%, transparent); }
+    :host([embedded]) .rail { display: none; }
+    :host([embedded]) .acts { grid-column: 2; align-self: start; justify-content: flex-end; flex-wrap: nowrap; gap: 2px; }
+    :host([embedded]) .ask { grid-column: 1 / -1; }
+    :host([embedded]) .r.mine { background: none; }
     :host([embedded]) .r.mine.is-done { background: var(--done-bg); }
+    :host([embedded]) .r .btn { border-color: transparent; background: transparent; color: var(--quiet); }
+    :host([embedded]) .r .btn.state-done { color: var(--live); }
+    @media (hover: hover) and (pointer: fine) {
+      :host([embedded]) .r .btn:not(:disabled):hover { background: color-mix(in srgb, var(--ink) 8%, transparent); color: var(--ink); transform: none; }
+    }
 
     /* Error state */
     .pad { padding: 8px 20px; margin: 0; }
@@ -612,7 +630,8 @@
 
       const acts = [];
       if (mine && !emb) acts.push('<span class="st" aria-label="Your item">YOURS</span>');
-      acts.push(this._playButton(it));
+      // Embedded: ▶ goes last (rightmost) so it lines up down every row; elsewhere it leads.
+      if (!emb) acts.push(this._playButton(it));
       if (mine && !flag && emb) {
         // Embedded: icon buttons with hover labels.
         acts.push(done
@@ -645,6 +664,8 @@
             data-key="flag-${id}" aria-pressed="false" aria-label="Not right: ${esc(it.text)}">Not right</button>`);
         }
       }
+
+      if (emb) acts.push(this._playButton(it));
 
       const ask = flag && !flag.reason ? `
         <div class="ask" role="group" aria-label="What's wrong with ${esc(it.text)}?">
@@ -679,6 +700,14 @@
         }
         toggle = `<div class="context more"><button class="link" data-act="more-toggle" data-key="more-toggle" aria-expanded="${this._ui.showAll}">${
           this._ui.showAll ? 'Show fewer' : `Show ${hidden} more`}</button></div>`;
+      }
+      if (this.hasAttribute('embedded')) {
+        // Embedded: two stacked cards, yours first, each with a heading and count.
+        const stack = (items, isMine, title, total) => (items.length
+          ? `<section class="stack${isMine ? ' mine-stack' : ''}" aria-label="${title}"><div class="stack-h">${title} <span class="n">· ${total}</span></div>
+              <div class="rows" role="list">${items.map((it) => this._rowHtml(it, isMine)).join('')}</div></section>` : '');
+        return `<div class="stacks">${stack(shownMine, true, 'Your action items', mine.length)}${stack(shownOthers, false, 'Team', others.length)}</div>`
+          + toggle + moreLine;
       }
       const list = (items, isMine, extra, label) => (items.length
         ? `<div class="rows${extra}" role="list" aria-label="${label}">${items.map((it) => this._rowHtml(it, isMine)).join('')}</div>` : '');

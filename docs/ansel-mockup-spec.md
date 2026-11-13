@@ -88,7 +88,7 @@ Layout sketch (the player is audio only):
 - Three collapsible columns: the left menu (collapses to an icon rail), the meeting series, and the selected series' Heads-Up card. A collapsed column becomes a thin labelled strip; click it to bring the column back.
 - The instruction line and the card's "Heads-Up · …" heading and description are gone; the series row says which card is showing.
 - In an expanded series, meetings that open are indigo with a chevron; ones without a page stay grey.
-- Card (embedded only): ▶ is an icon with the meeting date and time on hover; Mark done and Edit are icons; your own rows are tinted and show your name like everyone else's ("· Varun (you)") instead of a YOURS tag on each; other people's rows have no Not right; buttons and Join are left-aligned; larger type.
+- Card (embedded only): ▶ is an icon with the meeting date and time on hover; Mark done and Edit are icons; your own rows are tinted and show your name like everyone else's ("· Varun (you)") instead of a YOURS tag on each; other people's rows have no Not right; Join is left-aligned; larger type. Action items are two stacked cards, Your action items and Team, with rows touching (hairline between them) and borderless icon buttons on the right.
 - Minimum text size in Ansel screens raised to 12px (most small text 13px, body 15px) for the demo screen.
 - Transcript: no action item side panel (it repeated the Heads-Up card). ▶ links and action chips highlight the line instead; the panel still opens from the Summary's Update button. Transcript text is larger (lines 16px, timestamps and labels 14px), and timestamps sit at the top of wrapped lines.
 
