@@ -3,9 +3,10 @@
 //   *30 min · Weekly Product Sync*
 //   You own Forecast update (14:32) · 5 more items from last week     (one item of yours; 14:32 is the link)
 //   [Join Zoom] [Open in Ansel] [Mute series] [Not useful]
-// Several items of yours: "You own 2 items · 8 more from the team last week", then one row per item
-// ("Forecast update (14:32)  [▸ Details]"); Details expands that item to show its summary, Hide collapses it. Timestamps use the prototype's short #t/<itemId> link; "8 more…" links to the
+// Several items of yours: "You own 2 items · 8 more from the team last week", then one line per item
+// ("• Forecast update (14:32)"). Timestamps use the prototype's short #t/<itemId> link; "8 more…" links to the
 // meeting's Action items tab. Marking items done happens in Ansel, not on the card.
+// Then "Still open" (one open question) and "Decided" (one decision) as bullets with the same timestamp links.
 
 export const NOT_USEFUL_REASONS = [['already_knew', 'Already knew this'], ['wrong_meeting', 'Wrong meeting'], ['bad_timing', 'Bad timing']]
 const SOON_MS = 5 * 60000
@@ -39,7 +40,7 @@ export const MAX_LISTED = 3 // items of yours listed on the card; the rest are "
 export const shortTranscriptLink = (prototypeUrl, itemId) => (prototypeUrl ? `${prototypeUrl.replace(/#.*$/, '')}#t/${itemId}` : null)
 
 /**
- * entry: { persona, sid, startMs, joinUrl, postMs, data (contract 2.0), ui: { muted, notUseful, expanded: { [itemId]: true } } }
+ * entry: { persona, sid, startMs, joinUrl, postMs, data (contract 2.0), ui: { muted, notUseful } }
  * Every button carries the meta needed to rebuild the card after a restart.
  */
 export function buildCard(entry, { nowMs = Date.now(), prototypeUrl = '' } = {}) {
@@ -79,20 +80,22 @@ export function buildCard(entry, { nowMs = Date.now(), prototypeUrl = '' } = {})
   let line
   if (mine.length === 0) line = `${team(plural(othersCount, 'action item'))} from last week, none assigned to you`
   else if (mine.length === 1) line = `You own ${named(mine[0])}${othersCount ? ` · ${team(`${othersCount} more item${othersCount === 1 ? '' : 's'}`)} from last week` : ''}`
-  else line = `You own ${mine.length} items${othersCount ? ` · ${team(`${othersCount} more from the team`)} last week` : ''}`
+  else {
+    const shown = mine.slice(0, MAX_LISTED)
+    line = [`You own ${mine.length} items${othersCount ? ` · ${team(`${othersCount} more from the team`)} last week` : ''}`,
+      ...shown.map((it) => `• ${named(it)}`),
+      ...(mine.length > shown.length ? [`• ${team(`+${mine.length - shown.length} more of yours in Ansel`)}`] : [])].join('\n')
+  }
+  // Still open / Decided, in the same bullet format: "• Launch date: Mar 3 or Mar 10? (27:05)"
+  const note = (it) => {
+    const url = shortTranscriptLink(prototypeUrl, it.id)
+    return `• ${it.text} (${url ? `<${url}|${it.t.replace(/^0/, '')}>` : it.t.replace(/^0/, '')})${it.edited ? ' · _Edited_' : ''}`
+  }
+  if (data.stillOpen?.length) line += `\n*Still open*\n${data.stillOpen.map(note).join('\n')}`
+  if (data.decided?.length) line += `\n*Decided*\n${data.decided.map(note).join('\n')}`
   if (state === 'ended') line += '\n_Meeting ended · new summary in about 6 min_'
 
   const blocks = [{ type: 'section', text: md(`*${hero} · ${m.title}*\n${line}`) }]
-  // Several items of yours: one row per item, collapsed, with a toggle that expands it to show its summary.
-  if (mine.length > 1) {
-    const shown = mine.slice(0, MAX_LISTED)
-    for (const it of shown) {
-      const open = !!ui.expanded?.[it.id]
-      blocks.push({ type: 'section', text: md(named(it)), accessory: btn(`hu_expand:${it.id}`, open ? '▾ Hide' : '▸ Details', meta) })
-      if (open) blocks.push(ctxBlock(it.summary || `No summary for this item. ${stampLink(it)} opens it in the transcript.`))
-    }
-    if (mine.length > shown.length) blocks.push(ctxBlock(team(`+${mine.length - shown.length} more of yours in Ansel`)))
-  }
 
   if (ui.notUseful) {
     blocks.push(ui.notUseful.reason

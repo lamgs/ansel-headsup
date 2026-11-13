@@ -1,7 +1,7 @@
 // Heads-Up service: build card data (contract 2.0, card/CONTRACT.md), post it to Slack, handle every card action.
 import { SEED, RETENTION_DAYS } from '../../src/data/seed.js'
 import { TRANSCRIPTS } from '../../src/data/transcripts.js'
-import { shortDate } from '../../src/logic/buildHeadsUp.js'
+import { shortDate, buildHeadsUp } from '../../src/logic/buildHeadsUp.js'
 import { buildCardData } from '../../src/logic/buildCardData.js'
 import { buildWorld } from '../../src/logic/world.js'
 import { buildCard, cardState } from './card.js'
@@ -33,6 +33,14 @@ export function createHeadsUp({ client, config, access, log = pilotLog }) {
     const series = seriesById(sid)
     if (!user || !series) throw new Error(`Unknown persona "${persona}" or series "${sid}"`)
     const result = buildCardData(user, series, world, { startMs, joinUrl: joinUrl || config.demoJoinUrl, reminderMinutes: config.reminderMinutes, retentionDays: RETENTION_DAYS })
+    if (result.data) {
+      // Still open / Decided: the prototype's picks (one open question you're a stakeholder on, or the latest
+      // meeting's; the latest meeting's top decision). Slack-only addition to the contract data.
+      const picks = buildHeadsUp(user, series, { date: series.nextInstance.date, sec: 0 }, world).items
+      const pick = (section) => picks.filter((i) => i.section === section).map(({ id, text, t, edited }) => ({ id, text, t, edited }))
+      result.data.stillOpen = pick('open')
+      result.data.decided = pick('decided')
+    }
     return { series, result }
   }
 
@@ -42,7 +50,7 @@ export function createHeadsUp({ client, config, access, log = pilotLog }) {
     return userIds[ref]
   }
 
-  const freshUi = () => ({ muted: false, notUseful: null, expanded: {} })
+  const freshUi = () => ({ muted: false, notUseful: null })
   const render = (entry) => buildCard(entry, { nowMs: Date.now(), prototypeUrl: config.prototypeUrl })
   const update = (entry) => client.chat.update({ channel: entry.channel, ts: entry.ts, ...render(entry) })
 
@@ -131,11 +139,6 @@ export function createHeadsUp({ client, config, access, log = pilotLog }) {
       case 'open_last':
         ev('open_last_meeting', entry.data.lastMeeting.meetingId)
         return action.url ? null : summaryText(entry.data.lastMeeting.meetingId)
-      case 'expand': // ▸ Details / ▾ Hide on one of your items
-        ui.expanded ??= {}
-        if (ui.expanded[a1]) delete ui.expanded[a1]; else ui.expanded[a1] = true
-        ev(ui.expanded[a1] ? 'item_expanded' : 'item_collapsed', a1)
-        break
       case 'mute': ui.muted = true; muted[`${persona}:${entry.sid}`] = true; ev('mute_series', title); break
       case 'mute_undo': ui.muted = false; delete muted[`${persona}:${entry.sid}`]; ev('mute_undone', title); break
       case 'nu': ui.notUseful = { reason: null }; ev('not_useful', title); break

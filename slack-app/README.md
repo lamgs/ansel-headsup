@@ -169,17 +169,17 @@ Create a recurring event titled **Weekly Product Sync**, with a Meet, Teams or Z
 
 The card matches [`../card/heads-up-card.js`](../card/heads-up-card.js) and logs the same event names as [`../card/CONTRACT.md`](../card/CONTRACT.md) §4 (to the console, as `[pilot]` lines; ★ marks value actions). Every change updates the card in place and has an Undo.
 
-Layout (condensed, chosen in [`../card/slack-mockups/`](../card/slack-mockups/README.md): `condensed/B3-minimal.png`; several items: `live-card-expand.png`): one text block, a row per item of yours when you own several, and one row of buttons.
+Layout (condensed, chosen in [`../card/slack-mockups/`](../card/slack-mockups/README.md): `condensed/B3-minimal.png` and `condensed/M2-checkboxes.png`): one text block and one row of buttons.
 
 ```
 30 min · Weekly Product Sync
 You own 2 items · 8 more from the team last week
-Forecast update (14:32)                 [▸ Details]
-Dashboard link (45:50)                  [▸ Details]
+• Forecast update (14:32)
+• Dashboard link (45:50)
 [Join Zoom] [Open in Ansel] [Mute series] [Not useful]
 ```
 
-Only the timestamps are links (each opens that moment in last meeting's transcript, via the prototype's short `#t/<itemId>` link), and "8 more from the team" links to the meeting's Action items tab. With exactly one item of yours, the line reads "You own **Forecast update** (14:32) · 5 more items from last week". Marking items done happens in Ansel, not on the card; items already done there show struck through. Up to 3 of your items get a row, then "+N more of yours in Ansel". ▸ Details expands that item to show its summary in small grey text under it (the button becomes ▾ Hide); each item opens and closes on its own. Slack messages have no built-in expand, so each tap redraws the card. Everything else (other people's items, Not right) is in Ansel.
+Only the timestamps are links (each opens that moment in last meeting's transcript, via the prototype's short `#t/<itemId>` link), and "8 more from the team" links to the meeting's Action items tab. With exactly one item of yours, the line reads "You own **Forecast update** (14:32) · 5 more items from last week". Marking items done happens in Ansel, not on the card; items already done there show struck through. Up to 3 of your items are listed, then "+N more of yours in Ansel". Everything else (other people's items, Not right) is in Ansel.
 
 | Control | Behavior | Event |
 |---|---|---|
@@ -187,7 +187,6 @@ Only the timestamps are links (each opens that moment in last meeting's transcri
 | Open in Ansel | Opens last meeting's summary in the hosted prototype (default), or replies privately with the summary if `PROTOTYPE_URL=off` | `open_last_meeting` |
 | Mute series / Undo | Collapses the card to one line (Join stays) and stops future cards for the series | `mute_series` / `mute_undone` |
 | Not useful → reason / Undo | Asks "What was off?" (Already knew this, Wrong meeting, Bad timing) | `not_useful`, `not_useful_reason`, `not_useful_undone` |
-| ▸ Details / ▾ Hide (several items) | Shows or hides that item's summary under it | `item_expanded` / `item_collapsed` |
 | Timestamp link, e.g. (14:32) | Opens the transcript at that item | not logged (Slack doesn't report link clicks) |
 
 Slack buttons come in three styles only (default, green, red), so Open in Ansel uses the default style.
