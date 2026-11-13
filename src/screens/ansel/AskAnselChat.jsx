@@ -3,15 +3,23 @@
 import React, { useEffect, useRef } from 'react'
 import { ChevronDown, Minus, Sparkles, X } from 'lucide-react'
 import { useStore } from '../../state/store.jsx'
-import { shortDate } from '../../logic/buildHeadsUp.js'
+import { longDate, shortDate } from '../../logic/buildHeadsUp.js'
 import { Avatar, Ts } from '../../components/ui.jsx'
 import { canSee, useNip } from './shared.jsx'
 
 export const NOV6_QA = [
   { id: 'qa-pricing', q: 'What did we decide about the pricing page?', a: 'The pricing page ships with v2, not before. Alicia confirmed it after engineering and QA weighed in.', cites: ['41:18', '39:25'] },
   { id: 'qa-launch', q: 'Who is bringing the launch date recommendation?', a: 'Gabriel and Rishabh, at next week’s sync. Alicia asked not to lock March 3 or March 10 without the new forecast.', cites: ['27:40', '27:05'] },
-  { id: 'qa-mine', q: 'What do I owe from the last meeting?', a: 'Update the Q1 forecast with the new conversion numbers, due Thursday. It may already be done, so check the action item.', cites: ['14:32', '14:51'] },
 ]
+
+/** "What do I owe?" answered from the viewer's own open Nov 6 items, so it fits any persona. */
+function owedAnswer(world, persona) {
+  const mine = world.instance('wps-1106').actionItems.filter((a) => a.owner === persona && a.status !== 'done')
+  if (!mine.length) return null
+  const list = mine.map((a) => `${a.text.replace(/\.$/, '')} (due ${longDate(a.due)})`)
+  const a = mine.length === 1 ? `${list[0]}. It may already be done, so check the action item.` : `${mine.length} items: ${list.slice(0, -1).join('; ')} and ${list.at(-1)}.`
+  return { id: 'qa-mine', q: 'What do I owe from the last meeting?', a, cites: mine.slice(0, 3).map((x) => x.t) }
+}
 
 export default function AskAnselChat() {
   const { state, dispatch, world } = useStore()
@@ -30,7 +38,8 @@ export default function AskAnselChat() {
   const answersFor = !scopedInst || scopedInst.id === 'wps-1106'
   const canAnswer = answersFor && canSee(state, world.instance('wps-1106'))
   // "What do I owe" is Gabriel's item; other people don't get his answer.
-  const available = canAnswer ? NOV6_QA.filter((x) => x.id !== 'qa-mine' || state.persona === 'gabriel') : []
+  const owed = canAnswer ? owedAnswer(world, state.persona) : null
+  const available = canAnswer ? [...NOV6_QA, ...(owed ? [owed] : [])] : []
   const asked = chatThread.map((id) => available.find((x) => x.id === id)).filter(Boolean)
   const suggestions = available.filter((x) => !chatThread.includes(x.id))
 

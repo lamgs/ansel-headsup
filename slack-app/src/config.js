@@ -23,7 +23,7 @@ export function loadConfig(env = process.env) {
     appToken: env.SLACK_APP_TOKEN,
     allowedUsers: parseAllowedUsers(env.ALLOWED_SLACK_USERS),
     users: parseUserMap(env.SLACK_USERS),
-    demoPersona: env.DEMO_PERSONA || 'gabriel',
+    demoPersona: env.DEMO_PERSONA || 'varun',
     icsUrl: env.CALENDAR_ICS_URL || '',
     calendars: parseCalendarFeeds(env),
     seriesMap: env.SERIES_MAP || 'Weekly Product Sync=wps,Design Review=dr',

@@ -48,7 +48,6 @@ Times in *(mm:ss)* are where the item is said in the Nov 6 transcript; the card'
 - **Attends:** all three recorded Weekly Product Syncs (Oct 23, Oct 30, Nov 6); invited to Design Review.
 - **Owns:** "Update Q1 forecast with new conversion numbers" (Forecast update), due Thu Nov 12, flagged "may already be done"; and "Post the dashboard link in the channel" (Dashboard link, 45:50), due Fri Nov 13.
 - **Stakeholder on:** "Launch date: Mar 3 or Mar 10?"
-- Default persona for `/headsup demo` and **Ping me**.
 
 ### Alicia (`alicia`): CEO, organizer
 - **Attends:** all three recorded meetings; organizer of Weekly Product Sync; invited to Design Review.
@@ -63,6 +62,7 @@ Times in *(mm:ss)* are where the item is said in the Nov 6 transcript; the card'
 - **Change:** no longer in the holdout group.
 
 ### Varun (`varun`): software engineer
+- **Default persona** in the prototype and for `/headsup demo` and **Ping me**.
 - **Attends:** Oct 23 and Nov 6 (not Oct 30).
 - **In the story:** owns billing and the pricing config; raised "Do we need legal review for new pricing?", answered at the Nov 6 meeting (33:10).
 - **Owns:** "Update the pricing config with the final tiers", due Wed Nov 11; and "Share the updated metrics view" (44:30), due Fri Nov 13.

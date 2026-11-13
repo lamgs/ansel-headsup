@@ -12,8 +12,8 @@ import SummaryTab from './SummaryTab.jsx'
 import ItemPanel from './ItemPanel.jsx'
 
 const TABS = [
-  ['transcript', 'Transcript', FileText],
   ['summary', 'Summary', Sparkles],
+  ['transcript', 'Transcript', FileText],
 ]
 
 export default function MeetingDetail() {

@@ -7,7 +7,7 @@ import { buildWorld } from '../logic/world.js'
 export function initialState(theme = 'light') {
   return {
     theme,
-    persona: 'gabriel',
+    persona: 'varun',
     clock: CLOCK_START,
     tab: 'slack',
     drawerOpen: false,
