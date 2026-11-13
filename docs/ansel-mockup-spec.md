@@ -84,6 +84,10 @@ Layout sketch (the player is audio only):
 - Answers only appear where the person can open the Nov 6 record (Aryan without the direct share sees none). "What do I owe" is offered to Gabriel only. The thread resets when the persona changes.
 - Transcript: the speaker's avatar and name sit on the same line as their first line of dialogue, in a fixed column; consecutive lines from the same speaker leave it blank.
 
+**Cast and roles (branch `rishabh/cast-roles`)**
+- Cast is the five team members: Gabriel (Intern), Alicia (CEO, organizer), Rishabh (CTO), Varun and Aryan (Software Engineers). Riley Park and Leo Grant are removed; Governance G3 uses unnamed placeholders for the new teammate (direct share) and the external guest.
+- Without Riley as a persona, only attendees can open a record in the prototype; the direct share shows in the Share dialog, the access badge and the G4 audit log.
+
 **Heads-Up card in Ansel (branch `rishabh/ansel-polish-4`)**
 - Slack can only show a basic Heads-Up, so the full card lives in Ansel on the upcoming meeting's page (Nov 13 · upcoming). Links: `#headsup` or `#ansel/upcoming`; Home's "Weekly Product Sync · 2:00 PM" also opens it.
 - It is Varun's `<heads-up-card>` from `card/`, loaded unchanged apart from a container query for its narrow layout. Data comes from `buildCardData` (the same as the Slack app), built as if nothing were muted so the card can show its own muted view.
@@ -137,7 +141,7 @@ Layout sketch (the player is audio only):
 **Comments on lines (new)**
 - Hovering a line shows a **Comment** button. Comments show inline under the line with author, time and a count badge.
 - Who can comment: attendees of that meeting, and Aryan only when the G3 direct share is on (matches the case: people the organizer grants access can comment). Non-attendees see the existing "didn't attend" message instead of the transcript.
-- One seeded comment so the feature is visible on first load, e.g. Varun on 16:05: "March revenue line updated in the budget view."
+- One seeded comment so the feature is visible on first load, e.g. Varun on 16:05: "March numbers are updated on the metrics dashboard."
 
 **Visible but inactive on this tab**
 - Audio player strip (play button, scrubber at the current line, speed). No video. Clicking it → toast.
@@ -201,7 +205,7 @@ All look real. Clicking shows a toast: "Not in this prototype." Grouped by where
 
 - Notes are visible to attendees only (case default, 78% of meetings). Non-attendees see an explanation, not the transcript.
 - Aryan sees Nov 6 only if Alicia's G3 direct share is ticked; it's recorded in the G4 audit log (existing).
-- External guests (Leo) never see notes.
+- External guests never see notes (shown on Governance G3 with a placeholder guest).
 - Only the organizer edits decisions and questions; only the owner updates an action item.
 
 ## 11. Out of scope

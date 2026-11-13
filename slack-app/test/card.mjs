@@ -27,7 +27,7 @@ const ACTIONS = `${P}#ansel/wps-1106/actions/`
 const config = { prototypeUrl: P, demoJoinUrl: 'https://zoom.us/j/123', reminderMinutes: 30 }
 const logs = []
 const log = (...a) => logs.push(a)
-const team = ['gabriel', 'alicia', 'rishabh', 'varun', 'aryan', 'riley', 'leo'].map((p) => `${p}@acme.example`)
+const team = ['gabriel', 'alicia', 'rishabh', 'varun', 'aryan'].map((p) => `${p}@acme.example`)
 const access = createAccessControl({ client, allowedUsers: team, log })
 const hu = createHeadsUp({ client, config, access, log })
 const start = Date.now() + 30 * 60000
@@ -80,14 +80,16 @@ for (const e of ['card_shown', 'not_useful', 'not_useful_reason', 'not_useful_un
 assert.ok(ev.includes('join_tap Zoom'))
 console.log('ok  buttons + events')
 
-// 4. Who gets a card: everyone on the invite (Riley owns nothing); external guests and Design Review (no record) get none
-let r = await hu.post({ persona: 'riley', sid: 'wps', slackUser: 'riley@acme.example', startMs: start })
-const riley = calls.filter(([k]) => k === 'post').at(-1)[1]
-assert.equal(riley.blocks[0].text.text, `*30 min · Weekly Product Sync*\n<${ACTIONS}|10 action items> from last week, none assigned to you`)
-assert.equal(labels(riley)[0], 'Join Zoom | Open in Ansel | Mute series | Not useful')
-assert.equal((await hu.post({ persona: 'leo', sid: 'wps', slackUser: 'leo@acme.example', startMs: start })).result.reason, 'External guest')
+// 4. Who gets a card: everyone on the invite; external guests and Design Review (no record) get none.
+// No one in the cast owns nothing or is external, so those cases use stand-in data.
+let r
+const all4 = hu.evaluate('gabriel', 'wps', { startMs: start }).result.data
+const noneMine = buildCard({ persona: 'gabriel', sid: 'wps', startMs: start, joinUrl: config.demoJoinUrl, data: { ...all4, actionItems: { items: all4.actionItems.items.filter((i) => i.owner.id !== 'gabriel'), moreCount: 0 } }, ui: { muted: false, notUseful: null } }, { nowMs: Date.now(), prototypeUrl: P })
+assert.match(noneMine.blocks[0].text.text, /from last week, none assigned to you(\n|$)/)
+assert.equal(labels(noneMine)[0], 'Join Zoom | Open in Ansel | Mute series | Not useful')
 assert.equal((await hu.post({ persona: 'gabriel', sid: 'dr', slackUser: 'gabriel@acme.example', startMs: start })).result.reason, 'No record of last meeting')
 const w0 = buildWorld()
+assert.equal(buildCardData({ ...w0.person('gabriel'), org: 'external' }, SEED.series[0], w0, { startMs: start }).reason, 'External guest')
 const holdout = buildCardData({ ...w0.person('gabriel'), holdout: true }, SEED.series[0], w0, { startMs: start })
 assert.deepEqual([holdout.eligible, holdout.reason, holdout.suppressed], [false, 'Holdout (measured, no card)', true])
 assert.equal(buildCardData({ ...w0.person('gabriel'), slack: false }, SEED.series[0], w0, { startMs: start }).eligible, false)

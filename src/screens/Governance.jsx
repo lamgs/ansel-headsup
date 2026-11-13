@@ -86,7 +86,7 @@ export default function Governance() {
 function G3() {
   const { state, dispatch } = useStore()
   const series = SEED.series[0]
-  const existing = series.invitees.filter((p) => !['riley', 'leo'].includes(p))
+  const existing = series.invitees
   return (
     <div className="mx-auto grid max-w-5xl gap-5 lg:grid-cols-[1fr_340px]">
       <div className="rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
@@ -96,19 +96,19 @@ function G3() {
         <label className="mt-4 block text-xs font-medium text-slate-500">Required attendees</label>
         <div className="mt-1 flex flex-wrap gap-2 rounded-md border border-slate-300 p-2 dark:border-slate-700">
           {existing.map((p) => <span key={p} className="inline-flex items-center gap-1 rounded-full bg-slate-100 py-0.5 pl-0.5 pr-2 text-xs dark:bg-slate-800"><Avatar id={p} size="xs" />{personName(p)}</span>)}
-          <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 py-0.5 pl-0.5 pr-2 text-xs dark:bg-emerald-500/20"><Avatar id="riley" size="xs" />Riley Park <b className="ml-1 text-[10px] uppercase">new</b></span>
-          <span className="inline-flex items-center gap-1 rounded-full bg-orange-100 py-0.5 pl-0.5 pr-2 text-xs dark:bg-orange-500/20"><Avatar id="leo" size="xs" />Leo Grant · external <b className="ml-1 text-[10px] uppercase">new</b></span>
+          <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 py-0.5 pl-2 pr-2 text-xs dark:bg-emerald-500/20">new.teammate@acme.com <b className="ml-1 text-[10px] uppercase">new</b></span>
+          <span className="inline-flex items-center gap-1 rounded-full bg-orange-100 py-0.5 pl-2 pr-2 text-xs dark:bg-orange-500/20">guest@agency.com · external <b className="ml-1 text-[10px] uppercase">new</b></span>
         </div>
         <div className="mt-4 flex gap-2"><Btn variant="primary">Send update</Btn><Btn variant="ghost">Discard</Btn></div>
       </div>
       <aside className="rounded-xl border border-ansel/30 bg-ansel-50 p-4 text-sm dark:border-ansel-400/30 dark:bg-ansel/15">
         <div className="mb-2 flex items-center gap-2 font-semibold"><span className="flex h-5 w-5 items-center justify-center rounded bg-ansel text-[10px] text-white">A</span>Ansel</div>
-        <p>Riley wasn't in earlier meetings, so Heads-Up starts for Riley after their first meeting in this series. Sharing defaults are unchanged.</p>
+        <p>The new teammate wasn't in earlier meetings, so their Heads-Up starts after their first meeting in this series. Sharing defaults are unchanged.</p>
         <label className="mt-3 flex items-start gap-2">
           <input type="checkbox" className="mt-0.5" checked={!!state.share} onChange={(e) => dispatch({ type: 'SET_SHARE', on: e.target.checked })} />
-          <span>Also share the Nov 6 notes with Riley (direct share, allowed by your workspace policy, recorded in the audit log).</span>
+          <span>Also share the Nov 6 notes with the new teammate (direct share, allowed by your workspace policy, recorded in the audit log).</span>
         </label>
-        <p className="mt-3">Leo is outside Acme. External guests never receive Heads-Up or shared notes.</p>
+        <p className="mt-3">guest@agency.com is outside Acme. External guests never receive Heads-Up or shared notes.</p>
       </aside>
     </div>
   )
@@ -125,7 +125,7 @@ function G4() {
     if (e.event === 'item_acted_on') rows.push({ sort: e.sec, time: `Nov 13 ${fmtClock(e.sec)}`, text: `Action item updated by ${personName(e.persona)} · ${e.detail}` })
   }
   for (const [id, ed] of Object.entries(state.edits)) rows.push({ sort: ed.atSec, time: `Nov 13 ${fmtClock(ed.atSec)}`, text: `Tracked change by ${personName(ed.by)} · “${ed.text}” (${id}) · Nov 6 record` })
-  if (state.share) rows.push({ sort: state.share.sec, time: `Nov 13 ${fmtClock(state.share.sec)}`, text: 'Direct share by Alicia · Nov 6 notes → Riley Park · workspace policy: internal direct share allowed' })
+  if (state.share) rows.push({ sort: state.share.sec, time: `Nov 13 ${fmtClock(state.share.sec)}`, text: 'Direct share by Alicia · Nov 6 notes → new.teammate@acme.com · workspace policy: internal direct share allowed' })
   rows.sort((a, b) => b.sort - a.sort)
   return (
     <div className="mx-auto max-w-4xl">

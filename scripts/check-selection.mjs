@@ -12,7 +12,7 @@ const now = { date: '2026-11-13', sec: 13.5 * 3600 }
 const run = (pid, sid) => buildHeadsUp(world.person(pid), SEED.series.find((s) => s.id === sid), now, world)
 
 const expected = {
-  wps: { gabriel: true, alicia: true, rishabh: true, varun: true, aryan: true, riley: 'No meetings attended in this series', leo: 'External guest' },
+  wps: { gabriel: true, alicia: true, rishabh: true, varun: true, aryan: true },
   dr: { gabriel: 'No record of last meeting', alicia: 'No record of last meeting' },
 }
 for (const [sid, rows] of Object.entries(expected)) {
@@ -34,7 +34,7 @@ assert.equal(gabriel.recordsRead, 3)
 console.log('ok  gabriel card items + cost:', gabriel.cost)
 
 // Every team member's "You own" line is their own item (profiles.md)
-for (const [pid, id, text] of [['alicia', 'a3', 'Pricing page copy'], ['rishabh', 'a4', 'QA estimate'], ['varun', 'a6', 'Pricing model update'], ['aryan', 'a7', 'Payment flow test plan']]) {
+for (const [pid, id, text] of [['alicia', 'a3', 'Pricing page copy'], ['rishabh', 'a4', 'QA estimate'], ['varun', 'a6', 'Pricing config update'], ['aryan', 'a7', 'Payment flow test plan']]) {
   const r = run(pid, 'wps')
   assert.deepEqual([r.items[0].section, r.items[0].id, r.items[0].text], ['own', id, text], pid)
   assert.deepEqual(r.items.slice(1).map((i) => i.id), ['q2', 'd3'], pid)
@@ -44,7 +44,9 @@ for (const [pid, id, text] of [['alicia', 'a3', 'Pricing page copy'], ['rishabh'
 // No one in the cast is in the holdout or lacks Slack, but those rules still apply.
 assert.equal(buildHeadsUp({ ...world.person('gabriel'), holdout: true }, SEED.series[0], now, world).reason, 'Holdout (measured, no card)')
 assert.equal(buildHeadsUp({ ...world.person('gabriel'), slack: false }, SEED.series[0], now, world).reason, 'Slack not connected')
-console.log('ok  holdout + no-Slack rules (stand-in users)')
+assert.equal(buildHeadsUp({ ...world.person('gabriel'), org: 'external' }, SEED.series[0], now, world).reason, 'External guest')
+assert.equal(buildHeadsUp({ ...world.person('gabriel'), id: 'newbie' }, SEED.series[0], now, world).reason, 'No meetings attended in this series')
+console.log('ok  holdout, no-Slack, external-guest and new-member rules (stand-in users)')
 
 // Muted series and done item
 const w2 = buildWorld({ muted: { 'gabriel:wps': true } })

@@ -2,19 +2,16 @@
 export const SEED = {
   workspace: { id: 'acme', name: 'Acme' },
   people: [
-    { id: 'gabriel', name: 'Gabriel', role: 'Data Analyst', org: 'acme', slack: true, holdout: false, reminderMinutes: 30 },
-    { id: 'alicia', name: 'Alicia', role: 'Product Manager (organizer)', org: 'acme', slack: true, holdout: false, reminderMinutes: 30 },
-    { id: 'rishabh', name: 'Rishabh', role: 'Engineering Lead', org: 'acme', slack: true, holdout: false, reminderMinutes: 30 },
-    { id: 'varun', name: 'Varun', role: 'Finance Partner', org: 'acme', slack: true, holdout: false, reminderMinutes: 30 },
-    { id: 'aryan', name: 'Aryan', role: 'QA Engineer', org: 'acme', slack: true, holdout: false, reminderMinutes: 30 },
-    // Synthetic personas for the demo's skip cases (see profiles.md)
-    { id: 'riley', name: 'Riley Park', role: 'Support Lead (new to series)', org: 'acme', slack: true, holdout: false, reminderMinutes: 30 },
-    { id: 'leo', name: 'Leo Grant', role: 'Agency partner', org: 'external', slack: false, holdout: false, reminderMinutes: 30 },
+    { id: 'gabriel', name: 'Gabriel', role: 'Intern', org: 'acme', slack: true, holdout: false, reminderMinutes: 30 },
+    { id: 'alicia', name: 'Alicia', role: 'CEO (organizer)', org: 'acme', slack: true, holdout: false, reminderMinutes: 30 },
+    { id: 'rishabh', name: 'Rishabh', role: 'CTO', org: 'acme', slack: true, holdout: false, reminderMinutes: 30 },
+    { id: 'varun', name: 'Varun', role: 'Software Engineer', org: 'acme', slack: true, holdout: false, reminderMinutes: 30 },
+    { id: 'aryan', name: 'Aryan', role: 'Software Engineer', org: 'acme', slack: true, holdout: false, reminderMinutes: 30 },
   ],
   series: [
     {
       id: 'wps', title: 'Weekly Product Sync', organizer: 'alicia', cadence: 'Weekly, Fri 2:00 PM, 50 min',
-      invitees: ['alicia', 'gabriel', 'rishabh', 'varun', 'aryan', 'riley', 'leo'],
+      invitees: ['alicia', 'gabriel', 'rishabh', 'varun', 'aryan'],
       nextInstance: { date: '2026-11-13', start: '14:00' },
     },
     {
@@ -60,11 +57,11 @@ export const SEED = {
         { id: 'a3', text: 'Send final pricing page copy to Rishabh', short: 'Pricing page copy', summary: 'Send Rishabh the final pricing page copy so it ships with v2.', owner: 'alicia', due: '2026-11-11', t: '41:52', status: 'open' },
         { id: 'a4', text: 'Estimate QA time for payment flow', short: 'QA estimate', summary: 'Estimate QA time for the payment flow so the launch date can be set.', owner: 'rishabh', due: '2026-11-12', t: '28:30', status: 'open' },
         { id: 'a5', text: 'Send the updated launch checklist before next sync', short: 'Launch checklist', summary: "Send the updated launch checklist before next week's sync.", owner: 'alicia', due: '2026-11-11', t: '47:20', status: 'open' },
-        { id: 'a6', text: 'Update the pricing model with the final tiers', short: 'Pricing model update', summary: 'Update the pricing model with the final tiers now that legal is clear.', owner: 'varun', due: '2026-11-11', t: '34:30', status: 'open' },
+        { id: 'a6', text: 'Update the pricing config with the final tiers', short: 'Pricing config update', summary: 'Update the pricing config with the final tiers now that legal is clear.', owner: 'varun', due: '2026-11-11', t: '34:30', status: 'open' },
         { id: 'a7', text: 'Write the payment flow test plan', short: 'Payment flow test plan', summary: 'Write the payment flow test plan the QA estimate will build on.', owner: 'aryan', due: '2026-11-12', t: '28:50', status: 'open' },
         { id: 'a8', text: 'Post the dashboard link in the channel', short: 'Dashboard link', summary: 'Post the refreshed conversion dashboard link in the team channel.', owner: 'gabriel', due: '2026-11-13', t: '45:50', status: 'open' },
         { id: 'a9', text: 'Post the new on-call rotation schedule', short: 'On-call rotation', summary: 'Post next week\'s new on-call rotation so the team knows who to page.', owner: 'rishabh', due: '2026-11-13', t: '05:25', status: 'open' },
-        { id: 'a10', text: 'Share the updated budget view', short: 'Budget view', summary: 'Share the updated budget view with the team before next week\'s sync.', owner: 'varun', due: '2026-11-13', t: '44:30', status: 'open' },
+        { id: 'a10', text: 'Share the updated metrics view', short: 'Metrics view', summary: 'Share the updated metrics view with the team before next week\'s sync.', owner: 'varun', due: '2026-11-13', t: '44:30', status: 'open' },
         { id: 'a11', text: 'Set up the staging test accounts for the payment run', short: 'Staging test accounts', summary: 'Set up the staging test accounts the payment flow test run needs.', owner: 'aryan', due: '2026-11-13', t: '29:25', status: 'open' },
       ],
       // Discussion themes: contiguous transcript ranges, in meeting order.
@@ -84,7 +81,7 @@ export const SEED = {
 // Comments already on the record when the demo starts. Keyed like state.comments:
 // `line:<instanceId>:<t>` for transcript lines, or a summary item id.
 export const SEED_COMMENTS = {
-  'line:wps-1106:16:05': [{ by: 'varun', text: 'March revenue line is updated in the budget view.', on: '2026-11-07' }],
+  'line:wps-1106:16:05': [{ by: 'varun', text: 'March numbers are updated on the metrics dashboard.', on: '2026-11-07' }],
 }
 
 // Demo constants
