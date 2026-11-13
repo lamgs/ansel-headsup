@@ -8,6 +8,7 @@ import MeetingDetail from './ansel/MeetingDetail.jsx'
 import { HomePage, SearchPage, SettingsPage } from './ansel/Pages.jsx'
 import { MeetingList } from './ansel/MeetingsPage.jsx'
 import AskAnselChat from './ansel/AskAnselChat.jsx'
+import EditItemDialog from './ansel/EditItemDialog.jsx'
 
 const NAV = [
   ['home', 'Home', House],
@@ -59,6 +60,7 @@ export default function Ansel() {
         {page === 'settings' && <SettingsPage />}
       </div>
       <AskAnselChat />
+      {state.ansel.editItem && <EditItemDialog key={state.ansel.editItem} id={state.ansel.editItem} />}
     </div>
   )
 }

@@ -7,11 +7,12 @@ import { buildWorld } from '../logic/world.js'
 export function initialState(theme = 'light') {
   return {
     theme,
-    persona: 'gabriel',
+    persona: 'varun',
     clock: CLOCK_START,
     tab: 'slack',
     drawerOpen: false,
     itemUpdates: {},
+    itemEdits: {},
     edits: {},
     comments: SEED_COMMENTS,
     muted: {},
@@ -89,7 +90,13 @@ function reducer(s, a) {
     case 'DISMISS_TOAST': return { ...s, toasts: s.toasts.filter((t) => t.id !== a.id) }
     case 'SLACK_CHANNEL': return { ...s, slackChannel: a.id, tab: 'slack' }
     case 'OPEN_ANSEL':
-      return { ...s, tab: 'ansel', ansel: { ...s.ansel, page: 'meetings', view: 'detail', panelItem: null, focusId: null, highlight: null, selectedItem: null, themeId: null, ...a.nav } }
+      // There's no Action items tab: a meeting's items are on its Summary, and the series' items are on
+      // the Meetings page card. Old links to the tab (Slack's "N more from the team") open the card expanded.
+      if (a.nav?.tab === 'actions') {
+        const series = SEED.instances.find((i) => i.id === a.nav.instanceId)?.series ?? 'wps'
+        return { ...s, tab: 'ansel', ansel: { ...s.ansel, page: 'meetings', view: 'list', seriesId: series, expandCard: Date.now(), panelItem: null, focusId: null, highlight: null, selectedItem: null, themeId: null } }
+      }
+      return { ...s, tab: 'ansel', ansel: { ...s.ansel, page: 'meetings', view: 'detail', panelItem: null, focusId: null, highlight: null, selectedItem: null, themeId: null, expandCard: null, ...a.nav } }
     case 'ANSEL_NAV': return { ...s, ansel: { ...s.ansel, ...a.nav } }
     case 'CARD_OPENED': {
       if (s.opened[a.key]) return s
@@ -107,6 +114,11 @@ function reducer(s, a) {
       const itemUpdates = { ...s.itemUpdates }
       delete itemUpdates[a.id]
       return addLog({ ...s, itemUpdates }, s.persona, 'item_acted_on', `${a.id}: ${a.label || 'undone'}`)
+    }
+    case 'EDIT_ITEM': {
+      // Audited correction to an action item (wording, owner, due date). Shown as Edited; G4 audit log.
+      const n = { ...s, itemEdits: { ...s.itemEdits, [a.id]: { ...a.changes, by: s.persona, on: DEMO_DATE, atSec: s.clock } } }
+      return addToast(addLog(n, s.persona, 'item_edited', `${a.id}: ${a.label}`), 'Saved as a tracked change. Attendees see who edited and the original.')
     }
     case 'EDIT': {
       const n = { ...s, edits: { ...s.edits, [a.id]: { text: a.text, by: s.persona, on: DEMO_DATE, atSec: s.clock } } }
@@ -183,7 +195,7 @@ export function StoreProvider({ children }) {
   useEffect(() => {
     document.documentElement.classList.toggle('dark', state.theme === 'dark')
   }, [state.theme])
-  const world = useMemo(() => buildWorld(state), [state.itemUpdates, state.edits, state.muted, state.reminder])
+  const world = useMemo(() => buildWorld(state), [state.itemUpdates, state.edits, state.muted, state.reminder, state.itemEdits])
   const value = useMemo(() => ({ state, dispatch, world }), [state, world])
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>
 }

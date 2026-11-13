@@ -84,6 +84,17 @@ Layout sketch (the player is audio only):
 - Answers only appear where the person can open the Nov 6 record (Aryan without the direct share sees none). "What do I owe" is offered to Gabriel only. The thread resets when the persona changes.
 - Transcript: the speaker's avatar and name sit on the same line as their first line of dialogue, in a fixed column; consecutive lines from the same speaker leave it blank.
 
+**Series list expands in place; no Action items tab (branch `rishabh/ansel-polish-8`)**
+- The card in Ansel gets every item: it shows 6 (yours first) and **Show N more / Show fewer** expands in place, instead of "+N more in Ansel" linking out (the standalone pages and Slack keep the link).
+- The meeting screen has **Transcript · Summary** only; a meeting's own items are in the Summary's action item table.
+- Old links to the Action items tab (Slack's "N more from the team", `#ansel/<meeting>/actions/`) open the Meetings page with that series' card expanded.
+
+**Edit on the card (branch `rishabh/ansel-polish-8`)**
+- **Slack message:** unchanged here; #22 keeps Not Useful on it as a greyed-out card.
+- **Ansel card rows:** your items show ▶ · Mark done · **Edit** (Edit replaces Not right there); other people's show ▶ · Not right, and the organizer also gets Edit. **Not useful** stays as a footer button beside Open last meeting and Mute series.
+- **Edit** opens a dialog for the wording, owner and due date (also reachable from the item panel's "Edit details…"). Saving is a tracked change: an `Edited` tag with "Edited by … · was …" on the card, Summary and item panel, a Pilot log `item_edited` event, and a G4 audit row. Only the item's owner or the organizer can edit.
+- Card contract 2.2 adds optional `item.editable`, `item.edited` and the `edit_tap` event.
+
 **Heads-Up lives on the Meetings page, per series (branch `rishabh/ansel-polish-6`)**
 - The card belongs to a recurring series, not one meeting (it carries over open items from earlier meetings), so it moves off the Nov 6 Summary.
 - **Meetings page:** one row per series (Weekly Product Sync, Design Review) with cadence, next meeting and a "Heads-Up · N yours" or "No Heads-Up" tag. Selecting a row shows that series' card on the right (stacked below on narrow screens); expanding it lists its meetings (upcoming first, then past), and clicking one opens the existing meeting screen. Design Review shows why it has no card (last meeting had Ansel kept out).
@@ -96,7 +107,7 @@ Layout sketch (the player is audio only):
 **The Summary is the Heads-Up card (branch `rishabh/summary-card`)**
 - The latest meeting's (Nov 6) **Summary tab shows the full Heads-Up card** in place of the summary. Every link to that Summary (old Slack messages, `#headsup`, Home's upcoming meeting, the upcoming page) lands on the card; no VM update needed.
 - The full summary (overview, For you, decisions, open questions, action items, themes, edit history) stays below the card under **Show full meeting summary**, collapsed. It opens when the card's **Open last meeting** is tapped or something links to one of its items (e.g. the mock card's `Edited` badge).
-- Card taps: ▶ opens the transcript; **+N more** opens the Action items tab. Older meetings (Oct 23, Oct 30) keep the regular Summary. The upcoming page links to the card instead of showing a second copy.
+- Card taps: ▶ opens the transcript; **+N more** opened the Action items tab (later replaced by expanding in place). Older meetings (Oct 23, Oct 30) keep the regular Summary. The upcoming page links to the card instead of showing a second copy.
 
 **Slack's Open in Ansel opens the card (branch `rishabh/open-in-ansel-card`)**
 - The real Slack message's **Open in Ansel** button now links to `#headsup` (the full Heads-Up card) instead of the Summary. From the card, **Open last meeting** goes on to the Summary; ▶ timestamps still open the transcript. This supersedes the "Open last meeting stays on the Summary" decision below for the Slack button.

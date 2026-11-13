@@ -10,6 +10,7 @@ import { DEMO_DATE } from '../../data/seed.js'
 import { buildCardData } from '../../logic/buildCardData.js'
 import { triggerSec } from '../../logic/buildHeadsUp.js'
 import { fmtClock } from '../../components/ui.jsx'
+import { canEditItem, editNote } from './EditItemDialog.jsx'
 
 const JOIN_URL = 'https://zoom.us/j/0000000000'
 
@@ -29,10 +30,20 @@ export default function HeadsUpPanel({ series }) {
 
   // The card shows its own muted view, so build its data as if nothing were muted.
   const result = useMemo(
-    () => buildCardData(user, series, { ...world, isMuted: () => false }, { startMs: secOnDemoDay(startSec), joinUrl: JOIN_URL }),
+    () => buildCardData(user, series, { ...world, isMuted: () => false }, { startMs: secOnDemoDay(startSec), joinUrl: JOIN_URL, maxRows: Infinity }),
     [user, series, world, startSec],
   )
-  const data = result.eligible ? result.data : null
+  // Edit (contract 2.2) for the item's owner or the organizer; Edited tag for tracked changes.
+  const data = useMemo(() => {
+    if (!result.eligible) return null
+    const d = result.data
+    const items = d.actionItems.items.map((i) => {
+      const found = world.instance(i.meetingId)?.actionItems.find((a) => a.id === i.id)
+      if (!found) return i
+      return { ...i, editable: canEditItem(user.id, found, world.instance(i.meetingId)), ...(found.itemEdit ? { edited: editNote(found) } : {}) }
+    })
+    return { ...d, actionItems: { ...d.actionItems, items } }
+  }, [result, world, user.id])
   // Items marked done elsewhere in Ansel (item panel) need the card to re-read its data.
   const doneKey = data ? data.actionItems.items.filter((i) => i.done).map((i) => i.id).join(',') : ''
   const lastDone = useRef(null)
@@ -46,6 +57,11 @@ export default function HeadsUpPanel({ series }) {
     fromCard.current = false
     lastDone.current = doneKey
   }, [data, doneKey])
+
+  // Links that ask for every action item (e.g. Slack's "N more from the team") open the list expanded.
+  useEffect(() => {
+    if (ref.current && data && state.ansel.expandCard) ref.current.expanded = true
+  }, [state.ansel.expandCard, data])
 
   // Keep the card's countdown on the prototype's clock (Jump to 1:30 PM, +5 min, …).
   useEffect(() => {
@@ -69,8 +85,8 @@ export default function HeadsUpPanel({ series }) {
         case 'open_last_meeting':
           dispatch({ type: 'OPEN_ANSEL', nav: { instanceId: last, tab: 'summary', seriesId: series.id } })
           break
-        case 'more_tap':
-          dispatch({ type: 'OPEN_ANSEL', nav: { instanceId: last, tab: 'actions' } })
+        case 'edit_tap':
+          dispatch({ type: 'ANSEL_NAV', nav: { editItem: payload.itemId } })
           break
         case 'mark_done':
           fromCard.current = true

@@ -6,7 +6,7 @@ Who plays which role in the Heads-Up demo. The team's real names are used, but *
 
 ## How a card is built (so edits stay realistic)
 
-**Slack card (current, condensed):** everyone on the Weekly Product Sync invite gets a card. **Each team member owns two items** from the last meeting (Nov 6), listed on the card with their timestamps, e.g. "You own 2 items · 8 more from the team last week · • Forecast update (14:32) · • Dashboard link (45:50)". Only the timestamp is a link (to that moment in the transcript); "8 more from the team" links to the meeting's Action items tab in Ansel. Marking items done happens in Ansel, not on the Slack card. External guests would get no card, but the cast is just the five team members.
+**Slack card (current, condensed):** everyone on the Weekly Product Sync invite gets a card. **Each team member owns two items** from the last meeting (Nov 6), listed on the card with their timestamps, e.g. "You own 2 items · 8 more from the team last week · • Forecast update (14:32) · • Dashboard link (45:50)". Only the timestamp is a link (to that moment in the transcript); "8 more from the team" opens the Heads-Up card on Ansel's Meetings page with every item shown. Marking items done happens in Ansel, not on the Slack card. External guests would get no card, but the cast is just the five team members.
 
 **Prototype card (the React app's own Heads-Up screen):** unchanged, built by `src/logic/buildHeadsUp.js` with the rules below.
 
@@ -48,7 +48,6 @@ Times in *(mm:ss)* are where the item is said in the Nov 6 transcript; the card'
 - **Attends:** all three recorded Weekly Product Syncs (Oct 23, Oct 30, Nov 6); invited to Design Review.
 - **Owns:** "Update Q1 forecast with new conversion numbers" (Forecast update), due Thu Nov 12, flagged "may already be done"; and "Post the dashboard link in the channel" (Dashboard link, 45:50), due Fri Nov 13.
 - **Stakeholder on:** "Launch date: Mar 3 or Mar 10?"
-- Default persona for `/headsup demo` and **Ping me**.
 
 ### Alicia (`alicia`): CEO, organizer
 - **Attends:** all three recorded meetings; organizer of Weekly Product Sync; invited to Design Review.
@@ -63,6 +62,7 @@ Times in *(mm:ss)* are where the item is said in the Nov 6 transcript; the card'
 - **Change:** no longer in the holdout group.
 
 ### Varun (`varun`): software engineer
+- **Default persona** in the prototype and for `/headsup demo` and **Ping me**.
 - **Attends:** Oct 23 and Nov 6 (not Oct 30).
 - **In the story:** owns billing and the pricing config; raised "Do we need legal review for new pricing?", answered at the Nov 6 meeting (33:10).
 - **Owns:** "Update the pricing config with the final tiers", due Wed Nov 11; and "Share the updated metrics view" (44:30), due Fri Nov 13.
