@@ -119,8 +119,11 @@ export default function HeadsUpPanel({ series }) {
           <button onClick={() => dispatch({ type: 'SET_CLOCK', sec: postSec })} className="ml-auto text-xs font-medium text-ansel underline-offset-2 hover:underline dark:text-ansel-300">Jump to {fmtClock(postSec)}</button>
         </div>
       )}
-      {/* The card renders nothing before its reminder time; keep it mounted so its clock runs. */}
-      <heads-up-card ref={ref} />
+      {/* Embedded: no Slack message frame, Ansel's font and colours (index.css). The card renders
+          nothing before its reminder time, so the container hides until then; keep it mounted so its clock runs. */}
+      <div className={early ? 'hidden' : 'rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900/60'}>
+        <heads-up-card ref={ref} embedded="" />
+      </div>
     </div>
   )
 }

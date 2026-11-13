@@ -84,6 +84,9 @@ Layout sketch (the player is audio only):
 - Answers only appear where the person can open the Nov 6 record (Aryan without the direct share sees none). "What do I owe" is offered to Gabriel only. The thread resets when the persona changes.
 - Transcript: the speaker's avatar and name sit on the same line as their first line of dialogue, in a fixed column; consecutive lines from the same speaker leave it blank.
 
+**Card looks native in Ansel (branch `rishabh/ansel-polish-5`)**
+- Ansel shows `<heads-up-card embedded>`: no Slack frame (avatar, APP tag, time, rail), Ansel's font, inside a standard Ansel card. Colours come from CSS variables set in `src/index.css` (indigo accent and Join, slate text and buttons), with dark-mode values. The standalone card pages keep the Slack look.
+
 **The Summary is the Heads-Up card (branch `rishabh/summary-card`)**
 - The latest meeting's (Nov 6) **Summary tab shows the full Heads-Up card** in place of the summary. Every link to that Summary (old Slack messages, `#headsup`, Home's upcoming meeting, the upcoming page) lands on the card; no VM update needed.
 - The full summary (overview, For you, decisions, open questions, action items, themes, edit history) stays below the card under **Show full meeting summary**, collapsed. It opens when the card's **Open last meeting** is tapped or something links to one of its items (e.g. the mock card's `Edited` badge).

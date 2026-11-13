@@ -102,6 +102,7 @@
     :host {
       --ink: #1D1C1D; --quiet: #616061; --line: #DDDDDD; --link: #1264A3;
       --green: #007A5A; --ansel: #1E4F8C; --soon: #A85F00; --live: #1A7F4B; --done-bg: #EAF5EF; --row-hover: #F8F8F8;
+      --surface: #fff; --on-accent: #fff; --btn-line: rgba(29, 28, 29, .3); --track: #E8EEF6; --rail: #D9D9D9;
       --ease: cubic-bezier(.2, .8, .2, 1);
       display: block; max-width: 780px; color: var(--ink);
       container-type: inline-size; /* lets the narrow layout follow the card's own width, e.g. inside Ansel */
@@ -115,7 +116,7 @@
     /* The message row */
     .msg { display: grid; grid-template-columns: 36px minmax(0, 1fr); column-gap: 8px; padding: 8px 20px; }
     .msg:hover { background: var(--row-hover); }
-    .avatar { width: 36px; height: 36px; border-radius: 8px; background: var(--ansel); color: #fff;
+    .avatar { width: 36px; height: 36px; border-radius: 8px; background: var(--ansel); color: var(--on-accent);
       display: grid; place-items: center; font-weight: 900; font-size: 18px; }
     .meta { display: flex; align-items: baseline; gap: 6px; line-height: 1.3; }
     .name { font-weight: 900; }
@@ -138,7 +139,7 @@
     @keyframes turn { from { color: var(--ansel); } to { color: var(--soon); } }
     h2.title { margin: 0; font-size: 18px; line-height: 1.33; font-weight: 700; }
     .sub { font-size: 13px; line-height: 1.38; color: var(--quiet); }
-    .track { grid-column: 1 / -1; height: 6px; margin-top: 12px; border-radius: 3px; background: #E8EEF6; overflow: hidden; }
+    .track { grid-column: 1 / -1; height: 6px; margin-top: 12px; border-radius: 3px; background: var(--track); overflow: hidden; }
     .track i { display: block; height: 100%; background: var(--ansel); transition: width 600ms var(--ease); }
     .track.soon i { background: var(--soon); }
     .track.live i { background: var(--live); }
@@ -149,7 +150,7 @@
     .rows.others { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line); }
     .r { display: grid; grid-template-columns: 4px minmax(0, 1fr) auto; column-gap: 12px; row-gap: 8px; align-items: center;
       padding: 10px 12px 10px 0; border-radius: 8px; transition: background-color 240ms var(--ease); }
-    .rail { align-self: stretch; border-radius: 2px; background: #D9D9D9; }
+    .rail { align-self: stretch; border-radius: 2px; background: var(--rail); }
     .r.mine .rail { background: var(--ansel); }
     .r.mine.is-done { background: var(--done-bg); }
     .r.mine.is-done .rail { background: var(--live); }
@@ -158,7 +159,7 @@
     .t .who { font-size: 13px; color: var(--quiet); }
     .t .summary { display: block; margin-top: 1px; font-size: 13px; line-height: 1.38; color: var(--quiet); }
     .acts { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 8px; }
-    .st { font-size: 11px; font-weight: 900; padding: 3px 9px; border-radius: 10px; letter-spacing: .02em; color: #fff; background: var(--ansel); }
+    .st { font-size: 11px; font-weight: 900; padding: 3px 9px; border-radius: 10px; letter-spacing: .02em; color: var(--on-accent); background: var(--ansel); }
     .ask { grid-column: 2 / -1; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
     .note { font-size: 13px; color: var(--quiet); }
     .context { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 6px; font-size: 13px; line-height: 1.38; color: var(--quiet); }
@@ -172,16 +173,16 @@
     .num { font-variant-numeric: tabular-nums; }
 
     /* Buttons: one rounded shape everywhere; one green button (Join) */
-    .btn { height: 28px; padding: 0 12px; border-radius: 14px; border: 1px solid rgba(29, 28, 29, .3);
-      background: #fff; color: var(--ink); font: 700 13px/1 Lato, "Helvetica Neue", Helvetica, Arial, sans-serif;
+    .btn { height: 28px; padding: 0 12px; border-radius: 14px; border: 1px solid var(--btn-line);
+      background: var(--surface); color: var(--ink); font: 700 13px/1 Lato, "Helvetica Neue", Helvetica, Arial, sans-serif;
       display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; cursor: pointer; font-variant-numeric: tabular-nums;
       transition: background-color 120ms var(--ease), border-color 120ms var(--ease), transform 120ms var(--ease); }
-    .btn.primary { background: var(--green); border-color: var(--green); color: #fff; }
+    .btn.primary { background: var(--green); border-color: var(--green); color: var(--on-accent); }
     .btn.join { height: 40px; padding: 0 22px; border-radius: 20px; font-size: 15px; font-weight: 900; }
     .btn.state-done { border-color: var(--live); color: var(--live); }
     .btn:disabled { opacity: .45; cursor: not-allowed; }
     @media (hover: hover) and (pointer: fine) {
-      .btn:not(:disabled):hover { background: color-mix(in srgb, #fff 86%, var(--ink)); transform: translateY(-1px);
+      .btn:not(:disabled):hover { background: color-mix(in srgb, var(--surface) 86%, var(--ink)); transform: translateY(-1px);
         transition-duration: 150ms; }
       .btn.primary:not(:disabled):hover { background: color-mix(in srgb, var(--green) 86%, var(--ink)); }
     }
@@ -190,6 +191,23 @@
     .link:hover { text-decoration: underline; }
     :focus-visible { outline: 2px solid var(--link); outline-offset: 2px; border-radius: 4px; }
     .btn:focus-visible { border-radius: 14px; }
+
+    /* Embedded mode (<heads-up-card embedded>): shown inside an app such as Ansel rather than as a
+       Slack message. No avatar, name, APP tag, time, blue rail or hover band; the host page's font;
+       colours come from the --* variables the host sets. The default (no attribute) is unchanged. */
+    :host([embedded]) { max-width: none; font-family: inherit; font-size: 15px; line-height: 1.5; }
+    :host([embedded]) .msg { display: block; padding: 0; }
+    :host([embedded]) .msg:hover { background: none; }
+    :host([embedded]) .avatar, :host([embedded]) .meta { display: none; }
+    :host([embedded]) .att { border-left: 0; padding: 0; margin: 0; }
+    :host([embedded]) .clock { margin-top: 0; }
+    :host([embedded]) .big { font-weight: 700; letter-spacing: -.02em; }
+    :host([embedded]) h2.title { font-weight: 600; }
+    :host([embedded]) .t .task { font-weight: 600; }
+    :host([embedded]) .st { font-weight: 700; border-radius: 4px; }
+    :host([embedded]) .btn { font-family: inherit; font-weight: 500; border-radius: 6px; }
+    :host([embedded]) .btn.join { font-weight: 600; border-radius: 8px; }
+    :host([embedded]) .btn:focus-visible { border-radius: 6px; }
 
     /* Error state */
     .pad { padding: 8px 20px; margin: 0; }
