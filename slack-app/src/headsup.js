@@ -42,7 +42,7 @@ export function createHeadsUp({ client, config, access, log = pilotLog }) {
     return userIds[ref]
   }
 
-  const freshUi = () => ({ muted: false, notUseful: null, done: {}, tapped: false })
+  const freshUi = () => ({ muted: false, notUseful: null })
   const render = (entry) => buildCard(entry, { nowMs: Date.now(), prototypeUrl: config.prototypeUrl })
   const update = (entry) => client.chat.update({ channel: entry.channel, ts: entry.ts, ...render(entry) })
 
@@ -113,10 +113,9 @@ export function createHeadsUp({ client, config, access, log = pilotLog }) {
     return entry
   }
 
-  const itemById = (entry, id) => entry.data.actionItems.items.find((i) => i.id === id)
 
   /**
-   * Handle a card control (action_id "hu_<act>[:<item>][:<reason>]", or "hu_pick" for the Mark done dropdown).
+   * Handle a card button (action_id "hu_<act>[:<reason>]").
    * Updates the card, logs the contract event and returns a private reply to show the user, if any.
    */
   async function handleAction(body, action) {
@@ -124,25 +123,14 @@ export function createHeadsUp({ client, config, access, log = pilotLog }) {
     const entry = entryFor(body)
     const { ui, persona } = entry
     const title = entry.data.meeting.title
-    const it = a1 ? itemById(entry, a1) : null
     const ev = (name, detail = '') => log(name, persona, detail)
     switch (act) {
       case 'join':
-        ev('join_tap', `${entry.data.meeting.platform} · joinedPrepared=${ui.tapped}`)
+        ev('join_tap', entry.data.meeting.platform)
         return null
       case 'open_last':
         ev('open_last_meeting', entry.data.lastMeeting.meetingId)
         return action.url ? null : summaryText(entry.data.lastMeeting.meetingId)
-      case 'done': ui.done[a1] = true; ui.tapped = true; ev('mark_done', `★ ${it?.text}`); break
-      case 'done_undo': ui.done[a1] = false; ev('mark_done_undone', it?.text); break
-      case 'pick': {
-        // "✓ Mark done" dropdown: value is "done:<itemId>" or "undo:<itemId>"
-        const [what, id] = (action.selected_option?.value ?? '').split(':')
-        const item = itemById(entry, id)
-        if (!item || item.owner.id !== entry.data.viewer.id) return null
-        if (what === 'done') { ui.done[id] = true; ui.tapped = true; ev('mark_done', `★ ${item.text}`) } else { ui.done[id] = false; ev('mark_done_undone', item.text) }
-        break
-      }
       case 'mute': ui.muted = true; muted[`${persona}:${entry.sid}`] = true; ev('mute_series', title); break
       case 'mute_undo': ui.muted = false; delete muted[`${persona}:${entry.sid}`]; ev('mute_undone', title); break
       case 'nu': ui.notUseful = { reason: null }; ev('not_useful', title); break

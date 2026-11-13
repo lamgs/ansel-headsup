@@ -5,7 +5,7 @@ A real Slack app that posts the Heads-Up card as a DM from "Ansel". It can be tr
 1. **Calendar trigger:** polls a Google or Outlook calendar ICS feed and posts at *meeting start − 30 min* for **recurring** meetings whose title matches a seeded Ansel series.
 2. **Manual demo trigger:** `/headsup demo` in Slack (or `npm run trigger` from a terminal) posts the card right away, for a meeting "starting in 30 min".
 
-Personas (who gets which card and why) are described in [`../profiles.md`](../profiles.md). The Slack card follows the Heads-Up card design in [`../card/`](../card/README.md) (contract 2.0, [`../card/CONTRACT.md`](../card/CONTRACT.md)): a countdown with Join, every action item from last meeting with its owner (yours first, marked `YOURS`), Mark done and Not right on rows, and the trust footer. The card data is built from the shared seed by [`../src/logic/buildCardData.js`](../src/logic/buildCardData.js). The calendar supplies the trigger time, the meeting title (matched to a series) and the join link. Socket Mode means no public URL is needed.
+Personas (who gets which card and why) are described in [`../profiles.md`](../profiles.md). The Slack card is a condensed Heads-Up (layout and previews in [`../card/slack-mockups/`](../card/slack-mockups/README.md)): the countdown, your action items from last meeting with links to their transcript moments, a link to the rest of the team's items, and Join / Open in Ansel / Mute series / Not useful. Marking items done happens in Ansel. The card data is built from the shared seed by [`../src/logic/buildCardData.js`](../src/logic/buildCardData.js) (contract 2.0, [`../card/CONTRACT.md`](../card/CONTRACT.md)). The calendar supplies the trigger time, the meeting title (matched to a series) and the join link. Socket Mode means no public URL is needed.
 
 ## Token and ownership model
 
@@ -176,15 +176,14 @@ Layout (condensed, chosen in [`../card/slack-mockups/`](../card/slack-mockups/RE
 You own 2 items · 8 more from the team last week
 • Forecast update (14:32)
 • Dashboard link (45:50)
-[✓ Mark done ▾] [Join Zoom] [Open in Ansel] [Mute series] [Not useful]
+[Join Zoom] [Open in Ansel] [Mute series] [Not useful]
 ```
 
-Only the timestamps are links (each opens that moment in last meeting's transcript, via the prototype's short `#t/<itemId>` link), and "8 more from the team" links to the meeting's Action items tab. With exactly one item of yours, the line reads "You own **Forecast update** (14:32) · 5 more items from last week" and the dropdown is a ✓ button. Up to 3 of your items are listed, then "+N more of yours in Ansel". Everything else (other people's items, Not right) is in Ansel.
+Only the timestamps are links (each opens that moment in last meeting's transcript, via the prototype's short `#t/<itemId>` link), and "8 more from the team" links to the meeting's Action items tab. With exactly one item of yours, the line reads "You own **Forecast update** (14:32) · 5 more items from last week". Marking items done happens in Ansel, not on the card; items already done there show struck through. Up to 3 of your items are listed, then "+N more of yours in Ansel". Everything else (other people's items, Not right) is in Ansel.
 
 | Control | Behavior | Event |
 |---|---|---|
-| ✓ Mark done dropdown (several items) / ✓ button (one item) | Marks the chosen item done (struck through, _Done_); pick "Undo: …" or tap the green ✓ again to undo | `mark_done` ★ / `mark_done_undone` |
-| Join Zoom / Join now | Opens the meeting link; the green button; removed after the meeting ends | `join_tap` (with `joinedPrepared`: true if something was marked done first) |
+| Join Zoom / Join now | Opens the meeting link; the green button; removed after the meeting ends | `join_tap` |
 | Open in Ansel | Opens last meeting's summary in the hosted prototype (default), or replies privately with the summary if `PROTOTYPE_URL=off` | `open_last_meeting` |
 | Mute series / Undo | Collapses the card to one line (Join stays) and stops future cards for the series | `mute_series` / `mute_undone` |
 | Not useful → reason / Undo | Asks "What was off?" (Already knew this, Wrong meeting, Bad timing) | `not_useful`, `not_useful_reason`, `not_useful_undone` |

@@ -2,10 +2,10 @@
 // condensed layout (card/slack-mockups/condensed, B3 + M2): one text block and one row of buttons.
 //   *30 min · Weekly Product Sync*
 //   You own Forecast update (14:32) · 5 more items from last week     (one item of yours; 14:32 is the link)
-//   [✓] [Join Zoom] [Open in Ansel] [Mute series] [Not useful]
+//   [Join Zoom] [Open in Ansel] [Mute series] [Not useful]
 // Several items of yours: "You own 2 items · 8 more from the team last week", then one line per item
-// ("• Forecast update (14:32)"), and a "✓ Mark done" dropdown in place of the ✓ button. Timestamps use the
-// prototype's short #t/<itemId> link; "8 more…" links to the meeting's Action items tab.
+// ("• Forecast update (14:32)"). Timestamps use the prototype's short #t/<itemId> link; "8 more…" links to the
+// meeting's Action items tab. Marking items done happens in Ansel, not on the card.
 
 export const NOT_USEFUL_REASONS = [['already_knew', 'Already knew this'], ['wrong_meeting', 'Wrong meeting'], ['bad_timing', 'Bad timing']]
 const SOON_MS = 5 * 60000
@@ -34,13 +34,12 @@ const md = (text) => ({ type: 'mrkdwn', text })
 const ctxBlock = (text) => ({ type: 'context', elements: [md(text)] })
 
 export const MAX_LISTED = 3 // items of yours listed on the card; the rest are "+N more of yours in Ansel"
-export const OPTION_LIMIT = 75 // Slack's limit for a menu option's text
 
 /** Short transcript link (#t/<itemId>); the prototype opens that item's moment in its meeting. */
 export const shortTranscriptLink = (prototypeUrl, itemId) => (prototypeUrl ? `${prototypeUrl.replace(/#.*$/, '')}#t/${itemId}` : null)
 
 /**
- * entry: { persona, sid, startMs, joinUrl, postMs, data (contract 2.0), ui: { muted, notUseful, done } }
+ * entry: { persona, sid, startMs, joinUrl, postMs, data (contract 2.0), ui: { muted, notUseful } }
  * Every button carries the meta needed to rebuild the card after a restart.
  */
 export function buildCard(entry, { nowMs = Date.now(), prototypeUrl = '' } = {}) {
@@ -66,7 +65,7 @@ export function buildCard(entry, { nowMs = Date.now(), prototypeUrl = '' } = {})
   const items = data.actionItems.items
   const mine = items.filter((i) => i.owner.id === me)
   const othersCount = items.length - mine.length + (data.actionItems.moreCount || 0)
-  const isDone = (it) => ui.done[it.id] ?? !!it.done
+  const isDone = (it) => !!it.done // done status comes from Ansel
   const plural = (n, word) => `${n} ${word}${n === 1 ? '' : 's'}`
   const stampLink = (it) => {
     const url = shortTranscriptLink(prototypeUrl, it.id)
@@ -98,17 +97,6 @@ export function buildCard(entry, { nowMs = Date.now(), prototypeUrl = '' } = {})
   }
 
   const row = []
-  if (mine.length === 1) {
-    const it = mine[0]
-    row.push(isDone(it)
-      ? btn(`hu_done_undo:${it.id}`, '✓', meta, { style: 'primary', accessibility_label: `Done: ${it.text}. Tap to undo`.slice(0, 75) })
-      : btn(`hu_done:${it.id}`, '✓', meta, { accessibility_label: `Mark done: ${it.text}`.slice(0, 75) }))
-  } else if (mine.length > 1) {
-    // Several items: a "✓ Mark done" dropdown of the listed items (done ones offer Undo).
-    const opt = (text, value) => ({ text: { type: 'plain_text', text: text.slice(0, OPTION_LIMIT) }, value })
-    row.push({ type: 'static_select', action_id: 'hu_pick', placeholder: { type: 'plain_text', text: '✓ Mark done' },
-      options: mine.slice(0, MAX_LISTED).map((it) => (isDone(it) ? opt(`Undo: ${it.text}`, `undo:${it.id}`) : opt(it.text, `done:${it.id}`))) })
-  }
   if (join) row.push(join)
   const summaryUrl = deepLink(prototypeUrl, { instanceId: data.lastMeeting.meetingId, tab: 'summary' })
   row.push(btn('hu_open_last', 'Open in Ansel', meta, summaryUrl ? { url: summaryUrl } : {}))

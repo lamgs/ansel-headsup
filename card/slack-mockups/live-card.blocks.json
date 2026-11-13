@@ -12,30 +12,6 @@
       "type": "actions",
       "elements": [
         {
-          "type": "static_select",
-          "action_id": "hu_pick",
-          "placeholder": {
-            "type": "plain_text",
-            "text": "✓ Mark done"
-          },
-          "options": [
-            {
-              "text": {
-                "type": "plain_text",
-                "text": "Forecast update"
-              },
-              "value": "done:a2"
-            },
-            {
-              "text": {
-                "type": "plain_text",
-                "text": "Dashboard link"
-              },
-              "value": "done:a8"
-            }
-          ]
-        },
-        {
           "type": "button",
           "action_id": "hu_join",
           "text": {
