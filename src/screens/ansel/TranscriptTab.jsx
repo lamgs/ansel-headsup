@@ -68,7 +68,7 @@ export default function TranscriptTab({ inst }) {
   return (
     <div>
       <PlayerBar inst={inst} durationSec={durationSec} posSec={posSec} />
-      <div className="max-w-4xl px-6 pb-16 pt-2">
+      <div className="px-6 pb-16 pt-2">
         {blocks.map((b, i) => (
           <React.Fragment key={`${b.lines[0].t}-${i}`}>
             {b.theme && <ThemeDivider theme={b.theme} selected={selTheme?.id === b.theme.id} />}
@@ -90,21 +90,21 @@ function PlayerBar({ inst, durationSec, posSec }) {
   const nip = useNip()
   return (
     <div id="ansel-player" className="sticky top-0 z-10 border-b border-slate-200 bg-white/95 px-6 py-2 backdrop-blur dark:border-slate-800 dark:bg-slate-950/95">
-      <div className="@container max-w-4xl">
+      <div className="@container">
       <div className="flex items-center gap-2.5">
         <button onClick={nip('Audio playback')} aria-label="Play" className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-ansel text-white hover:bg-ansel-700 dark:bg-ansel-400 dark:text-slate-950">
           <Play size={14} fill="currentColor" aria-hidden />
         </button>
         <button onClick={nip('Audio playback')} aria-label="Back 15 seconds" className="hidden text-slate-500 @lg:block hover:text-slate-800 dark:hover:text-slate-200"><SkipBack size={16} /></button>
         <button onClick={nip('Audio playback')} aria-label="Forward 15 seconds" className="hidden text-slate-500 @lg:block hover:text-slate-800 dark:hover:text-slate-200"><SkipForward size={16} /></button>
-        <span className="shrink-0 font-mono text-xs text-slate-500">{mmss(posSec)}<span className="hidden @md:inline"> / {mmss(durationSec)}</span></span>
+        <span className="shrink-0 font-mono text-[14px] text-slate-500">{mmss(posSec)}<span className="hidden @md:inline"> / {mmss(durationSec)}</span></span>
         <Waveform inst={inst} durationSec={durationSec} posSec={posSec} />
-        <button onClick={nip('Playback speed')} className="hidden shrink-0 rounded border @lg:block border-slate-300 px-1.5 py-0.5 text-xs text-slate-600 dark:border-slate-600 dark:text-slate-300">1x</button>
+        <button onClick={nip('Playback speed')} className="hidden shrink-0 rounded border @lg:block border-slate-300 px-1.5 py-0.5 text-[14px] text-slate-600 dark:border-slate-600 dark:text-slate-300">1x</button>
         <button onClick={nip('Transcript search')} aria-label="Search transcript" className="text-slate-500 hover:text-slate-800 @2xl:hidden dark:hover:text-slate-200"><Search size={16} /></button>
         <div className="relative hidden @2xl:block">
           <Search size={14} className="pointer-events-none absolute left-2 top-1/2 -translate-y-1/2 text-slate-400" aria-hidden />
           <input readOnly onClick={nip('Transcript search')} placeholder="Search transcript"
-            className="w-44 cursor-pointer rounded-md border border-slate-300 bg-transparent py-1 pl-7 pr-2 text-xs dark:border-slate-600" />
+            className="w-44 cursor-pointer rounded-md border border-slate-300 bg-transparent py-1 pl-7 pr-2 text-[14px] dark:border-slate-600" />
         </div>
       </div>
       </div>
@@ -179,7 +179,7 @@ function ThemeDivider({ theme, selected }) {
   const { dispatch } = useStore()
   return (
     <button onClick={() => jumpTo(dispatch, theme.start, { theme: theme.id })}
-      className={`mt-6 flex w-full items-center gap-3 text-left text-xs font-semibold uppercase tracking-wider ${selected ? 'text-ansel dark:text-ansel-300' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'}`}>
+      className={`mt-6 flex w-full items-center gap-3 text-left text-[14px] font-semibold uppercase tracking-wider ${selected ? 'text-ansel dark:text-ansel-300' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'}`}>
       <span className="h-px w-10 bg-current opacity-40" />
       {theme.title} · {theme.start}–{theme.end}
       <span className="h-px flex-1 bg-current opacity-40" />
@@ -214,38 +214,38 @@ function Line({ s, inst, items, flash, inTheme, showSpeaker }) {
     <div id={`seg-${s.t}`}
       className={`group relative flex gap-3 rounded-md py-1 pr-2 ${tint} ${selected ? 'ring-2 ring-ansel/30 dark:ring-ansel-300/30' : ''} ${flash ? 'flash ring-2 ring-amber-400' : ''}`}>
       <button onClick={() => jumpTo(dispatch, s.t)} title={`Play from ${s.t}`}
-        className="w-11 shrink-0 pt-0.5 text-right font-mono text-xs text-slate-400 hover:text-ansel dark:hover:text-ansel-300">{s.t}</button>
+        className="w-12 shrink-0 self-start pt-0.5 text-right font-mono text-[14px] text-slate-400 hover:text-ansel dark:hover:text-ansel-300">{s.t}</button>
       {/* Speaker sits on the same line as what they said; repeated only when the speaker changes. */}
       <div className="flex w-24 shrink-0 items-start gap-1.5 pt-0.5">
-        {showSpeaker && <><Avatar id={s.speaker} size="xs" /><span className="truncate text-sm font-semibold leading-5">{firstName(s.speaker)}</span></>}
+        {showSpeaker && <><Avatar id={s.speaker} size="xs" /><span className="truncate text-[16px] font-semibold leading-5">{firstName(s.speaker)}</span></>}
       </div>
       <div className="min-w-0 flex-1">
-        <p className="text-[15px] leading-relaxed text-slate-800 dark:text-slate-200">{s.text}</p>
+        <p className="text-[16px] leading-relaxed text-slate-800 dark:text-slate-200">{s.text}</p>
         {items.length > 0 && (
           <div className="mt-1 flex flex-wrap gap-1.5">
             {items.map((x) => (
               <KindChip key={x.item.id} kind={x.kind} active={x.item.id === state.ansel.selectedItem}
                 onClick={() => dispatch({
                   type: 'ANSEL_NAV',
-                  // Action items open their panel; decisions and questions open on the Summary page.
+                  // Action items are highlighted in place; decisions and questions open on the Summary page.
                   nav: x.kind === 'action'
-                    ? { selectedItem: x.item.id, themeId: null, panelItem: x.item.id }
+                    ? { selectedItem: x.item.id, themeId: null }
                     : { tab: 'summary', focusId: x.item.id, panelItem: null },
                 })} />
             ))}
           </div>
         )}
         {comments.map((c, i) => (
-          <div key={i} className="mt-1.5 flex items-start gap-2 rounded-md border border-slate-200 bg-white px-2 py-1.5 text-sm dark:border-slate-700 dark:bg-slate-900">
+          <div key={i} className="mt-1.5 flex items-start gap-2 rounded-md border border-slate-200 bg-white px-2 py-1.5 text-[16px] dark:border-slate-700 dark:bg-slate-900">
             <Avatar id={c.by} size="xs" />
-            <div><b className="font-semibold">{firstName(c.by)}</b> <span className="text-xs text-slate-400">{commentWhen(c)}</span><div>{c.text}</div></div>
+            <div><b className="font-semibold">{firstName(c.by)}</b> <span className="text-[14px] text-slate-400">{commentWhen(c)}</span><div>{c.text}</div></div>
           </div>
         ))}
         {composing && (
           <div className="mt-1.5 flex gap-2">
             <input autoFocus value={draft} onChange={(e) => setDraft(e.target.value)} placeholder="Add a comment for attendees"
               onKeyDown={(e) => { if (e.key === 'Enter') submit(); if (e.key === 'Escape') setComposing(false) }}
-              className="flex-1 rounded border border-slate-300 bg-white px-2 py-1 text-sm dark:border-slate-600 dark:bg-slate-800" />
+              className="flex-1 rounded border border-slate-300 bg-white px-2 py-1 text-[16px] dark:border-slate-600 dark:bg-slate-800" />
             <Btn variant="primary" onClick={submit}>Comment</Btn>
             <Btn variant="ghost" onClick={() => setComposing(false)}>Cancel</Btn>
           </div>

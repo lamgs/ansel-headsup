@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { useStore } from '../state/store.jsx'
 import { SEED } from '../data/seed.js'
 import { Avatar, Btn, Modal, personName, fmtClock } from '../components/ui.jsx'
@@ -9,20 +9,7 @@ export default function JoinFlow() {
   if (!j) return null
   const series = SEED.series.find((s) => s.id === j.sid)
 
-  if (j.step === 'notice') {
-    return (
-      <Modal onClose={() => dispatch({ type: 'JOIN_CLOSE' })}>
-        <div className="p-5">
-          <div className="flex items-center gap-2 text-sm font-semibold"><span className="h-2 w-2 rounded-full bg-rose-500" />{series.title}</div>
-          <p className="mt-3 text-sm">Ansel is recording and transcribing this meeting. Attendees can access the notes afterward.</p>
-          <div className="mt-5 flex justify-end gap-2">
-            <Btn variant="ghost" onClick={() => dispatch({ type: 'JOIN_CONFIRM', keptOut: true })}>Keep Ansel out of this meeting</Btn>
-            <Btn variant="primary" onClick={() => dispatch({ type: 'JOIN_CONFIRM', keptOut: false })}>Join meeting</Btn>
-          </div>
-        </div>
-      </Modal>
-    )
-  }
+  if (j.step === 'notice') return <ConsentDialog series={series} dispatch={dispatch} />
 
   const people = ['alicia', 'rishabh', 'varun', state.persona === 'gabriel' ? 'gabriel' : state.persona].filter((v, i, a) => a.indexOf(v) === i)
   return (
@@ -54,5 +41,37 @@ export default function JoinFlow() {
         <Btn variant="danger" onClick={() => dispatch({ type: 'JOIN_CLOSE' })}>Leave</Btn>
       </div>
     </div>
+  )
+}
+
+// Shown every time Join is pressed, before the call opens.
+function ConsentDialog({ series, dispatch }) {
+  const [agreed, setAgreed] = useState(true)
+  const close = () => dispatch({ type: 'JOIN_CLOSE' })
+  return (
+    <Modal onClose={close}>
+      <div className="p-5" role="dialog" aria-labelledby="join-consent-title">
+        <div className="flex items-center gap-3">
+          <Avatar id="ansel" size="md" />
+          <div>
+            <div id="join-consent-title" className="text-sm font-semibold">Ansel will join this meeting</div>
+            <div className="text-xs text-slate-500 dark:text-slate-400">{series.title}</div>
+          </div>
+        </div>
+        <ul className="mt-4 list-disc space-y-1 pl-5 text-sm text-slate-700 dark:text-slate-300">
+          <li>Ansel Notetaker joins as a visible participant.</li>
+          <li>The meeting is recorded and transcribed.</li>
+          <li>Notes, action items and the next Heads-Up are shared only with attendees and people given access.</li>
+        </ul>
+        <label className="mt-4 flex cursor-pointer items-start gap-2 rounded-md border border-slate-200 p-3 text-sm dark:border-slate-700">
+          <input type="checkbox" className="mt-0.5" checked={agreed} onChange={(e) => setAgreed(e.target.checked)} />
+          <span>I understand and consent to Ansel recording and transcribing this meeting.</span>
+        </label>
+        <div className="mt-5 flex justify-end gap-2">
+          <Btn variant="secondary" onClick={close}>Leave</Btn>
+          <Btn variant="primary" disabled={!agreed} onClick={() => dispatch({ type: 'JOIN_CONFIRM', keptOut: false })}>Join with Ansel</Btn>
+        </div>
+      </div>
+    </Modal>
   )
 }

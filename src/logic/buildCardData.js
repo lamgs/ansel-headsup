@@ -24,7 +24,7 @@ const durationOf = (series) => Number(series.cadence?.match(/(\d+)\s*min/)?.[1] 
 
 /**
  * buildCardData(user, series, world, opts) → { eligible, reason, suppressed?, data? }
- *  opts: { startMs, joinUrl, reminderMinutes, retentionDays, today }
+ *  opts: { startMs, joinUrl, reminderMinutes, retentionDays, today, maxRows (default 6; Infinity for every item) }
  * Rules (CONTRACT.md §3): everyone on the invite gets a card; holdout users get none (suppressed);
  * no card if the last meeting wasn't recorded. Muted series, no Slack and external guests also get none.
  * Earlier meetings: the viewer's own open items from up to LOOKBACK - 1 earlier recorded meetings they
@@ -91,7 +91,7 @@ export function buildCardData(user, series, world, opts = {}) {
         joinUrl,
       },
       lastMeeting: { meetingId: last.id, date: last.date, dateLabel: shortDate(last.date), recorded: true, label: "last week's recording" },
-      actionItems: { items: ordered.slice(0, MAX_ROWS), moreCount: Math.max(0, ordered.length - MAX_ROWS) },
+      actionItems: { items: ordered.slice(0, opts.maxRows ?? MAX_ROWS), moreCount: Math.max(0, ordered.length - (opts.maxRows ?? MAX_ROWS)) },
     },
   }
 }

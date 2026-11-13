@@ -36,7 +36,7 @@ export default function HeadsUpCard({ series, snap }) {
     dispatch({ type: 'LOG', event: 'timestamp_tapped', detail: `▶ ${it.t} (${SECTION[it.section]})` })
     dispatch({
       type: 'OPEN_ANSEL',
-      nav: { instanceId: it.instanceId, tab: 'transcript', highlight: { t: it.t, n: Date.now() }, panelItem: it.section === 'own' ? it.id : null },
+      nav: { instanceId: it.instanceId, tab: 'transcript', highlight: { t: it.t, n: Date.now() }, selectedItem: it.id },
     })
   }
 

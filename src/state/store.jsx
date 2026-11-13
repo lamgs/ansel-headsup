@@ -7,11 +7,12 @@ import { buildWorld } from '../logic/world.js'
 export function initialState(theme = 'light') {
   return {
     theme,
-    persona: 'gabriel',
+    persona: 'varun',
     clock: CLOCK_START,
     tab: 'slack',
     drawerOpen: false,
     itemUpdates: {},
+    itemEdits: {},
     edits: {},
     comments: SEED_COMMENTS,
     muted: {},
@@ -89,7 +90,13 @@ function reducer(s, a) {
     case 'DISMISS_TOAST': return { ...s, toasts: s.toasts.filter((t) => t.id !== a.id) }
     case 'SLACK_CHANNEL': return { ...s, slackChannel: a.id, tab: 'slack' }
     case 'OPEN_ANSEL':
-      return { ...s, tab: 'ansel', ansel: { ...s.ansel, page: 'meetings', view: 'detail', panelItem: null, focusId: null, highlight: null, selectedItem: null, themeId: null, ...a.nav } }
+      // There's no Action items tab: a meeting's items are on its Summary, and the series' items are on
+      // the Meetings page card. Old links to the tab (Slack's "N more from the team") open the card expanded.
+      if (a.nav?.tab === 'actions') {
+        const series = SEED.instances.find((i) => i.id === a.nav.instanceId)?.series ?? 'wps'
+        return { ...s, tab: 'ansel', ansel: { ...s.ansel, page: 'meetings', view: 'list', seriesId: series, expandCard: Date.now(), panelItem: null, focusId: null, highlight: null, selectedItem: null, themeId: null } }
+      }
+      return { ...s, tab: 'ansel', ansel: { ...s.ansel, page: 'meetings', view: 'detail', panelItem: null, focusId: null, highlight: null, selectedItem: null, themeId: null, expandCard: null, ...a.nav } }
     case 'ANSEL_NAV': return { ...s, ansel: { ...s.ansel, ...a.nav } }
     case 'CARD_OPENED': {
       if (s.opened[a.key]) return s
@@ -107,6 +114,11 @@ function reducer(s, a) {
       const itemUpdates = { ...s.itemUpdates }
       delete itemUpdates[a.id]
       return addLog({ ...s, itemUpdates }, s.persona, 'item_acted_on', `${a.id}: ${a.label || 'undone'}`)
+    }
+    case 'EDIT_ITEM': {
+      // Audited correction to an action item (wording, owner, due date). Shown as Edited; G4 audit log.
+      const n = { ...s, itemEdits: { ...s.itemEdits, [a.id]: { ...a.changes, by: s.persona, on: DEMO_DATE, atSec: s.clock } } }
+      return addToast(addLog(n, s.persona, 'item_edited', `${a.id}: ${a.label}`), 'Saved as a tracked change. Attendees see who edited and the original.')
     }
     case 'EDIT': {
       const n = { ...s, edits: { ...s.edits, [a.id]: { text: a.text, by: s.persona, on: DEMO_DATE, atSec: s.clock } } }
@@ -139,7 +151,7 @@ function reducer(s, a) {
       const diff = Math.round((start - s.clock) / 60)
       const when = Math.abs(start - s.clock) < 60 ? 'on time' : diff > 0 ? `joined ${diff} min before start` : `late, ${-diff} min after start`
       const n = { ...s, join: { ...s.join, step: 'call', keptOut: a.keptOut } }
-      return addLog(n, s.persona, 'meeting_joined', `${series.title}: ${when}${a.keptOut ? ' · Ansel kept out' : ''}`)
+      return addLog(n, s.persona, 'meeting_joined', `${series.title}: ${when}${a.keptOut ? ' · Ansel kept out' : ' · recording consent given'}`)
     }
     case 'JOIN_CLOSE': return { ...s, join: null }
     case 'SET_SHARE': return { ...s, share: a.on ? { sec: s.clock } : null }
@@ -155,11 +167,15 @@ export function StoreProvider({ children }) {
     const t = setInterval(() => dispatch({ type: 'TICK' }), 1000)
     return () => clearInterval(t)
   }, [])
-  // Deep links from the Slack app: #ansel/<instanceId>/<tab>/<mm:ss>/<itemId>, or the short
+  // Deep links from the Slack app: #ansel/<instanceId>/<tab>/<mm:ss>/<itemId>, #headsup, or the short
   // #t/<itemId> (opens that item's moment in its meeting's transcript; short enough for Slack checkbox notes).
   useEffect(() => {
     const open = () => {
-      const parts = decodeURIComponent(location.hash.slice(1)).split('/')
+      // ?as=<persona> (added by the Slack app for each message's recipient) opens the prototype as that person.
+      const [path, query = ''] = decodeURIComponent(location.hash.slice(1)).split('?')
+      const as = new URLSearchParams(query).get('as')
+      if (as && SEED.people.some((p) => p.id === as)) dispatch({ type: 'SET_PERSONA', id: as })
+      const parts = path.split('/')
       if (parts[0] === 't') {
         const inst = SEED.instances.find((i) => [...i.actionItems, ...i.decisions, ...i.openQuestions].some((x) => x.id === parts[1]))
         const item = inst && [...inst.actionItems, ...inst.decisions, ...inst.openQuestions].find((x) => x.id === parts[1])
@@ -171,10 +187,12 @@ export function StoreProvider({ children }) {
         dispatch({ type: 'OPEN_ANSEL', nav: { view: 'list', seriesId: parts[1] || 'wps' } })
         return
       }
-      const [root, instanceId, tab = 'summary', t, panelItem] = parts
+      const [root, instanceId, tab = 'summary', t, itemId] = parts
       if (root !== 'ansel' || !(instanceId === 'upcoming' || SEED.instances.some((i) => i.id === instanceId))) return
       dispatch({ type: 'AT_LEAST_CLOCK', sec: 13.5 * 3600 })
-      dispatch({ type: 'OPEN_ANSEL', nav: { instanceId, tab, highlight: t ? { t, n: Date.now() } : null, panelItem: panelItem || null } })
+      dispatch({ type: 'OPEN_ANSEL', nav: { instanceId, tab, highlight: t ? { t, n: Date.now() } : null,
+        // On the transcript the item is just highlighted; the item panel only opens on the Summary.
+        ...(tab === 'transcript' ? { selectedItem: itemId || null } : { panelItem: itemId || null }) } })
     }
     open()
     window.addEventListener('hashchange', open)
@@ -183,7 +201,7 @@ export function StoreProvider({ children }) {
   useEffect(() => {
     document.documentElement.classList.toggle('dark', state.theme === 'dark')
   }, [state.theme])
-  const world = useMemo(() => buildWorld(state), [state.itemUpdates, state.edits, state.muted, state.reminder])
+  const world = useMemo(() => buildWorld(state), [state.itemUpdates, state.edits, state.muted, state.reminder, state.itemEdits])
   const value = useMemo(() => ({ state, dispatch, world }), [state, world])
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>
 }

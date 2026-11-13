@@ -9,6 +9,7 @@ import { SUMMARIES } from '../../data/summaries.js'
 import { shortDate, longDate } from '../../logic/buildHeadsUp.js'
 import { Avatar, Btn, Ts, firstName, fmtClock, personName } from '../../components/ui.jsx'
 import { StatusPill, jumpTo, toSec } from './shared.jsx'
+import { editNote } from './EditItemDialog.jsx'
 
 const DAY = 86400000
 const days = (a, b) => Math.round((Date.parse(`${a}T00:00:00Z`) - Date.parse(`${b}T00:00:00Z`)) / DAY)
@@ -54,7 +55,7 @@ function FullSummary({ inst, series, embedded = false }) {
   return (
     <article className={`@container max-w-5xl ${embedded ? 'pt-4' : 'px-6 py-6'}`}>
       <div className="flex items-center justify-between gap-4">
-        <p className="text-xs text-slate-500">Summary by Ansel · 6 min after the meeting · {inst.attendees.length} attendees</p>
+        <p className="text-[13px] text-slate-500">Summary by Ansel · 6 min after the meeting · {inst.attendees.length} attendees</p>
         {!embedded && <Btn onClick={() => jumpTo(dispatch, null)}><FileText size={15} aria-hidden />View full transcript</Btn>}
       </div>
 
@@ -62,7 +63,7 @@ function FullSummary({ inst, series, embedded = false }) {
         <Card className="@3xl:col-start-1 @3xl:row-start-1">
           <Label>Overview</Label>
           {text.overview && <p className="text-[15px] leading-relaxed text-slate-800 dark:text-slate-100">{text.overview}</p>}
-          <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-500">
+          <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-[13px] text-slate-500">
             {counts.map(([n, word, unit]) => (
               <span key={word}><b className="font-semibold text-slate-800 dark:text-slate-100">{n}</b> {unit || n === 1 ? word : `${word}s`}</span>
             ))}
@@ -73,9 +74,9 @@ function FullSummary({ inst, series, embedded = false }) {
           <ForYou inst={inst} me={me} />
           <Card className="hidden @3xl:block">
             <Label>Attendees</Label>
-            <ul className="space-y-1.5 text-sm">
+            <ul className="space-y-1.5 text-[15px]">
               {inst.attendees.map((p) => (
-                <li key={p} className="flex items-center gap-2"><Avatar id={p} size="xs" />{personName(p)}{p === series.organizer && <span className="text-xs text-slate-500">· organizer</span>}</li>
+                <li key={p} className="flex items-center gap-2"><Avatar id={p} size="xs" />{personName(p)}{p === series.organizer && <span className="text-[13px] text-slate-500">· organizer</span>}</li>
               ))}
             </ul>
           </Card>
@@ -119,8 +120,8 @@ function FullSummary({ inst, series, embedded = false }) {
 const Card = ({ className = '', children, ...p }) => (
   <div className={`rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900/60 ${className}`} {...p}>{children}</div>
 )
-const Label = ({ children }) => <h2 className="mb-2 text-sm font-semibold text-slate-600 dark:text-slate-300">{children}</h2>
-const None = () => <p className="text-sm text-slate-400">None.</p>
+const Label = ({ children }) => <h2 className="mb-2 text-[15px] font-semibold text-slate-600 dark:text-slate-300">{children}</h2>
+const None = () => <p className="text-[15px] text-slate-400">None.</p>
 
 /** What the viewer owns and is tagged on, like the Heads-Up card. */
 function ForYou({ inst, me }) {
@@ -129,20 +130,20 @@ function ForYou({ inst, me }) {
   const tagged = inst.openQuestions.filter((q) => q.status === 'open' && q.stakeholders?.includes(me))
   return (
     <div className="rounded-xl border-2 border-ansel/50 bg-ansel-50/50 p-4 dark:border-ansel-300/40 dark:bg-ansel/10">
-      <h2 className="mb-3 flex items-center gap-1.5 text-sm font-semibold text-ansel dark:text-ansel-300"><User size={15} aria-hidden />For you, {firstName(me)}</h2>
-      {mine.length === 0 && tagged.length === 0 && <p className="text-sm text-slate-500">Nothing assigned to you in this meeting.</p>}
+      <h2 className="mb-3 flex items-center gap-1.5 text-[15px] font-semibold text-ansel dark:text-ansel-300"><User size={15} aria-hidden />For you, {firstName(me)}</h2>
+      {mine.length === 0 && tagged.length === 0 && <p className="text-[15px] text-slate-500">Nothing assigned to you in this meeting.</p>}
       {mine.length > 0 && (
         <div className="mb-3">
-          <div className="text-xs text-slate-500">You own</div>
+          <div className="text-[13px] text-slate-500">You own</div>
           {mine.map((a) => {
             const due = dueLabel(a)
             return (
               <div key={a.id} className="mt-1">
                 <div className={`font-medium ${a.status === 'done' ? 'text-slate-500 line-through' : ''}`}>{a.short || a.text}</div>
-                <div className={`text-xs ${due.overdue ? 'text-amber-700 dark:text-amber-400' : 'text-slate-500'}`}>{due.text}{due.overdue && due.text !== 'Due yesterday' && ' · overdue'}</div>
+                <div className={`text-[13px] ${due.overdue ? 'text-amber-700 dark:text-amber-400' : 'text-slate-500'}`}>{due.text}{due.overdue && due.text !== 'Due yesterday' && ' · overdue'}</div>
                 <div className="mt-1.5 flex items-center gap-2">
                   <Ts t={a.t} onClick={() => jumpTo(dispatch, a.t, { item: a.id })} />
-                  {a.status !== 'done' && <Btn className="px-2! py-0.5! text-xs" onClick={() => dispatch({ type: 'ANSEL_NAV', nav: { panelItem: a.id } })}>Update</Btn>}
+                  {a.status !== 'done' && <Btn className="px-2! py-0.5! text-[13px]" onClick={() => dispatch({ type: 'ANSEL_NAV', nav: { panelItem: a.id } })}>Update</Btn>}
                 </div>
               </div>
             )
@@ -151,7 +152,7 @@ function ForYou({ inst, me }) {
       )}
       {tagged.length > 0 && (
         <div>
-          <div className="text-xs text-slate-500">You're tagged on</div>
+          <div className="text-[13px] text-slate-500">You're tagged on</div>
           {tagged.map((q) => (
             <div key={q.id} className="mt-1">
               <div className="font-medium">{q.text}</div>
@@ -183,19 +184,19 @@ function ItemCard({ it, question, context, editable, flash, inst }) {
         <div className="min-w-0 flex-1">
           {editing ? (
             <div className="flex gap-2">
-              <input autoFocus value={draft} onChange={(e) => setDraft(e.target.value)} className="flex-1 rounded border border-slate-300 bg-transparent px-2 py-1 text-sm dark:border-slate-600" />
+              <input autoFocus value={draft} onChange={(e) => setDraft(e.target.value)} className="flex-1 rounded border border-slate-300 bg-transparent px-2 py-1 text-[15px] dark:border-slate-600" />
               <Btn variant="primary" onClick={() => { if (draft.trim() && draft !== it.text) dispatch({ type: 'EDIT', id: it.id, text: draft.trim() }); setEditing(false) }}>Save</Btn>
               <Btn variant="ghost" onClick={() => { setDraft(it.text); setEditing(false) }}>Cancel</Btn>
             </div>
           ) : (
             <div className="text-[15px] font-semibold leading-snug">{it.text}</div>
           )}
-          {context && <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">{context}</p>}
+          {context && <p className="mt-1 text-[15px] text-slate-600 dark:text-slate-400">{context}</p>}
         </div>
-        {it.status === 'resolved' && <span className="inline-flex shrink-0 items-center gap-1 rounded bg-emerald-100 px-1.5 py-0.5 text-[11px] font-medium text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-300"><CircleCheck size={11} aria-hidden />Resolved{it.resolvedIn === 'wps-1106' ? ' Nov 6' : ''}</span>}
+        {it.status === 'resolved' && <span className="inline-flex shrink-0 items-center gap-1 rounded bg-emerald-100 px-1.5 py-0.5 text-[12px] font-medium text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-300"><CircleCheck size={11} aria-hidden />Resolved{it.resolvedIn === 'wps-1106' ? ' Nov 6' : ''}</span>}
         {editable && !editing && <button title="Edit (saved as a tracked change)" aria-label="Edit" onClick={() => setEditing(true)} className="rounded p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800"><Pencil size={14} /></button>}
       </div>
-      <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
+      <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[13px]">
         <Ts t={it.t} className="bg-ansel-50 dark:bg-ansel/15" onClick={() => jumpTo(dispatch, it.t, { item: it.id })} />
         {tc && (
           <span className="text-amber-700 dark:text-amber-400">
@@ -207,11 +208,11 @@ function ItemCard({ it, question, context, editable, flash, inst }) {
           <button onClick={() => setCommenting(true)} className="inline-flex items-center gap-1 text-slate-500 opacity-0 hover:text-slate-800 group-hover:opacity-100 focus:opacity-100 dark:hover:text-slate-200"><MessageSquare size={12} aria-hidden />Comment</button>
         )}
       </div>
-      {tc && showOriginal && <p className="mt-2 rounded bg-slate-50 px-2 py-1 text-xs text-slate-500 dark:bg-slate-800">Original: <span className="line-through">{tc.original}</span></p>}
-      {comments.map((c, i) => <div key={i} className="mt-2 rounded bg-slate-50 px-2 py-1 text-xs dark:bg-slate-800"><b>{firstName(c.by)}</b> {c.text} <span className="text-slate-400">· {fmtClock(c.sec)}</span></div>)}
+      {tc && showOriginal && <p className="mt-2 rounded bg-slate-50 px-2 py-1 text-[13px] text-slate-500 dark:bg-slate-800">Original: <span className="line-through">{tc.original}</span></p>}
+      {comments.map((c, i) => <div key={i} className="mt-2 rounded bg-slate-50 px-2 py-1 text-[13px] dark:bg-slate-800"><b>{firstName(c.by)}</b> {c.text} <span className="text-slate-400">· {fmtClock(c.sec)}</span></div>)}
       {commenting && (
         <div className="mt-2 flex gap-2">
-          <input autoFocus value={comment} onChange={(e) => setComment(e.target.value)} placeholder="Add a comment" className="flex-1 rounded border border-slate-300 bg-transparent px-2 py-1 text-xs dark:border-slate-600" />
+          <input autoFocus value={comment} onChange={(e) => setComment(e.target.value)} placeholder="Add a comment" className="flex-1 rounded border border-slate-300 bg-transparent px-2 py-1 text-[13px] dark:border-slate-600" />
           <Btn onClick={() => { if (comment.trim()) dispatch({ type: 'COMMENT', id: it.id, text: comment.trim() }); setComment(''); setCommenting(false) }}>Comment</Btn>
         </div>
       )}
@@ -227,20 +228,20 @@ function ActionTable({ inst, me, flash }) {
   const cols = 'grid grid-cols-[7.5rem_minmax(0,1fr)_7.5rem_7rem] items-center gap-3'
   return (
     <div className="rounded-xl border border-slate-200 dark:border-slate-800">
-      <div className={`${cols} border-b border-slate-200 px-4 py-2 text-xs text-slate-500 dark:border-slate-800`}><span>Owner</span><span>Item</span><span>Due</span><span /></div>
+      <div className={`${cols} border-b border-slate-200 px-4 py-2 text-[13px] text-slate-500 dark:border-slate-800`}><span>Owner</span><span>Item</span><span>Due</span><span /></div>
       {rows.map((a) => {
         const mine = a.owner === me
         const done = a.status === 'done'
         const due = dueLabel(a)
         return (
           <div key={a.id} id={`sum-${a.id}`}
-            className={`${cols} border-b border-slate-100 px-4 py-2.5 text-sm last:border-b-0 dark:border-slate-800/70 ${mine ? 'bg-ansel-50/60 dark:bg-ansel/10' : ''} ${flash === a.id ? 'flash' : ''}`}>
+            className={`${cols} border-b border-slate-100 px-4 py-2.5 text-[15px] last:border-b-0 dark:border-slate-800/70 ${mine ? 'bg-ansel-50/60 dark:bg-ansel/10' : ''} ${flash === a.id ? 'flash' : ''}`}>
             <span className="flex min-w-0 items-center gap-2"><Avatar id={a.owner} size="xs" /><span className="truncate">{mine ? 'You' : firstName(a.owner)}</span></span>
-            <span className={`min-w-0 ${mine ? 'font-medium' : ''} ${done ? 'text-slate-500 line-through' : ''}`}>{a.text}</span>
+            <span className={`min-w-0 ${mine ? 'font-medium' : ''} ${done ? 'text-slate-500 line-through' : ''}`}>{a.text}{a.itemEdit && <span title={editNote(a)} className="ml-1.5 rounded border border-amber-400 px-1 text-[12px] font-medium text-amber-700 no-underline dark:text-amber-300">Edited</span>}</span>
             <span className={due.overdue ? 'text-amber-700 dark:text-amber-400' : 'text-slate-500'}>{done ? `Due ${shortDate(a.due)}` : due.text}</span>
             <span className="flex items-center justify-end gap-2">
               {(done || a.update) && <StatusPill a={a} />}
-              {mine && !done && <button onClick={() => dispatch({ type: 'ANSEL_NAV', nav: { panelItem: a.id } })} className="text-xs font-medium text-ansel dark:text-ansel-300">Update</button>}
+              {mine && !done && <button onClick={() => dispatch({ type: 'ANSEL_NAV', nav: { panelItem: a.id } })} className="text-[13px] font-medium text-ansel dark:text-ansel-300">Update</button>}
               <Ts t={a.t} onClick={() => jumpTo(dispatch, a.t, { item: a.id })} />
             </span>
           </div>
@@ -264,7 +265,7 @@ function ThemeTimeline({ inst, me }) {
             className={`transition hover:brightness-95 dark:hover:brightness-125 ${i % 2 ? 'bg-ansel-100 dark:bg-ansel/30' : 'bg-slate-100 dark:bg-slate-800'} ${th.mine ? 'ring-2 ring-inset ring-ansel dark:ring-ansel-300' : ''}`} />
         ))}
       </div>
-      <div className="mt-1.5 flex gap-0.5 text-[11px] leading-tight text-slate-500">
+      <div className="mt-1.5 flex gap-0.5 text-[12px] leading-tight text-slate-500">
         {segs.map((th) => (
           <button key={th.id} onClick={() => jumpTo(dispatch, th.start, { theme: th.id })} style={{ flex: th.span }}
             className={`min-w-0 truncate text-left hover:text-slate-800 dark:hover:text-slate-200 ${th.mine ? 'font-medium text-ansel dark:text-ansel-300' : ''}`}>

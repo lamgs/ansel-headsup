@@ -16,6 +16,14 @@
   const TIMELINE = ['posted', 'starting-soon', 'started', 'ended'];
 
   const DEFAULT_ROW_LIMIT = 6;
+  // Icons for embedded mode (an app such as Ansel): play, mark done, done, edit.
+  const svg = (d, fill = 'none') => `<svg width="16" height="16" viewBox="0 0 24 24" fill="${fill}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
+  const ICON = {
+    play: svg('<polygon points="7 4 20 12 7 20 7 4"/>', 'currentColor'),
+    check: svg('<path d="M20 6 9 17l-5-5"/>'),
+    done: svg('<circle cx="12" cy="12" r="10"/><path d="m8 12 3 3 5-6"/>'),
+    edit: svg('<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/>'),
+  };
   const FLAG_REASONS = [
     ['wrong_owner', 'Wrong owner'],
     ['not_real', 'Not a real item'],
@@ -192,6 +200,8 @@
     :focus-visible { outline: 2px solid var(--link); outline-offset: 2px; border-radius: 4px; }
     .btn:focus-visible { border-radius: 14px; }
 
+    .edited { font-size: 11px; font-weight: 700; color: var(--soon); border: 1px solid currentColor; border-radius: 4px; padding: 0 4px; margin-left: 4px; vertical-align: 1px; }
+
     /* Embedded mode (<heads-up-card embedded>): shown inside an app such as Ansel rather than as a
        Slack message. No avatar, name, APP tag, time, blue rail or hover band; the host page's font;
        colours come from the --* variables the host sets. The default (no attribute) is unchanged. */
@@ -208,6 +218,38 @@
     :host([embedded]) .btn { font-family: inherit; font-weight: 500; border-radius: 6px; }
     :host([embedded]) .btn.join { font-weight: 600; border-radius: 8px; }
     :host([embedded]) .btn:focus-visible { border-radius: 6px; }
+    /* Embedded layout: Join left-aligned under the timer; larger type for demos */
+    :host([embedded]) { font-size: 16px; }
+    :host([embedded]) h2.title { font-size: 19px; }
+    :host([embedded]) .sub, :host([embedded]) .t .summary, :host([embedded]) .t .who,
+    :host([embedded]) .note, :host([embedded]) .context { font-size: 14px; }
+    :host([embedded]) .st, :host([embedded]) .edited { font-size: 12px; }
+    :host([embedded]) .btn { height: 32px; font-size: 14px; }
+    :host([embedded]) .btn.icon { width: 32px; padding: 0; justify-content: center; }
+    :host([embedded]) .clock { grid-template-columns: auto minmax(0, 1fr); row-gap: 12px; }
+    :host([embedded]) .clock .join { grid-column: 1 / -1; justify-self: start; justify-content: center; }
+    /* Embedded action items: two stacked cards (yours, then the team's); rows touch, split by a
+       hairline; buttons on the right with no borders */
+    :host([embedded]) .stacks { display: flex; flex-direction: column; gap: 12px; }
+    :host([embedded]) .stack { border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+    :host([embedded]) .stack.mine-stack { background: var(--mine-bg, #EEEFFA); border-color: color-mix(in srgb, var(--ansel) 28%, transparent); }
+    :host([embedded]) .stack-h { padding: 9px 14px; font-size: 14px; font-weight: 600; color: var(--quiet); border-bottom: 1px solid var(--line); }
+    :host([embedded]) .mine-stack .stack-h { color: var(--ansel); border-bottom-color: color-mix(in srgb, var(--ansel) 20%, transparent); }
+    :host([embedded]) .stack-h .n { font-weight: 500; font-variant-numeric: tabular-nums; }
+    :host([embedded]) .stack .rows { gap: 0; }
+    :host([embedded]) .r { grid-template-columns: minmax(0, 1fr) auto; column-gap: 12px; padding: 12px 10px 12px 14px; border-radius: 0; }
+    :host([embedded]) .r + .r { border-top: 1px solid var(--line); }
+    :host([embedded]) .mine-stack .r + .r { border-top-color: color-mix(in srgb, var(--ansel) 14%, transparent); }
+    :host([embedded]) .rail { display: none; }
+    :host([embedded]) .acts { grid-column: 2; align-self: start; justify-content: flex-end; flex-wrap: nowrap; gap: 2px; }
+    :host([embedded]) .ask { grid-column: 1 / -1; }
+    :host([embedded]) .r.mine { background: none; }
+    :host([embedded]) .r.mine.is-done { background: var(--done-bg); }
+    :host([embedded]) .r .btn { border-color: transparent; background: transparent; color: var(--quiet); }
+    :host([embedded]) .r .btn.state-done { color: var(--live); }
+    @media (hover: hover) and (pointer: fine) {
+      :host([embedded]) .r .btn:not(:disabled):hover { background: color-mix(in srgb, var(--ink) 8%, transparent); color: var(--ink); transform: none; }
+    }
 
     /* Error state */
     .pad { padding: 8px 20px; margin: 0; }
@@ -317,6 +359,11 @@
 
     get now() { return new Date(this._nowMs()); }
 
+    // Embedded mode shows the first DEFAULT_ROW_LIMIT rows with "Show N more"; setting expanded = true
+    // opens the full list (e.g. when a link asks for every action item).
+    get expanded() { return !!this._ui.showAll; }
+    set expanded(value) { this._ui.showAll = !!value; this._render(); }
+
     set now(value) {
       if (value == null) {
         this._offset = 0;
@@ -359,6 +406,7 @@
         muted: false,
         notUseful: null,        // null, or { reason }
         whyOpen: false,
+        showAll: false,         // embedded: rows beyond the limit are shown
         seeded: false,
       };
     }
@@ -558,6 +606,11 @@
     _playButton(item) {
       const date = item.dateLabel ? `${item.dateLabel} · ` : '';
       const spokenDate = item.dateLabel ? ` from ${item.dateLabel}` : '';
+      if (this.hasAttribute('embedded')) {
+        // Embedded: just a play icon; the date and time show on hover.
+        return `<button class="btn icon" data-act="play" data-section="actionItems" data-item="${esc(item.id)}" data-key="play-${esc(item.id)}"
+          title="${esc(date)}${esc(fmtStamp(item.seconds))}" aria-label="Play transcript${esc(spokenDate)} at ${esc(spokenStamp(item.seconds))}: ${esc(item.text)}">${ICON.play}</button>`;
+      }
       return `<button class="btn" data-act="play" data-section="actionItems" data-item="${esc(item.id)}" data-key="play-${esc(item.id)}"
         aria-label="Play transcript${esc(spokenDate)} at ${esc(spokenStamp(item.seconds))}: ${esc(item.text)}">▶ ${esc(date)}${esc(fmtStamp(item.seconds))}</button>`;
     }
@@ -569,20 +622,39 @@
       const done = mine && ui.done.has(it.id);
       const flag = ui.flagged.get(it.id);
 
-      const who = mine ? '' : ` <span class="who">· ${esc(it.owner.name)}</span>`;
+      const emb = this.hasAttribute('embedded');
+      // Embedded: your rows name you like everyone else's ("· Varun (you)"); the tint marks them, so no YOURS tag.
+      const who = !mine ? ` <span class="who">· ${esc(it.owner.name)}</span>`
+        : emb ? ` <span class="who">· ${esc(it.owner.name)} (you)</span>` : '';
       const summary = it.summary ? `<span class="summary">${esc(it.summary)}</span>` : '';
 
       const acts = [];
-      if (mine) acts.push('<span class="st" aria-label="Your item">YOURS</span>');
-      acts.push(this._playButton(it));
-      if (mine && !flag) {
+      if (mine && !emb) acts.push('<span class="st" aria-label="Your item">YOURS</span>');
+      // Embedded: ▶ goes last (rightmost) so it lines up down every row; elsewhere it leads.
+      if (!emb) acts.push(this._playButton(it));
+      if (mine && !flag && emb) {
+        // Embedded: icon buttons with hover labels.
+        acts.push(done
+          ? `<button class="btn icon state-done" data-act="done-undo" data-item="${id}" data-key="done-undo-${id}" aria-pressed="true"
+              title="Done · tap to undo" aria-label="Done: ${esc(it.text)}. Tap to undo">${ICON.done}</button>`
+          : `<button class="btn icon" data-act="done" data-item="${id}" data-key="done-${id}" aria-pressed="false"
+              title="Mark done" aria-label="Mark done: ${esc(it.text)}">${ICON.check}</button>`);
+      } else if (mine && !flag) {
         acts.push(done
           ? `<button class="btn state-done" data-act="done-undo" data-item="${id}" data-key="done-undo-${id}" aria-pressed="true"
               aria-label="Done: ${esc(it.text)}. Tap to undo">✓ Done</button>`
           : `<button class="btn" data-act="done" data-item="${id}" data-key="done-${id}" aria-pressed="false"
               aria-label="Mark done: ${esc(it.text)}">Mark done</button>`);
       }
-      if (!done) {
+      // Edit (contract 2.2): shown when the app marks the item editable (e.g. its owner or the
+      // organizer). On your own editable items it replaces Not right: you fix it instead of flagging it.
+      if (it.editable && !flag) {
+        acts.push(emb
+          ? `<button class="btn icon" data-act="edit" data-item="${id}" data-key="edit-${id}" title="Edit" aria-label="Edit: ${esc(it.text)}">${ICON.edit}</button>`
+          : `<button class="btn" data-act="edit" data-item="${id}" data-key="edit-${id}" aria-label="Edit: ${esc(it.text)}">Edit</button>`);
+      }
+      // Embedded: no Not right on other people's items (your own have Edit; Not useful covers the card).
+      if (!done && !(mine && it.editable) && !(emb && !mine)) {
         if (flag) {
           const why = flag.reason ? (FLAG_REASONS.find(([r]) => r === flag.reason) || [null, flag.reason])[1].toLowerCase() : null;
           acts.push(`<button class="btn" data-act="flag-undo" data-item="${id}" data-key="flag-undo-${id}" aria-pressed="true"
@@ -593,6 +665,8 @@
         }
       }
 
+      if (emb) acts.push(this._playButton(it));
+
       const ask = flag && !flag.reason ? `
         <div class="ask" role="group" aria-label="What's wrong with ${esc(it.text)}?">
           <span class="note">What's wrong?</span>
@@ -601,7 +675,7 @@
 
       const cls = ['r', mine ? 'mine' : '', done ? 'is-done' : '', flag ? 'is-flagged' : ''].join(' ').replace(/\s+/g, ' ').trim();
       return `<div class="${cls}" role="listitem"><span class="rail" aria-hidden="true"></span>
-        <div class="t"><span class="task">${esc(it.text)}</span>${who}${summary}</div>
+        <div class="t"><span class="task">${esc(it.text)}</span>${it.edited ? ` <span class="edited" title="${esc(it.edited)}">Edited</span>` : ''}${who}${summary}</div>
         <div class="acts">${acts.join('')}</div>${ask}</div>`;
     }
 
@@ -616,11 +690,30 @@
             aria-label="${more} more action items in Ansel">+${more} more in Ansel</button></div>`
         : '';
       if (!rows.length) return `<div class="context">No action items from last week.</div>${moreLine}`;
+      // Embedded (inside an app that has every item): expand in place instead of linking out.
+      let shownMine = mine, shownOthers = others, toggle = '';
+      if (this.hasAttribute('embedded') && rows.length > DEFAULT_ROW_LIMIT) {
+        const hidden = rows.length - DEFAULT_ROW_LIMIT;
+        if (!this._ui.showAll) {
+          shownMine = mine.slice(0, DEFAULT_ROW_LIMIT);
+          shownOthers = others.slice(0, Math.max(0, DEFAULT_ROW_LIMIT - shownMine.length));
+        }
+        toggle = `<div class="context more"><button class="link" data-act="more-toggle" data-key="more-toggle" aria-expanded="${this._ui.showAll}">${
+          this._ui.showAll ? 'Show fewer' : `Show ${hidden} more`}</button></div>`;
+      }
+      if (this.hasAttribute('embedded')) {
+        // Embedded: two stacked cards, yours first, each with a heading and count.
+        const stack = (items, isMine, title, total) => (items.length
+          ? `<section class="stack${isMine ? ' mine-stack' : ''}" aria-label="${title}"><div class="stack-h">${title} <span class="n">· ${total}</span></div>
+              <div class="rows" role="list">${items.map((it) => this._rowHtml(it, isMine)).join('')}</div></section>` : '');
+        return `<div class="stacks">${stack(shownMine, true, 'Your action items', mine.length)}${stack(shownOthers, false, 'Team', others.length)}</div>`
+          + toggle + moreLine;
+      }
       const list = (items, isMine, extra, label) => (items.length
         ? `<div class="rows${extra}" role="list" aria-label="${label}">${items.map((it) => this._rowHtml(it, isMine)).join('')}</div>` : '');
-      return list(mine, true, '', 'Your action items')
-        + list(others, false, mine.length ? ' others' : '', "Everyone else's action items")
-        + moreLine;
+      return list(shownMine, true, '', 'Your action items')
+        + list(shownOthers, false, shownMine.length ? ' others' : '', "Everyone else's action items")
+        + toggle + moreLine;
     }
 
     _cardHtml(d, state, now) {
@@ -704,6 +797,12 @@
           this._rerender(`done-${ds.item}`, 'Mark done undone.');
           this._emit('mark_done_undone', { itemId: ds.item });
           break;
+        case 'edit': {
+          const found = this._findItem(ds.item);
+          if (!found || !found.item.editable) return;
+          this._emit('edit_tap', { itemId: ds.item, section: 'actionItems', meetingId: found.item.meetingId || last.meetingId });
+          break;
+        }
         case 'flag':
           ui.flagged.set(ds.item, { reason: null, section: ds.section, ownerId: ds.owner || null });
           this._rerender(`reason-${ds.item}-wrong_owner`, "Flagged. What's wrong? Choose a reason, or skip.");
@@ -721,6 +820,11 @@
           ui.flagged.delete(ds.item);
           this._rerender(`flag-${ds.item}`, 'Flag removed.');
           this._emit('item_flag_undone', { itemId: ds.item });
+          break;
+        case 'more-toggle':
+          ui.showAll = !ui.showAll;
+          this._rerender('more-toggle', ui.showAll ? 'Showing every action item.' : 'Showing fewer action items.');
+          this._emit('more_toggled', { section: 'actionItems', expanded: ui.showAll });
           break;
         case 'more': {
           const sec = d.actionItems || {};
