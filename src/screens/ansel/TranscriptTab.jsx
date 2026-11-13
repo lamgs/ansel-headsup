@@ -68,7 +68,7 @@ export default function TranscriptTab({ inst }) {
   return (
     <div>
       <PlayerBar inst={inst} durationSec={durationSec} posSec={posSec} />
-      <div className="max-w-4xl px-6 pb-16 pt-2">
+      <div className="px-6 pb-16 pt-2">
         {blocks.map((b, i) => (
           <React.Fragment key={`${b.lines[0].t}-${i}`}>
             {b.theme && <ThemeDivider theme={b.theme} selected={selTheme?.id === b.theme.id} />}
@@ -90,7 +90,7 @@ function PlayerBar({ inst, durationSec, posSec }) {
   const nip = useNip()
   return (
     <div id="ansel-player" className="sticky top-0 z-10 border-b border-slate-200 bg-white/95 px-6 py-2 backdrop-blur dark:border-slate-800 dark:bg-slate-950/95">
-      <div className="@container max-w-4xl">
+      <div className="@container">
       <div className="flex items-center gap-2.5">
         <button onClick={nip('Audio playback')} aria-label="Play" className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-ansel text-white hover:bg-ansel-700 dark:bg-ansel-400 dark:text-slate-950">
           <Play size={14} fill="currentColor" aria-hidden />
