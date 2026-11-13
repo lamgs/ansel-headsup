@@ -173,22 +173,20 @@ Layout (condensed, chosen in [`../card/slack-mockups/`](../card/slack-mockups/RE
 
 ```
 30 min · Weekly Product Sync
-You own 1 item · 5 more from the team last week
-☐ Forecast update
-  14:32 ↗
-[Join Zoom] [Open in Ansel] [Mute series] [Not useful]
+You own Forecast update (14:32) · 5 more items from last week
+[✓] [Join Zoom] [Open in Ansel] [Mute series] [Not useful]
 ```
 
-Each item of yours gets a checkbox (up to 3, then "+N more of yours in Ansel"); its small note is a link to that moment in last meeting's transcript. Slack caps checkbox labels and notes at 75 characters, link address included, so the note uses the prototype's short `#t/<itemId>` link. Everything else (other people's items, Not right) is in Ansel.
+Only the timestamp is a link: it opens that moment in last meeting's transcript (the prototype's short `#t/<itemId>` link). If you own several items, the line reads "You own 3 items · …" and each item gets a checkbox (up to 3, then "+N more of yours in Ansel") with the timestamp link as its note; Slack caps checkbox labels and notes at 75 characters, link address included. Everything else (other people's items, Not right) is in Ansel.
 
 | Control | Behavior | Event |
 |---|---|---|
-| Checkbox | Ticking marks your item done (struck through); unticking undoes it | `mark_done` ★ / `mark_done_undone` |
+| ✓ (one item of yours) / checkboxes (several) | Marks your item done (struck through, ✓ turns green); tap or untick to undo | `mark_done` ★ / `mark_done_undone` |
 | Join Zoom / Join now | Opens the meeting link; the green button; removed after the meeting ends | `join_tap` (with `joinedPrepared`: true if something was marked done first) |
 | Open in Ansel | Opens last meeting's summary in the hosted prototype (default), or replies privately with the summary if `PROTOTYPE_URL=off` | `open_last_meeting` |
 | Mute series / Undo | Collapses the card to one line (Join stays) and stops future cards for the series | `mute_series` / `mute_undone` |
 | Not useful → reason / Undo | Asks "What was off?" (Already knew this, Wrong meeting, Bad timing) | `not_useful`, `not_useful_reason`, `not_useful_undone` |
-| Timestamp link under an item (e.g. 14:32 ↗) | Opens the transcript at that item | not logged (Slack doesn't report link clicks) |
+| Timestamp link, e.g. (14:32) | Opens the transcript at that item | not logged (Slack doesn't report link clicks) |
 
 Slack buttons come in three styles only (default, green, red), so Open in Ansel uses the default style.
 

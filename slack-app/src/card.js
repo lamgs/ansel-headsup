@@ -1,12 +1,11 @@
 // Slack Block Kit version of the Heads-Up card, contract 2.0 data (card/CONTRACT.md), in the team's chosen
 // condensed layout (card/slack-mockups/condensed, B3 + M2): one text block and one row of buttons.
 //   *30 min · Weekly Product Sync*
-//   You own 2 items · 4 more from the team last week
-//   ☐ Forecast update        (a checkbox per item of yours, up to 3; ticked = done)
-//     14:32 ↗                (small note: link to that moment in last meeting's transcript)
-//   [Join Zoom] [Open in Ansel] [Mute series] [Not useful]
-// Slack caps checkbox labels and notes at 75 characters, link address included, so the note uses the
-// prototype's short #t/<itemId> link.
+//   You own Forecast update (14:32) · 5 more items from last week     (one item of yours; 14:32 is the link)
+//   [✓] [Join Zoom] [Open in Ansel] [Mute series] [Not useful]
+// Several items of yours: "You own 3 items · …" and a checkbox per item (up to 3; ticked = done) with the
+// timestamp link as its note. Slack caps checkbox labels and notes at 75 characters, link address included,
+// so links use the prototype's short #t/<itemId> form.
 
 export const NOT_USEFUL_REASONS = [['already_knew', 'Already knew this'], ['wrong_meeting', 'Wrong meeting'], ['bad_timing', 'Bad timing']]
 const SOON_MS = 5 * 60000
@@ -71,14 +70,22 @@ export function buildCard(entry, { nowMs = Date.now(), prototypeUrl = '' } = {})
   const plural = (n, word) => `${n} ${word}${n === 1 ? '' : 's'}`
   const fit = (text) => (text.length <= OPTION_LIMIT ? text : `${text.slice(0, OPTION_LIMIT - 1)}…`)
 
+  const stampLink = (it) => {
+    const url = shortTranscriptLink(prototypeUrl, it.id)
+    return url ? `<${url}|${fmtStamp(it.seconds)}>` : fmtStamp(it.seconds)
+  }
+
   let line
   if (mine.length === 0) line = `${plural(othersCount, 'action item')} from last week, none assigned to you`
-  else line = `You own ${plural(mine.length, 'item')}${othersCount ? ` · ${othersCount} more from the team last week` : ''}`
+  else if (mine.length === 1) {
+    const it = mine[0]
+    line = `You own ${isDone(it) ? `~${it.text}~` : `*${it.text}*`} (${stampLink(it)})${isDone(it) ? ' · _Done_' : ''}${othersCount ? ` · ${othersCount} more item${othersCount === 1 ? '' : 's'} from last week` : ''}`
+  } else line = `You own ${mine.length} items${othersCount ? ` · ${othersCount} more from the team last week` : ''}`
   if (state === 'ended') line += '\n_Meeting ended · new summary in about 6 min_'
 
   const blocks = [{ type: 'section', text: md(`*${hero} · ${m.title}*\n${line}`) }]
 
-  if (mine.length) {
+  if (mine.length > 1) {
     const shown = mine.slice(0, MAX_CHECKBOXES)
     const option = (it) => {
       const name = it.text.slice(0, OPTION_LIMIT - 4)
@@ -104,6 +111,12 @@ export function buildCard(entry, { nowMs = Date.now(), prototypeUrl = '' } = {})
   }
 
   const row = []
+  if (mine.length === 1) {
+    const it = mine[0]
+    row.push(isDone(it)
+      ? btn(`hu_done_undo:${it.id}`, '✓', meta, { style: 'primary', accessibility_label: `Done: ${it.text}. Tap to undo`.slice(0, 75) })
+      : btn(`hu_done:${it.id}`, '✓', meta, { accessibility_label: `Mark done: ${it.text}`.slice(0, 75) }))
+  }
   if (join) row.push(join)
   const summaryUrl = deepLink(prototypeUrl, { instanceId: data.lastMeeting.meetingId, tab: 'summary' })
   row.push(btn('hu_open_last', 'Open in Ansel', meta, summaryUrl ? { url: summaryUrl } : {}))

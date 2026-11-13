@@ -33,3 +33,5 @@ The images are approximations drawn outside Slack (stand-in font; spacing and bu
 **Built: option 3 without the quote.** A checkbox per item of yours, with a timestamp link (`#t/<itemId>`) as its note; `live-card.png` and `live-card-several.png` are the real output.
 
 **Two boxes per item** (previews, not built): `flags/F1-side-by-side.*` (the item's Done box, then a Not right box beside it, one row per item) and `flags/F2-boxes-on-right.*` (item name and timestamp link on the left, Done and Not right boxes on the right).
+
+**Current: back to the ✓ button**, with the timestamp after your item and only the timestamp linked: "You own **Forecast update** (14:32) · 5 more items from last week". Several items still get checkboxes with a timestamp link as the note. `live-card.png` is the real output.

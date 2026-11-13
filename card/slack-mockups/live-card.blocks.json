@@ -5,34 +5,23 @@
       "type": "section",
       "text": {
         "type": "mrkdwn",
-        "text": "*30 min · Weekly Product Sync*\nYou own 1 item · 5 more from the team last week"
+        "text": "*30 min · Weekly Product Sync*\nYou own *Forecast update* (<https://lamgs.github.io/ansel-headsup/#t/a2|14:32>) · 5 more items from last week"
       }
     },
     {
       "type": "actions",
       "elements": [
         {
-          "type": "checkboxes",
-          "action_id": "hu_check",
-          "options": [
-            {
-              "text": {
-                "type": "mrkdwn",
-                "text": "*Forecast update*"
-              },
-              "description": {
-                "type": "mrkdwn",
-                "text": "<https://lamgs.github.io/ansel-headsup/#t/a2|14:32 ↗>"
-              },
-              "value": "a2"
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "type": "actions",
-      "elements": [
+          "type": "button",
+          "action_id": "hu_done:a2",
+          "text": {
+            "type": "plain_text",
+            "text": "✓",
+            "emoji": true
+          },
+          "value": "{\"p\":\"gabriel\",\"s\":\"wps\",\"st\":1794578400000,\"j\":\"https://zoom.us/j/123\"}",
+          "accessibility_label": "Mark done: Forecast update"
+        },
         {
           "type": "button",
           "action_id": "hu_join",
