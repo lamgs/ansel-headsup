@@ -3,9 +3,8 @@ import { SEED, SEED_COMMENTS, DEMO_DATE, CLOCK_START } from '../data/seed.js'
 import { buildHeadsUp, triggerSec, hhmmToSec } from '../logic/buildHeadsUp.js'
 import { buildWorld } from '../logic/world.js'
 
-const prefersDark = typeof window !== 'undefined' && window.matchMedia?.('(prefers-color-scheme: dark)').matches
-
-export function initialState(theme = prefersDark ? 'dark' : 'light') {
+// Always start in light mode (reads better on a projector); the demo bar's toggle switches to dark.
+export function initialState(theme = 'light') {
   return {
     theme,
     persona: 'gabriel',
