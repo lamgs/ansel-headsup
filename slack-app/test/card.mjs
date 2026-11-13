@@ -5,7 +5,7 @@
 //   • Pricing FAQ (<Oct 30 · 24:10>)                        (still open from an earlier meeting)
 //   [Join Zoom] [Open in Ansel] [Mute Series]
 //   Open in Ansel to make changes.
-// With one item of yours: "You own Forecast update (Nov 6 · 14:32) · 5 more items from last week". Marking done is in Ansel.
+// With one item of yours: "*You own 1 item* · 5 more from the team last week", then the item on its own line. Marking done is in Ansel.
 // Fake Slack client: no tokens or network. Run: node test/card.mjs
 import assert from 'node:assert/strict'
 import { buildCard, cardState, fmtStamp, MAX_LISTED } from '../src/card.js'
@@ -126,10 +126,10 @@ const base = hu.evaluate('gabriel', 'wps', { startMs: start }).result.data
 const entryWith = (items, moreCount = 0) => ({ persona: 'gabriel', sid: 'wps', startMs: start, joinUrl: config.demoJoinUrl, data: { ...base, stillOpen: [], decided: [], actionItems: { items, moreCount } }, ui: { muted: false } })
 const others = base.actionItems.items.filter((i) => i.owner.id !== 'gabriel') // 3 shown; the other 5 are in moreCount
 let c = buildCard(entryWith([base.actionItems.items[0], ...others], 2), { nowMs: Date.now(), prototypeUrl: P })
-assert.equal(c.blocks[0].text.text, `*30 min · Weekly Product Sync*\nYou own *Forecast update* (<${P}#t/a2?as=gabriel|Nov 6 · 14:32>) · <${ACTIONS}|5 more items> from last week`)
+assert.equal(c.blocks[0].text.text, `*30 min · Weekly Product Sync*\n*You own 1 item* · <${ACTIONS}|5 more from the team> last week\n • Forecast update (<${P}#t/a2?as=gabriel|Nov 6 · 14:32>)`)
 assert.equal(labels(c)[0], 'Join Zoom | Open in Ansel | Mute Series')
 c = buildCard(entryWith([{ ...base.actionItems.items[0], done: true }, ...others], 2), { nowMs: Date.now(), prototypeUrl: P })
-assert.match(c.blocks[0].text.text, /You own ~Forecast update~ \(<.*\|Nov 6 · 14:32>\) · _Done_ · </)
+assert.match(c.blocks[0].text.text, /\*You own 1 item\* · <.*\n • ~Forecast update~ \(<.*\|Nov 6 · 14:32>\) · _Done_$/)
 assert.ok(!c.blocks[0].text.text.includes('Still Open'), 'no Still open / Decided headings when there is nothing to show')
 console.log('ok  one item')
 

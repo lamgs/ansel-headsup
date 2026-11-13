@@ -1,7 +1,8 @@
 // Slack Block Kit version of the Heads-Up card, contract 2.0 data (card/CONTRACT.md), in the team's chosen
 // condensed layout (card/slack-mockups/condensed, B3 + M2): one text block and one row of buttons.
 //   *30 min · Weekly Product Sync*
-//   You own Forecast update (14:32) · 5 more items from last week     (one item of yours; 14:32 is the link)
+//   *You own 1 item* · 5 more from the team last week
+//   • Forecast update (Nov 6 · 14:32)                                  (the timestamp is the link)
 //   [Join Zoom] [Open in Ansel] [Mute Series]
 //   Open in Ansel to make changes.                                    (small grey text)
 // Several items of yours: "*You own 2 items* · 8 more from the team last week", then one line per item
@@ -91,15 +92,14 @@ export function buildCard(entry, { nowMs = Date.now(), prototypeUrl = '' } = {})
   // "5 more items" links to the meeting's Action items tab in Ansel, where those items are listed.
   const teamUrl = as(deepLink(prototypeUrl, { instanceId: data.lastMeeting.meetingId, tab: 'actions' }))
   const team = (text) => (teamUrl ? `<${teamUrl}|${text}>` : text)
-  const named = (it, bold = true) => `${isDone(it) ? `~${it.text}~` : bold ? `*${it.text}*` : it.text} (${stampLink(it)})${isDone(it) ? ' · _Done_' : ''}`
+  const named = (it) => `${isDone(it) ? `~${it.text}~` : it.text} (${stampLink(it)})${isDone(it) ? ' · _Done_' : ''}`
 
   let line
   if (mine.length === 0) line = `${team(plural(othersCount, 'action item'))} from last week, none assigned to you`
-  else if (mine.length === 1) line = `You own ${named(mine[0])}${othersCount ? ` · ${team(`${othersCount} more item${othersCount === 1 ? '' : 's'}`)} from last week` : ''}`
   else {
     const shown = mine.slice(0, MAX_LISTED)
-    line = [`*You own ${mine.length} items*${othersCount ? ` · ${team(`${othersCount} more from the team`)} last week` : ''}`,
-      ...shown.map((it) => `${BULLET}${named(it, false)}`),
+    line = [`*You own ${plural(mine.length, 'item')}*${othersCount ? ` · ${team(`${othersCount} more from the team`)} last week` : ''}`,
+      ...shown.map((it) => `${BULLET}${named(it)}`),
       ...(mine.length > shown.length ? [`${BULLET}${team(`+${mine.length - shown.length} more of yours in Ansel`)}`] : [])].join('\n')
   }
   if (state === 'ended') line += '\n_Meeting ended · new summary in about 6 min_'
