@@ -60,7 +60,7 @@ assert.equal(labels(card)[0], 'Join Zoom | Open in Ansel | Mute Series | Not Use
 assert.ok(!JSON.stringify(card).includes('Mark done') && !JSON.stringify(card).includes('static_select'))
 assert.deepEqual([button(card, 'hu_join').style, button(card, 'hu_join').url], ['primary', 'https://zoom.us/j/123'])
 assert.equal(button(card, 'hu_open_last').url, `${P}#headsup`, 'Open in Ansel opens the full Heads-Up card')
-assert.equal(elements(card).filter((e) => e.style === 'primary').length, 1)
+assert.deepEqual(elements(card).filter((e) => e.style === 'primary').map((e) => e.action_id), ['hu_join', 'hu_open_last'], 'Join and Open in Ansel are green')
 console.log('ok  two items each: layout')
 
 const msg = { channel: 'D_UGABRIEL01', ts: String(calls.findIndex(([k, m]) => k === 'post' && m.channel === 'D_UGABRIEL01') + 1), m: card }
@@ -71,7 +71,7 @@ await press(msg, 'hu_nu'); m = lastUpdate()
 // Not Useful greys the card out: same text in a context block, a "Marked Not Useful" note, then Join and Undo. No follow-up.
 assert.deepEqual(m.blocks.map((b) => b.type), ['context', 'context', 'actions'])
 assert.equal(m.blocks[0].elements[0].text, card.blocks[0].text.text)
-assert.match(m.blocks[1].elements[0].text, /Marked \*Not Useful\*/); assert.equal(labels(m)[0], 'Join Zoom | Undo')
+assert.equal(m.blocks[1].elements[0].text, 'Marked Not Useful'); assert.equal(labels(m)[0], 'Join Zoom | Undo')
 await press(msg, 'hu_nu_undo'); assert.equal(lastUpdate().blocks.length, 2)
 await press(msg, 'hu_mute'); m = lastUpdate()
 assert.match(m.blocks[0].text.text, /^\*Muted Weekly Product Sync\*\nYou won't get Heads-Up for this series\. Starts in 30 min$/); assert.equal(labels(m)[0], 'Join Zoom | Undo')
@@ -153,7 +153,7 @@ console.log('ok  countdown states + links off')
 // 8. Restart safety: a press on a card this process didn't post rebuilds it from its buttons, and mutes persist
 const hu3 = createHeadsUp({ client, config, access, log })
 await press({ channel: 'D9', ts: '9', m: card }, 'hu_nu', undefined, hu3)
-assert.match(lastUpdate().blocks[1].elements[0].text, /Marked \*Not Useful\*/)
+assert.equal(lastUpdate().blocks[1].elements[0].text, 'Marked Not Useful')
 await press({ channel: 'D8', ts: '8', m: card }, 'hu_mute', undefined, hu3)
 assert.equal(hu3.evaluate('gabriel', 'wps').result.reason, 'Series muted')
 console.log('ok  restart-safe actions')
