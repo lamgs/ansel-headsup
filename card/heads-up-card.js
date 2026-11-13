@@ -15,13 +15,13 @@
   const SOON_MS = 5 * MIN; // Join turns primary at 5 minutes out
   const TIMELINE = ['posted', 'starting-soon', 'started', 'ended'];
 
-  const DEFAULT_ROW_LIMIT = 6;
   // Icons for embedded mode (an app such as Ansel): play, mark done, done, edit.
   const svg = (d, fill = 'none') => `<svg width="16" height="16" viewBox="0 0 24 24" fill="${fill}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
   const ICON = {
     play: svg('<polygon points="7 4 20 12 7 20 7 4"/>', 'currentColor'),
     check: svg('<path d="M20 6 9 17l-5-5"/>'),
     done: svg('<circle cx="12" cy="12" r="10"/><path d="m8 12 3 3 5-6"/>'),
+    chevron: svg('<path d="m9 18 6-6-6-6"/>'),
     edit: svg('<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/>'),
   };
   const FLAG_REASONS = [
@@ -246,7 +246,20 @@
     :host([embedded]) .stack-h { padding: 9px 14px; font-size: 14px; font-weight: 600; color: var(--quiet); border-bottom: 1px solid var(--line); }
     :host([embedded]) .mine-stack .stack-h { color: var(--ansel); border-bottom-color: color-mix(in srgb, var(--ansel) 20%, transparent); }
     :host([embedded]) .stack-h .n { font-weight: 500; font-variant-numeric: tabular-nums; }
-    :host([embedded]) .stack.q-stack { margin-top: 12px; border-color: color-mix(in srgb, var(--soon) 30%, var(--line)); }
+    /* Team folds to its heading */
+    :host([embedded]) .stack-toggle { display: flex; align-items: center; gap: 6px; width: 100%; border: 0; border-bottom: 1px solid transparent;
+      background: none; font: inherit; font-size: 14px; font-weight: 600; text-align: left; cursor: pointer; }
+    :host([embedded]) .team-stack.open .stack-toggle { border-bottom-color: var(--line); }
+    :host([embedded]) .stack-toggle:hover { color: var(--ink); background: color-mix(in srgb, var(--ink) 4%, transparent); }
+    :host([embedded]) .chev { display: inline-flex; transition: transform 150ms var(--ease); }
+    :host([embedded]) .team-stack.open .chev { transform: rotate(90deg); }
+    /* ▶ tooltip: shows the meeting date and timestamp the moment you hover or focus, no delay */
+    :host([embedded]) .btn.tip { position: relative; }
+    :host([embedded]) .btn.tip::after { content: attr(data-tip); position: absolute; right: 0; bottom: calc(100% + 4px);
+      padding: 3px 8px; border-radius: 6px; background: var(--ink); color: var(--surface); font-size: 13px; font-weight: 600;
+      line-height: 1.4; white-space: nowrap; font-variant-numeric: tabular-nums; pointer-events: none; opacity: 0; z-index: 2; }
+    :host([embedded]) .btn.tip:hover::after, :host([embedded]) .btn.tip:focus-visible::after { opacity: 1; }
+    :host([embedded]) .stack.q-stack { border-color: color-mix(in srgb, var(--soon) 30%, var(--line)); }
     :host([embedded]) .q-stack .stack-h { color: var(--soon); }
     :host([embedded]) .r.q.q-stale { box-shadow: inset 3px 0 0 var(--soon); }
     :host([embedded]) .tag { font-size: 12px; }
@@ -373,8 +386,7 @@
 
     get now() { return new Date(this._nowMs()); }
 
-    // Embedded mode shows the first DEFAULT_ROW_LIMIT rows with "Show N more"; setting expanded = true
-    // opens the full list (e.g. when a link asks for every action item).
+    // Embedded: the Team stack is closed by default; expanded = true opens it.
     get expanded() { return !!this._ui.showAll; }
     set expanded(value) { this._ui.showAll = !!value; this._render(); }
 
@@ -420,7 +432,7 @@
         muted: false,
         notUseful: null,        // null, or { reason }
         whyOpen: false,
-        showAll: false,         // embedded: rows beyond the limit are shown
+        showAll: false,         // embedded: the Team stack is open
         seeded: false,
       };
     }
@@ -622,8 +634,8 @@
       const spokenDate = item.dateLabel ? ` from ${item.dateLabel}` : '';
       if (this.hasAttribute('embedded')) {
         // Embedded: just a play icon; the date and time show on hover.
-        return `<button class="btn icon" data-act="play" data-section="${section}" data-item="${esc(item.id)}" data-key="play-${esc(item.id)}"
-          title="${esc(date)}${esc(fmtStamp(item.seconds))}" aria-label="Play transcript${esc(spokenDate)} at ${esc(spokenStamp(item.seconds))}: ${esc(item.text)}">${ICON.play}</button>`;
+        return `<button class="btn icon tip" data-act="play" data-section="${section}" data-item="${esc(item.id)}" data-key="play-${esc(item.id)}"
+          data-tip="${esc(date)}${esc(fmtStamp(item.seconds))}" aria-label="Play transcript${esc(spokenDate)} at ${esc(spokenStamp(item.seconds))}: ${esc(item.text)}">${ICON.play}</button>`;
       }
       return `<button class="btn" data-act="play" data-section="${section}" data-item="${esc(item.id)}" data-key="play-${esc(item.id)}"
         aria-label="Play transcript${esc(spokenDate)} at ${esc(spokenStamp(item.seconds))}: ${esc(item.text)}">▶ ${esc(date)}${esc(fmtStamp(item.seconds))}</button>`;
@@ -709,31 +721,26 @@
         ? `<div class="context more"><button class="link" data-act="more" data-section="actionItems" data-key="more-actionItems"
             aria-label="${more} more action items in Ansel">+${more} more in Ansel</button></div>`
         : '';
-      if (!rows.length) return `<div class="context">No action items from last week.</div>${moreLine}`;
-      // Embedded (inside an app that has every item): expand in place instead of linking out.
-      let shownMine = mine, shownOthers = others, toggle = '';
-      if (this.hasAttribute('embedded') && rows.length > DEFAULT_ROW_LIMIT) {
-        const hidden = rows.length - DEFAULT_ROW_LIMIT;
-        if (!this._ui.showAll) {
-          shownMine = mine.slice(0, DEFAULT_ROW_LIMIT);
-          shownOthers = others.slice(0, Math.max(0, DEFAULT_ROW_LIMIT - shownMine.length));
-        }
-        toggle = `<div class="context more"><button class="link" data-act="more-toggle" data-key="more-toggle" aria-expanded="${this._ui.showAll}">${
-          this._ui.showAll ? 'Show fewer' : `Show ${hidden} more`}</button></div>`;
-      }
       if (this.hasAttribute('embedded')) {
-        // Embedded: two stacked cards, yours first, each with a heading and count.
-        const stack = (items, isMine, title, total) => (items.length
-          ? `<section class="stack${isMine ? ' mine-stack' : ''}" aria-label="${title}"><div class="stack-h">${title} <span class="n">· ${total}</span></div>
-              <div class="rows" role="list">${items.map((it) => this._rowHtml(it, isMine)).join('')}</div></section>` : '');
-        return `<div class="stacks">${stack(shownMine, true, 'Your action items', mine.length)}${stack(shownOthers, false, 'Team', others.length)}</div>`
-          + toggle + moreLine;
+        // Embedded: stacked cards. Your action items, then Open questions, then Team, which folds
+        // closed to its heading (closed by default; card.expanded = true opens it).
+        const rowsOf = (items, isMine) => `<div class="rows" role="list">${items.map((it) => this._rowHtml(it, isMine)).join('')}</div>`;
+        const yours = mine.length ? `<section class="stack mine-stack" aria-label="Your action items"><div class="stack-h">Your action items <span class="n">· ${mine.length}</span></div>
+            ${rowsOf(mine, true)}</section>` : '';
+        const open = !!this._ui.showAll;
+        const team = others.length ? `<section class="stack team-stack${open ? ' open' : ''}" aria-label="Team">
+            <button class="stack-h stack-toggle" data-act="team-toggle" data-key="team-toggle" aria-expanded="${open}" aria-controls="team-rows">
+              <span class="chev" aria-hidden="true">${ICON.chevron}</span>Team <span class="n">· ${others.length}</span></button>
+            <div id="team-rows" ${open ? '' : 'hidden'}>${rowsOf(others, false)}</div></section>` : '';
+        const none = rows.length ? '' : '<div class="context">No action items from last week.</div>';
+        return `${none}<div class="stacks">${yours}${this._questionsHtml(d)}${team}</div>${moreLine}`;
       }
+      if (!rows.length) return `<div class="context">No action items from last week.</div>${moreLine}`;
       const list = (items, isMine, extra, label) => (items.length
         ? `<div class="rows${extra}" role="list" aria-label="${label}">${items.map((it) => this._rowHtml(it, isMine)).join('')}</div>` : '');
-      return list(shownMine, true, '', 'Your action items')
-        + list(shownOthers, false, shownMine.length ? ' others' : '', "Everyone else's action items")
-        + toggle + moreLine;
+      return list(mine, true, '', 'Your action items')
+        + list(others, false, mine.length ? ' others' : '', "Everyone else's action items")
+        + moreLine;
     }
 
     // Open questions (2.3): unresolved questions from the last few meetings. Ones the viewer is tagged
@@ -780,7 +787,7 @@
       const inner = `
         ${this._clockHtml(d, state, now)}
         ${this._rowsHtml(d)}
-        ${this._questionsHtml(d)}
+        ${this.hasAttribute('embedded') ? '' : this._questionsHtml(d)}
         ${ui.notUseful ? this._notUsefulHtml() : ''}
         <div class="bar">
           <button data-act="open-last" data-key="open-last" class="btn">Open last meeting</button>
@@ -882,10 +889,10 @@
           this._rerender(`flag-${ds.item}`, 'Flag removed.');
           this._emit('item_flag_undone', { itemId: ds.item });
           break;
-        case 'more-toggle':
+        case 'team-toggle':
           ui.showAll = !ui.showAll;
-          this._rerender('more-toggle', ui.showAll ? 'Showing every action item.' : 'Showing fewer action items.');
-          this._emit('more_toggled', { section: 'actionItems', expanded: ui.showAll });
+          this._rerender('team-toggle', ui.showAll ? "Showing the team's action items." : "Team's action items hidden.");
+          this._emit('team_toggled', { expanded: ui.showAll });
           break;
         case 'more': {
           const sec = d.actionItems || {};
