@@ -151,7 +151,7 @@ function reducer(s, a) {
       const diff = Math.round((start - s.clock) / 60)
       const when = Math.abs(start - s.clock) < 60 ? 'on time' : diff > 0 ? `joined ${diff} min before start` : `late, ${-diff} min after start`
       const n = { ...s, join: { ...s.join, step: 'call', keptOut: a.keptOut } }
-      return addLog(n, s.persona, 'meeting_joined', `${series.title}: ${when}${a.keptOut ? ' · Ansel kept out' : ''}`)
+      return addLog(n, s.persona, 'meeting_joined', `${series.title}: ${when}${a.keptOut ? ' · Ansel kept out' : ' · recording consent given'}`)
     }
     case 'JOIN_CLOSE': return { ...s, join: null }
     case 'SET_SHARE': return { ...s, share: a.on ? { sec: s.clock } : null }
