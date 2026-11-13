@@ -1,6 +1,6 @@
 # Heads-Up Card · Integration Contract
 
-**Contract version:** 2.1 (2.1 adds the viewer's still-open items from earlier meetings and tags every item with the meeting it came from. 2.0 replaced the sections with one Action items table; Following, sharing and the Decided section are gone.)
+**Contract version:** 2.3 (2.3 adds the optional `openQuestions` list: questions still unresolved from the last few meetings. 2.1 adds the viewer's still-open items from earlier meetings and tags every item with the meeting it came from. 2.0 replaced the sections with one Action items table; Following, sharing and the Decided section are gone.)
 
 **Files in `/card`:** `heads-up-card.js` (the card), `heads-up-log.js` (the event log), `demo-data.js` (sample data), `index.html` (the final page: the card in an Ansel message, no controls), `demo.html` (testing page with controls and the event log), `CONTRACT.md` (this file), `README.md`.
 
@@ -112,6 +112,7 @@ Setting `card.data` again re-renders from the new data. If it is the same viewer
 | `item.done` | Optional, viewer's items only; `true` shows the row as done (green background, "✓ Done"). Ignored on other people's items |
 | `actionItems.moreCount` | Shows "+N more in Ansel" under the table when above 0 |
 | `item.meetingId`, `item.date`, `item.dateLabel` | 2.1. The meeting the item comes from (`"wps-1030"`, `"2026-10-30"`, `"Oct 30"`). The Slack card and the `<heads-up-card>` element show the date next to every timestamp: "Nov 6 · 14:32" / "▶ Nov 6 · 14:32", and `timestamp_tap` carries the item's own `meetingId`. Without them, read the item as from `lastMeeting` (the element shows "▶ 14:32") |
+| `openQuestions.items` | 2.3. Optional. Every open question still unresolved from last meeting and the earlier meetings the viewer attended (same window as carried-over items). Each: `id`, `text`, `seconds`, `t`, `meetingId`, `date`, `dateLabel`, `stakeholders` (`[{ id, name }]`), and optionally `mine` (viewer is a stakeholder: "You're tagged", listed first), `carriedOver` (raised before last meeting: "Unresolved since Oct 30"), `context` (one line from the meeting summary), `edited`. The card shows them under the action items as **Open questions · N**, each with ▶ only. Resolved questions are left off. The Slack card doesn't show them |
 | `item.carriedOver` | 2.1. `true` on the viewer's own items that are still open from an earlier meeting (up to 3 earlier recorded meetings they attended, inside retention). They come after the viewer's last-meeting items. Done items and other people's items never carry over |
 
 Everyone on the invite gets a card and sees every action item, because invitees can already open last meeting's summary. The card adds no access.
@@ -144,7 +145,7 @@ Every event is `headsup:action`, cancelable, with this `e.detail`:
 | `card_shown` | Card first renders | `state` | | — |
 | `card_suppressed` | A holdout user's card is withheld | `reason: "holdout"` | | — |
 | `state_changed` | Posted → starting soon → started → ended | `from`, `to` | | — |
-| `timestamp_tap` | ▶ on any action item | `itemId`, `section` (`actionItems`), `seconds`, `meetingId` | ★ | `transcriptUrl&t=seconds` |
+| `timestamp_tap` | ▶ on any action item or open question | `itemId`, `section` (`actionItems` or `openQuestions`), `seconds`, `meetingId` | ★ | `transcriptUrl&t=seconds` |
 | `mark_done` | Mark done on one of the viewer's own items (the row turns green, the button shows "✓ Done") | `itemId` | ★ | — |
 | `mark_done_undone` | "✓ Done" tapped again | `itemId` | | — |
 | `item_flagged` | Not right on any action item | `itemId`, `section`, `ownerId` | | — |

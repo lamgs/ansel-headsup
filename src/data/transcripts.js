@@ -122,6 +122,8 @@ const OCT30 = [
   ['22:30', 'gabriel', 'Yes, I can do that.'],
   ['24:10', 'alicia', 'And Gabriel, can you draft a short pricing FAQ for the support team?'],
   ['24:25', 'gabriel', 'Sure, I will have a draft next week.'],
+  ['26:05', 'rishabh', 'Related question: after launch, who handles support escalations, engineering or the support team?'],
+  ['26:30', 'alicia', 'Good question. Gabriel, Rishabh, think about it and we will come back to it.'],
   ['31:40', 'alicia', 'Thanks everyone.'],
 ]
 

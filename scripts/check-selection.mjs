@@ -148,3 +148,19 @@ for (const [id, segs] of Object.entries(TRANSCRIPTS)) {
   assert.ok(!w.instance('wps-1023').actionItems.find((a) => a.id === 'a12').itemEdit)
   console.log('ok  editing back to the original clears Edited')
 }
+
+// Open questions on the Heads-Up card (contract 2.3): every unresolved question from the last
+// meeting and the earlier meetings you attended; yours first; older ones flagged as carried over.
+{
+  const wps = SEED.series.find((s) => s.id === 'wps')
+  const qs = (pid) => { const w = buildWorld({}); return buildCardData(w.person(pid), wps, { ...w, isMuted: () => false }, {}).data.openQuestions.items }
+  const g = qs('gabriel')
+  assert.deepEqual(g.map((q) => q.id), ['q2', 'q3'], 'gabriel: Nov 6 then Oct 30, resolved q1 left off')
+  assert.ok(g.every((q) => q.mine), 'gabriel is tagged on both')
+  assert.equal(g[0].carriedOver, undefined)
+  assert.deepEqual([g[1].carriedOver, g[1].dateLabel, g[1].t], [true, 'Oct 30', '26:05'])
+  assert.deepEqual(g[1].stakeholders.map((p) => p.name), ['Gabriel', 'Rishabh'])
+  assert.deepEqual(qs('alicia').map((q) => [q.id, !!q.mine]), [['q2', false], ['q3', false]], 'alicia sees both, tagged on neither')
+  assert.deepEqual(qs('aryan').map((q) => q.id), ['q2'], "aryan missed Oct 30, so only last meeting's question")
+  console.log('ok  heads-up card open questions')
+}

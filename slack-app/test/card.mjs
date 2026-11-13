@@ -108,7 +108,7 @@ console.log('ok  who gets a card')
 // 4b. Earlier meetings: only your own items that are still open carry over, tagged with their meeting;
 // done items, other people's items, meetings you missed and meetings past retention stay off the card.
 const gd = buildCardData(w0.person('gabriel'), SEED.series[0], w0, { startMs: start, retentionDays: 365 }).data
-assert.equal(gd.contractVersion, '2.1')
+assert.equal(gd.contractVersion, '2.3')
 assert.deepEqual(gd.actionItems.items.filter((i) => i.owner.id === 'gabriel').map((i) => [i.id, i.meetingId, i.dateLabel, !!i.carriedOver]),
   [['a2', 'wps-1106', 'Nov 6', false], ['a8', 'wps-1106', 'Nov 6', false], ['a15', 'wps-1030', 'Oct 30', true]])
 assert.ok(!gd.actionItems.items.some((i) => i.id === 'a1'), 'a1 is done, so it does not carry over')

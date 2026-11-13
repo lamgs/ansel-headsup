@@ -1,5 +1,5 @@
 /*
- * Heads-Up card · contract 2.0
+ * Heads-Up card · contract 2.0 (+ optional 2.1–2.3 fields)
  * A plain-JavaScript custom element: <heads-up-card>. No dependencies, no build step.
  * See CONTRACT.md for the data it reads and the events it fires.
  *
@@ -173,6 +173,15 @@
     .context { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 6px; font-size: 13px; line-height: 1.38; color: var(--quiet); }
     .more { margin-top: 8px; }
 
+    /* Open questions (2.3): unresolved from the last few meetings */
+    .qs { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line); }
+    .qs-h { font-size: 13px; font-weight: 700; color: var(--quiet); margin-bottom: 4px; }
+    .r.q .rail { background: var(--soon); opacity: .45; }
+    .r.q.q-stale .rail { opacity: 1; }
+    .tag { display: inline-block; font-size: 11px; font-weight: 700; border-radius: 4px; padding: 0 5px; margin-left: 4px; vertical-align: 1px; white-space: nowrap; }
+    .tag.stale { color: var(--soon); background: color-mix(in srgb, var(--soon) 12%, transparent); }
+    .tag.you { color: var(--ansel); background: color-mix(in srgb, var(--ansel) 12%, transparent); }
+
     /* Footer */
     .bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 14px; }
     .foot { flex-wrap: nowrap; align-items: flex-start; margin-top: 8px; }
@@ -236,6 +245,10 @@
     :host([embedded]) .stack-h { padding: 9px 14px; font-size: 14px; font-weight: 600; color: var(--quiet); border-bottom: 1px solid var(--line); }
     :host([embedded]) .mine-stack .stack-h { color: var(--ansel); border-bottom-color: color-mix(in srgb, var(--ansel) 20%, transparent); }
     :host([embedded]) .stack-h .n { font-weight: 500; font-variant-numeric: tabular-nums; }
+    :host([embedded]) .stack.q-stack { margin-top: 12px; border-color: color-mix(in srgb, var(--soon) 30%, var(--line)); }
+    :host([embedded]) .q-stack .stack-h { color: var(--soon); }
+    :host([embedded]) .r.q.q-stale { box-shadow: inset 3px 0 0 var(--soon); }
+    :host([embedded]) .tag { font-size: 12px; }
     :host([embedded]) .stack .rows { gap: 0; }
     :host([embedded]) .r { grid-template-columns: minmax(0, 1fr) auto; column-gap: 12px; padding: 12px 10px 12px 14px; border-radius: 0; }
     :host([embedded]) .r + .r { border-top: 1px solid var(--line); }
@@ -603,15 +616,15 @@
 
     // ▶ mm:ss, or ▶ Nov 6 · mm:ss when the item carries its meeting's date (items can come from
     // different meetings in the series, e.g. carried over from an earlier one).
-    _playButton(item) {
+    _playButton(item, section = 'actionItems') {
       const date = item.dateLabel ? `${item.dateLabel} · ` : '';
       const spokenDate = item.dateLabel ? ` from ${item.dateLabel}` : '';
       if (this.hasAttribute('embedded')) {
         // Embedded: just a play icon; the date and time show on hover.
-        return `<button class="btn icon" data-act="play" data-section="actionItems" data-item="${esc(item.id)}" data-key="play-${esc(item.id)}"
+        return `<button class="btn icon" data-act="play" data-section="${section}" data-item="${esc(item.id)}" data-key="play-${esc(item.id)}"
           title="${esc(date)}${esc(fmtStamp(item.seconds))}" aria-label="Play transcript${esc(spokenDate)} at ${esc(spokenStamp(item.seconds))}: ${esc(item.text)}">${ICON.play}</button>`;
       }
-      return `<button class="btn" data-act="play" data-section="actionItems" data-item="${esc(item.id)}" data-key="play-${esc(item.id)}"
+      return `<button class="btn" data-act="play" data-section="${section}" data-item="${esc(item.id)}" data-key="play-${esc(item.id)}"
         aria-label="Play transcript${esc(spokenDate)} at ${esc(spokenStamp(item.seconds))}: ${esc(item.text)}">▶ ${esc(date)}${esc(fmtStamp(item.seconds))}</button>`;
     }
 
@@ -715,12 +728,48 @@
         + toggle + moreLine;
     }
 
+    // Open questions (2.3): unresolved questions from the last few meetings. Ones the viewer is tagged
+    // on come first; ones raised before last meeting are flagged "Unresolved since <date>".
+    _questions(d) {
+      const items = ((d.openQuestions && d.openQuestions.items) || []).filter((q) => q && q.id);
+      return [...items.filter((q) => q.mine), ...items.filter((q) => !q.mine)];
+    }
+
+    _questionRowHtml(q) {
+      const people = (q.stakeholders || []).map((p) => p.name).filter(Boolean);
+      const tags = [
+        q.carriedOver ? `<span class="tag stale" title="Raised ${esc(q.dateLabel || 'earlier')} and not resolved since">Unresolved since ${esc(q.dateLabel || 'earlier')}</span>` : '',
+        q.mine ? '<span class="tag you">You\'re tagged</span>' : '',
+        q.edited ? '<span class="edited">Edited</span>' : '',
+      ].join('');
+      const who = people.length ? `<span class="who">${q.context ? ' · ' : ''}${esc(people.join(', '))}</span>` : '';
+      const sub = q.context || who ? `<span class="summary">${q.context ? esc(q.context) : ''}${who}</span>` : '';
+      const cls = ['r', 'q', q.mine ? 'q-mine' : '', q.carriedOver ? 'q-stale' : ''].join(' ').replace(/\s+/g, ' ').trim();
+      return `<div class="${cls}" role="listitem"><span class="rail" aria-hidden="true"></span>
+        <div class="t"><span class="task">${esc(q.text)}</span> ${tags}${sub}</div>
+        <div class="acts">${this._playButton(q, 'openQuestions')}</div></div>`;
+    }
+
+    _questionsHtml(d) {
+      const qs = this._questions(d);
+      if (!qs.length) return '';
+      const stale = qs.filter((q) => q.carriedOver).length;
+      const note = stale ? ` <span class="n">· ${stale} from earlier meetings</span>` : '';
+      if (this.hasAttribute('embedded')) {
+        return `<section class="stack q-stack" aria-label="Open questions"><div class="stack-h">Open questions <span class="n">· ${qs.length}</span>${note}</div>
+          <div class="rows" role="list">${qs.map((q) => this._questionRowHtml(q)).join('')}</div></section>`;
+      }
+      return `<div class="qs"><div class="qs-h">Open questions · ${qs.length}${stale ? ` (${stale} from earlier meetings)` : ''}</div>
+        <div class="rows" role="list" aria-label="Open questions">${qs.map((q) => this._questionRowHtml(q)).join('')}</div></div>`;
+    }
+
     _cardHtml(d, state, now) {
       const m = d.meeting;
       const ui = this._ui;
       const inner = `
         ${this._clockHtml(d, state, now)}
         ${this._rowsHtml(d)}
+        ${this._questionsHtml(d)}
         ${ui.notUseful ? this._notUsefulHtml() : ''}
         <div class="bar">
           <button data-act="open-last" data-key="open-last" class="btn">Open last meeting</button>
@@ -763,7 +812,9 @@
     // ---------- actions ----------
 
     _findItem(id) {
-      return this._allItems(this._data).find((x) => x.item.id === id) || null;
+      return this._allItems(this._data).find((x) => x.item.id === id)
+        || this._questions(this._data).map((item) => ({ section: 'openQuestions', item })).find((x) => x.item.id === id)
+        || null;
     }
 
     _onAct(act, ds) {
