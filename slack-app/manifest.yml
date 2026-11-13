@@ -11,7 +11,7 @@ display_information:
     • Still open: a question that is still unresolved
     • Decided: the most important decision from the last meeting
 
-    Each item links back to the moment in the transcript where it was said. If there is nothing for you, Ansel stays quiet. You can mute a series or mark a card as not useful right from the card.
+    Each item links back to the moment in the transcript where it was said. If there is nothing for you, Ansel stays quiet. You can mute a series right from the card.
 
     How it is triggered: Ansel watches your published Outlook calendar for recurring meetings (Teams links are picked up automatically), or a pilot member can send a demo card from the Home tab with Ping me or Ping everyone.
 

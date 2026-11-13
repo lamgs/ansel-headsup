@@ -2,13 +2,12 @@
 // condensed layout (card/slack-mockups/condensed, B3 + M2): one text block and one row of buttons.
 //   *30 min · Weekly Product Sync*
 //   You own Forecast update (14:32) · 5 more items from last week     (one item of yours; 14:32 is the link)
-//   [Join Zoom] [Open in Ansel] [Mute series] [Not useful]
+//   [Join Zoom] [Open in Ansel] [Mute Series]
 // Several items of yours: "You own 2 items · 8 more from the team last week", then one line per item
 // ("• Forecast update (14:32)"). Timestamps use the prototype's short #t/<itemId> link; "8 more…" links to the
 // meeting's Action items tab. Marking items done happens in Ansel, not on the card.
 // Then "Still Open" (one open question) and "Decided" (one decision) as bullets with the same timestamp links.
 
-export const NOT_USEFUL_REASONS = [['already_knew', 'Already knew this'], ['wrong_meeting', 'Wrong meeting'], ['bad_timing', 'Bad timing']]
 const SOON_MS = 5 * 60000
 
 const fmtTime = (ms) => new Date(ms).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
@@ -45,7 +44,7 @@ export const headsUpLink = (prototypeUrl) => (prototypeUrl ? `${prototypeUrl.rep
 export const shortTranscriptLink = (prototypeUrl, itemId) => (prototypeUrl ? `${prototypeUrl.replace(/#.*$/, '')}#t/${itemId}` : null)
 
 /**
- * entry: { persona, sid, startMs, joinUrl, postMs, data (contract 2.1), ui: { muted, notUseful } }
+ * entry: { persona, sid, startMs, joinUrl, postMs, data (contract 2.1), ui: { muted } }
  * Every button carries the meta needed to rebuild the card after a restart.
  */
 export function buildCard(entry, { nowMs = Date.now(), prototypeUrl = '' } = {}) {
@@ -104,22 +103,16 @@ export function buildCard(entry, { nowMs = Date.now(), prototypeUrl = '' } = {})
   if (data.decided?.length) line += `\n*Decided*\n${data.decided.map(note).join('\n')}`
   if (state === 'ended') line += '\n_Meeting ended · new summary in about 6 min_'
 
-  const blocks = [{ type: 'section', text: md(`*${hero} · ${m.title}*\n${line}`) }]
+  const body = `*${hero} · ${m.title}*\n${line}`
 
-  if (ui.notUseful) {
-    blocks.push(ui.notUseful.reason
-      ? { type: 'section', text: md('Thanks for the feedback.'), accessory: btn('hu_nu_undo', 'Undo', meta) }
-      : { type: 'section', text: md('Thanks. What was off?') },
-    ...(ui.notUseful.reason ? [] : [{ type: 'actions', elements: [...NOT_USEFUL_REASONS.map(([r, label]) => btn(`hu_nu_reason:${r}`, label, meta)), btn('hu_nu_undo', 'Undo', meta)] }]))
-  }
+  const blocks = [{ type: 'section', text: md(body) }]
 
   const row = []
   if (join) row.push(join)
   // Open in Ansel opens the full Heads-Up card; the card's Open last meeting leads on to the Summary.
   const cardUrl = headsUpLink(prototypeUrl)
   row.push(btn('hu_open_last', 'Open in Ansel', meta, cardUrl ? { url: cardUrl } : {}))
-  row.push(btn('hu_mute', 'Mute series', meta))
-  if (!ui.notUseful) row.push(btn('hu_nu', 'Not useful', meta))
+  row.push(btn('hu_mute', 'Mute Series', meta))
   blocks.push({ type: 'actions', elements: row })
   return { text: fallback, blocks }
 }
