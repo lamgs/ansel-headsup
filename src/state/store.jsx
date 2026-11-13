@@ -25,7 +25,7 @@ export function initialState(theme = prefersDark ? 'dark' : 'light') {
     toasts: [],
     share: null, // { sec } when the G3 direct share is ticked
     slackChannel: 'product',
-    ansel: { page: 'meetings', view: 'detail', instanceId: 'wps-1106', tab: 'summary', highlight: null, panelItem: null, focusId: null, selectedItem: null, themeId: null, sideTab: 'summary', sideOpen: true, shareOpen: false, chat: 'closed', chatThread: [] },
+    ansel: { page: 'meetings', view: 'detail', instanceId: 'wps-1106', tab: 'summary', highlight: null, panelItem: null, focusId: null, selectedItem: null, themeId: null, shareOpen: false, chat: 'closed', chatThread: [] },
     join: null, // null | { step: 'notice' | 'call', keptOut, joinedAt }
   }
 }
@@ -90,7 +90,7 @@ function reducer(s, a) {
     case 'DISMISS_TOAST': return { ...s, toasts: s.toasts.filter((t) => t.id !== a.id) }
     case 'SLACK_CHANNEL': return { ...s, slackChannel: a.id, tab: 'slack' }
     case 'OPEN_ANSEL':
-      return { ...s, tab: 'ansel', ansel: { ...s.ansel, page: 'meetings', view: 'detail', panelItem: null, focusId: null, highlight: null, selectedItem: null, themeId: null, sideOpen: true, ...a.nav } }
+      return { ...s, tab: 'ansel', ansel: { ...s.ansel, page: 'meetings', view: 'detail', panelItem: null, focusId: null, highlight: null, selectedItem: null, themeId: null, ...a.nav } }
     case 'ANSEL_NAV': return { ...s, ansel: { ...s.ansel, ...a.nav } }
     case 'CARD_OPENED': {
       if (s.opened[a.key]) return s

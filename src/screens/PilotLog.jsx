@@ -45,7 +45,7 @@ export default function PilotLog() {
           <section className="rounded-lg border border-ansel/30 bg-ansel-50 p-4 dark:border-ansel-400/30 dark:bg-ansel/15">
             <h2 className="text-sm font-semibold">Holdout</h2>
             <p className="mt-1 text-sm">Randomized holdout: 10% of eligible users get no card. Their activity is tracked for comparison so we can measure causal lift.</p>
-            <p className="mt-2 text-sm"><b>Sam Ortiz</b> is in the holdout for this demo.</p>
+            <p className="mt-2 text-sm">No one in this demo's cast is in the holdout, so every attendee gets a card.</p>
           </section>
           <section>
             <h2 className="text-sm font-semibold">Metrics <span className="ml-1 rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-bold uppercase text-amber-800 dark:bg-amber-500/20 dark:text-amber-300">Targets, not results</span></h2>

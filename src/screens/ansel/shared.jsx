@@ -20,7 +20,7 @@ export function jumpTo(dispatch, t, { item = null, theme = null, panelItem } = {
     type: 'ANSEL_NAV',
     nav: {
       tab: 'transcript', highlight: t ? { t, n: Date.now() } : null,
-      selectedItem: item, themeId: theme, sideOpen: true, sideTab: 'summary',
+      selectedItem: item, themeId: theme,
       ...(panelItem !== undefined ? { panelItem } : {}),
     },
   })

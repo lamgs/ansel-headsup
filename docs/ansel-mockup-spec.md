@@ -68,7 +68,7 @@ Layout sketch (the player is audio only):
 - Cited lines: soft background tint plus a margin chip (Decision / Open question / Action item). The ▶ target flashes for 3 s.
 - Theme dividers between sections, e.g. "Forecast & conversion · 14:32–21:25".
 - Comments: icon on line hover; threads in the right margin with avatar, text and time.
-- Right panel with tabs: Summary · Action items · Comments. Collapsible; every row has ▶.
+- ~~Right panel with tabs: Summary · Action items · Comments.~~ Removed (see the cast and panel pass below).
 - Search box in the toolbar (inactive).
 
 **Polish pass (branch `rishabh/ansel-polish`)**
@@ -83,6 +83,11 @@ Layout sketch (the player is audio only):
 - Scope follows the screen: the open meeting if you can see it, otherwise "Meetings you attended". Suggested questions add canned answers with ▶ citations; clicking one opens the transcript at that line and minimizes the chat.
 - Answers only appear where the person can open the Nov 6 record (Aryan without the direct share sees none). "What do I owe" is offered to Gabriel only. The thread resets when the persona changes.
 - Transcript: the speaker's avatar and name sit on the same line as their first line of dialogue, in a fixed column; consecutive lines from the same speaker leave it blank.
+
+**Cast and panel pass (branch `rishabh/ansel-polish-2`)**
+- Alex Kim and Sam Ortiz are removed from the cast. Alex's transcript lines are reassigned by context (Alicia presents the pricing page, Varun asks about pricing tiers, Aryan has the screen and audio lines), his action item a3 moves to Alicia, and Alicia organizes Design Review. See `profiles.md`.
+- The transcript's right-hand panel (Summary / Action items / Comments tabs) is removed; the transcript uses the full width. The item panel (Mark done / On track / New date / Reassign) still opens for an action item, e.g. from the card's ▶ 14:32.
+- Line labels: an Action item label opens its item panel; a Decision or Open question label opens the Summary on that item.
 
 **Summary redesign (branch `rishabh/ansel-work`)**
 - Order: overview card (2 sentences plus live counts) → "For you, <name>" (items you own with due status and Update, questions you're tagged on) → decision and open-question cards → action item table → themes timeline. Attendees list sits under "For you" on wide screens.
@@ -131,7 +136,9 @@ Layout sketch (the player is audio only):
 - Audio player strip (play button, scrubber at the current line, speed). No video. Clicking it → toast.
 - "Search this transcript" box. Typing or clicking → toast.
 
-## 6. Summary panel (active, right side)
+## 6. Summary panel (removed)
+
+_Removed in the cast and panel pass: the transcript has no side panel. The notes below are kept for history._
 
 - Opens by default on the Transcript tab; collapsible.
 - Sections in this order, per the case: **Decisions**, **Open questions**, **Action items**, **Themes**.

@@ -10,7 +10,6 @@ import { NipMenu, NipSwitch, canSee, useNip } from './shared.jsx'
 import TranscriptTab from './TranscriptTab.jsx'
 import SummaryTab from './SummaryTab.jsx'
 import ActionItemsTab from './ActionItemsTab.jsx'
-import SidePanel from './SidePanel.jsx'
 import ItemPanel from './ItemPanel.jsx'
 
 const TABS = [
@@ -74,8 +73,8 @@ export default function MeetingDetail() {
               </>
             )}
         </div>
-        {onTranscript && state.ansel.sideOpen && <SidePanel inst={inst} />}
-        {visible && !onTranscript && state.ansel.panelItem && <ItemPanel id={state.ansel.panelItem} />}
+        {/* No side panel: the item panel (Mark done / On track / New date) opens only for an action item. */}
+        {visible && state.ansel.panelItem && <ItemPanel id={state.ansel.panelItem} />}
       </div>
       {state.ansel.shareOpen && inst && <ShareDialog inst={inst} series={series} onClose={() => nav({ shareOpen: false })} />}
     </div>
