@@ -50,4 +50,4 @@ Load `card/heads-up-card.js` once (for example with a `<script>` tag in `index.h
 | `demo-data.js` | Sample data: `alex`, `alexOwnsNothing`, `holdout` |
 | `index.html` | The final page: the card in an Ansel message, no controls |
 | `demo.html` | Testing page: viewer switcher, clock jumps, reset, event log |
-| `CONTRACT.md` | Every data field the card reads and every event it fires (version 2.0) |
+| `CONTRACT.md` | Every data field the card reads and every event it fires (version 2.1) |

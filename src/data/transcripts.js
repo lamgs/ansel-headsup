@@ -99,10 +99,13 @@ const OCT23 = [
   ['00:04', 'alicia', 'Morning, everyone. Let us get started.'],
   ['01:30', 'rishabh', 'Payments API is feature complete in staging.'],
   ['03:15', 'alicia', 'I have early pricing page sketches to share later.'],
+  ['04:30', 'alicia', 'Varun, can you set up error alerts on the billing service before launch?'],
+  ['04:45', 'varun', 'Yes, I will get them in this week.'],
   ['05:02', 'varun', 'The billing changes for Q1 fit in the current sprint plan.'],
   ['08:10', 'alicia', 'So we lock Q1 launch scope: payments plus the pricing page. Nothing else gets added.'],
   ['09:40', 'gabriel', 'I will set up a dashboard to track conversion for the launch.'],
   ['14:20', 'alicia', 'Here are the sketches. Three tiers for now.'],
+  ['14:40', 'alicia', 'I will also collect a few beta customer quotes for the pricing page.'],
   ['21:05', 'rishabh', 'We should plan QA for the payment flow early.'],
   ['29:50', 'alicia', 'Thanks all. See you next week.'],
 ]
@@ -110,12 +113,15 @@ const OCT23 = [
 const OCT30 = [
   ['00:06', 'alicia', 'Okay, let us start. Short agenda today.'],
   ['02:10', 'rishabh', 'Payments is in code review.'],
+  ['02:30', 'rishabh', 'A few payments tests are flaky. I will fix them before code review closes.'],
   ['05:40', 'alicia', 'Decision on beta: the waitlist closes November 15.'],
   ['09:30', 'alicia', 'Pricing page copy is in first draft.'],
   ['14:45', 'gabriel', 'Conversion dashboard is live. Numbers look stable.'],
   ['19:22', 'alicia', 'Do we need legal review for the new pricing? Varun, can you check with legal?'],
   ['22:15', 'alicia', 'Gabriel, can you pull the conversion data from the dashboard before Tuesday?'],
   ['22:30', 'gabriel', 'Yes, I can do that.'],
+  ['24:10', 'alicia', 'And Gabriel, can you draft a short pricing FAQ for the support team?'],
+  ['24:25', 'gabriel', 'Sure, I will have a draft next week.'],
   ['31:40', 'alicia', 'Thanks everyone.'],
 ]
 
