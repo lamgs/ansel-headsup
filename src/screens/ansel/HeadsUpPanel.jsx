@@ -119,9 +119,9 @@ export default function HeadsUpPanel({ series }) {
 
   if (!data) {
     return (
-      <div className="rounded-xl border border-slate-200 p-4 text-sm text-slate-600 dark:border-slate-800 dark:text-slate-300">
+      <div className="rounded-xl border border-slate-200 p-4 text-[15px] text-slate-600 dark:border-slate-800 dark:text-slate-300">
         No Heads-Up for {series.title}: <b>{result.reason}</b>.
-        {series.note && <span className="mt-1 block text-xs text-slate-500">{series.note.replace(/'Keep Ansel out'/, '“Keep Ansel out”')}.</span>}
+        {series.note && <span className="mt-1 block text-[13px] text-slate-500">{series.note.replace(/'Keep Ansel out'/, '“Keep Ansel out”')}.</span>}
       </div>
     )
   }
@@ -130,10 +130,10 @@ export default function HeadsUpPanel({ series }) {
   return (
     <div>
       {early && (
-        <div className="flex items-center gap-2 rounded-xl border border-dashed border-slate-300 p-4 text-sm text-slate-600 dark:border-slate-700 dark:text-slate-300">
+        <div className="flex items-center gap-2 rounded-xl border border-dashed border-slate-300 p-4 text-[15px] text-slate-600 dark:border-slate-700 dark:text-slate-300">
           <BellRing size={16} className="text-ansel dark:text-ansel-300" aria-hidden />
           Your Heads-Up for {series.title} arrives at {fmtClock(postSec)}, {user.reminderMinutes} minutes before the meeting.
-          <button onClick={() => dispatch({ type: 'SET_CLOCK', sec: postSec })} className="ml-auto text-xs font-medium text-ansel underline-offset-2 hover:underline dark:text-ansel-300">Jump to {fmtClock(postSec)}</button>
+          <button onClick={() => dispatch({ type: 'SET_CLOCK', sec: postSec })} className="ml-auto text-[13px] font-medium text-ansel underline-offset-2 hover:underline dark:text-ansel-300">Jump to {fmtClock(postSec)}</button>
         </div>
       )}
       {/* Embedded: no Slack message frame, Ansel's font and colours (index.css). The card renders

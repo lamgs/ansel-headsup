@@ -16,6 +16,14 @@
   const TIMELINE = ['posted', 'starting-soon', 'started', 'ended'];
 
   const DEFAULT_ROW_LIMIT = 6;
+  // Icons for embedded mode (an app such as Ansel): play, mark done, done, edit.
+  const svg = (d, fill = 'none') => `<svg width="16" height="16" viewBox="0 0 24 24" fill="${fill}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
+  const ICON = {
+    play: svg('<polygon points="7 4 20 12 7 20 7 4"/>', 'currentColor'),
+    check: svg('<path d="M20 6 9 17l-5-5"/>'),
+    done: svg('<circle cx="12" cy="12" r="10"/><path d="m8 12 3 3 5-6"/>'),
+    edit: svg('<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/>'),
+  };
   const FLAG_REASONS = [
     ['wrong_owner', 'Wrong owner'],
     ['not_real', 'Not a real item'],
@@ -210,6 +218,20 @@
     :host([embedded]) .btn { font-family: inherit; font-weight: 500; border-radius: 6px; }
     :host([embedded]) .btn.join { font-weight: 600; border-radius: 8px; }
     :host([embedded]) .btn:focus-visible { border-radius: 6px; }
+    /* Embedded layout: every button left-aligned under its text; your rows tinted; larger type for demos */
+    :host([embedded]) { font-size: 16px; }
+    :host([embedded]) h2.title { font-size: 19px; }
+    :host([embedded]) .sub, :host([embedded]) .t .summary, :host([embedded]) .t .who,
+    :host([embedded]) .note, :host([embedded]) .context { font-size: 14px; }
+    :host([embedded]) .st, :host([embedded]) .edited { font-size: 12px; }
+    :host([embedded]) .btn { height: 32px; font-size: 14px; }
+    :host([embedded]) .btn.icon { width: 32px; padding: 0; justify-content: center; }
+    :host([embedded]) .clock { grid-template-columns: auto minmax(0, 1fr); row-gap: 12px; }
+    :host([embedded]) .clock .join { grid-column: 1 / -1; justify-self: start; justify-content: center; }
+    :host([embedded]) .r { grid-template-columns: 4px minmax(0, 1fr); padding: 10px 12px; }
+    :host([embedded]) .acts { grid-column: 2; justify-content: flex-start; }
+    :host([embedded]) .r.mine { background: var(--mine-bg, #EEEFFA); }
+    :host([embedded]) .r.mine.is-done { background: var(--done-bg); }
 
     /* Error state */
     .pad { padding: 8px 20px; margin: 0; }
@@ -566,6 +588,11 @@
     _playButton(item) {
       const date = item.dateLabel ? `${item.dateLabel} · ` : '';
       const spokenDate = item.dateLabel ? ` from ${item.dateLabel}` : '';
+      if (this.hasAttribute('embedded')) {
+        // Embedded: just a play icon; the date and time show on hover.
+        return `<button class="btn icon" data-act="play" data-section="actionItems" data-item="${esc(item.id)}" data-key="play-${esc(item.id)}"
+          title="${esc(date)}${esc(fmtStamp(item.seconds))}" aria-label="Play transcript${esc(spokenDate)} at ${esc(spokenStamp(item.seconds))}: ${esc(item.text)}">${ICON.play}</button>`;
+      }
       return `<button class="btn" data-act="play" data-section="actionItems" data-item="${esc(item.id)}" data-key="play-${esc(item.id)}"
         aria-label="Play transcript${esc(spokenDate)} at ${esc(spokenStamp(item.seconds))}: ${esc(item.text)}">▶ ${esc(date)}${esc(fmtStamp(item.seconds))}</button>`;
     }
@@ -577,13 +604,23 @@
       const done = mine && ui.done.has(it.id);
       const flag = ui.flagged.get(it.id);
 
-      const who = mine ? '' : ` <span class="who">· ${esc(it.owner.name)}</span>`;
+      const emb = this.hasAttribute('embedded');
+      // Embedded: your rows name you like everyone else's ("· Varun (you)"); the tint marks them, so no YOURS tag.
+      const who = !mine ? ` <span class="who">· ${esc(it.owner.name)}</span>`
+        : emb ? ` <span class="who">· ${esc(it.owner.name)} (you)</span>` : '';
       const summary = it.summary ? `<span class="summary">${esc(it.summary)}</span>` : '';
 
       const acts = [];
-      if (mine) acts.push('<span class="st" aria-label="Your item">YOURS</span>');
+      if (mine && !emb) acts.push('<span class="st" aria-label="Your item">YOURS</span>');
       acts.push(this._playButton(it));
-      if (mine && !flag) {
+      if (mine && !flag && emb) {
+        // Embedded: icon buttons with hover labels.
+        acts.push(done
+          ? `<button class="btn icon state-done" data-act="done-undo" data-item="${id}" data-key="done-undo-${id}" aria-pressed="true"
+              title="Done · tap to undo" aria-label="Done: ${esc(it.text)}. Tap to undo">${ICON.done}</button>`
+          : `<button class="btn icon" data-act="done" data-item="${id}" data-key="done-${id}" aria-pressed="false"
+              title="Mark done" aria-label="Mark done: ${esc(it.text)}">${ICON.check}</button>`);
+      } else if (mine && !flag) {
         acts.push(done
           ? `<button class="btn state-done" data-act="done-undo" data-item="${id}" data-key="done-undo-${id}" aria-pressed="true"
               aria-label="Done: ${esc(it.text)}. Tap to undo">✓ Done</button>`
@@ -593,9 +630,12 @@
       // Edit (contract 2.2): shown when the app marks the item editable (e.g. its owner or the
       // organizer). On your own editable items it replaces Not right: you fix it instead of flagging it.
       if (it.editable && !flag) {
-        acts.push(`<button class="btn" data-act="edit" data-item="${id}" data-key="edit-${id}" aria-label="Edit: ${esc(it.text)}">Edit</button>`);
+        acts.push(emb
+          ? `<button class="btn icon" data-act="edit" data-item="${id}" data-key="edit-${id}" title="Edit" aria-label="Edit: ${esc(it.text)}">${ICON.edit}</button>`
+          : `<button class="btn" data-act="edit" data-item="${id}" data-key="edit-${id}" aria-label="Edit: ${esc(it.text)}">Edit</button>`);
       }
-      if (!done && !(mine && it.editable)) {
+      // Embedded: no Not right on other people's items (your own have Edit; Not useful covers the card).
+      if (!done && !(mine && it.editable) && !(emb && !mine)) {
         if (flag) {
           const why = flag.reason ? (FLAG_REASONS.find(([r]) => r === flag.reason) || [null, flag.reason])[1].toLowerCase() : null;
           acts.push(`<button class="btn" data-act="flag-undo" data-item="${id}" data-key="flag-undo-${id}" aria-pressed="true"

@@ -84,6 +84,13 @@ Layout sketch (the player is audio only):
 - Answers only appear where the person can open the Nov 6 record (Aryan without the direct share sees none). "What do I owe" is offered to Gabriel only. The thread resets when the persona changes.
 - Transcript: the speaker's avatar and name sit on the same line as their first line of dialogue, in a fixed column; consecutive lines from the same speaker leave it blank.
 
+**Meetings page as three columns; demo readability (branch `rishabh/ansel-polish-10`)**
+- Three collapsible columns: the left menu (collapses to an icon rail), the meeting series, and the selected series' Heads-Up card. A collapsed column becomes a thin labelled strip; click it to bring the column back.
+- The instruction line and the card's "Heads-Up · …" heading and description are gone; the series row says which card is showing.
+- In an expanded series, meetings that open are indigo with a chevron; ones without a page stay grey.
+- Card (embedded only): ▶ is an icon with the meeting date and time on hover; Mark done and Edit are icons; your own rows are tinted and show your name like everyone else's ("· Varun (you)") instead of a YOURS tag on each; other people's rows have no Not right; buttons and Join are left-aligned; larger type.
+- Minimum text size in Ansel screens raised to 12px (most small text 13px, body 15px) for the demo screen.
+
 **Slack links open Ansel as the recipient (branch `rishabh/ansel-polish-9`)**
 - Each Slack message is built for one person, so every link into the prototype carries `?as=<persona>` (Open in Ansel, timestamps, "N more from the team"). The prototype switches to that person before opening the page; links without it (older messages, typing the address) keep the current persona.
 - Demo-only shortcut: anyone with a forwarded link sees Ansel as that person. A real product would use the signed-in user.
