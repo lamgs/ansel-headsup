@@ -5,7 +5,7 @@ import { SEED, SEED_COMMENTS } from '../src/data/seed.js'
 import { TRANSCRIPTS } from '../src/data/transcripts.js'
 import { SUMMARIES } from '../src/data/summaries.js'
 import { buildHeadsUp } from '../src/logic/buildHeadsUp.js'
-import { buildWorld } from '../src/logic/world.js'
+import { buildWorld, mergeItemEdit } from '../src/logic/world.js'
 import { buildCardData } from '../src/logic/buildCardData.js'
 
 const world = buildWorld()
@@ -118,7 +118,7 @@ for (const [id, segs] of Object.entries(TRANSCRIPTS)) {
 // removes a row, including items carried over from earlier meetings, and Mark done shows as done.
 {
   const wps = SEED.series.find((s) => s.id === 'wps')
-  const rows = (st, pid) => { const w = buildWorld(st); return buildCardData(w.person(pid), wps, { ...w, isMuted: () => false }, { maxRows: Infinity }).data.actionItems.items }
+  const rows = (st, pid) => { const w = buildWorld(st); return buildCardData(w.person(pid), wps, { ...w, isMuted: () => false }, { maxRows: Infinity, keepMarkedDone: true }).data.actionItems.items }
   for (const pid of wps.invitees) {
     const base = rows({}, pid)
     const order = base.map((i) => i.id).join()
@@ -133,4 +133,18 @@ for (const [id, segs] of Object.entries(TRANSCRIPTS)) {
     }
   }
   console.log('ok  heads-up card keeps every row when you act on your items')
+}
+
+// Editing an item back to its original wording/owner/due clears the Edited tag.
+{
+  const a12 = SEED.instances.flatMap((i) => i.actionItems).find((a) => a.id === 'a12')
+  const e1 = mergeItemEdit(undefined, { text: 'Billing alerts v2' }, a12)
+  assert.deepEqual(e1, { text: 'Billing alerts v2' })
+  const e2 = mergeItemEdit({ ...e1, by: 'varun', on: '2026-11-13', atSec: 1 }, { due: '2026-11-20' }, a12)
+  assert.deepEqual(e2, { text: 'Billing alerts v2', due: '2026-11-20' })
+  assert.deepEqual(mergeItemEdit(e2, { text: a12.text }, a12), { due: '2026-11-20' }, 'wording back to original drops out')
+  assert.equal(mergeItemEdit({ due: '2026-11-20' }, { due: a12.due }, a12), null, 'all back to original: not Edited')
+  const w = buildWorld({ itemEdits: {} })
+  assert.ok(!w.instance('wps-1023').actionItems.find((a) => a.id === 'a12').itemEdit)
+  console.log('ok  editing back to the original clears Edited')
 }

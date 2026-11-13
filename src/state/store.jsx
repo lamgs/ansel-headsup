@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useMemo, useReducer } from 'react'
 import { SEED, SEED_COMMENTS, DEMO_DATE, CLOCK_START } from '../data/seed.js'
 import { buildHeadsUp, triggerSec, hhmmToSec } from '../logic/buildHeadsUp.js'
-import { buildWorld } from '../logic/world.js'
+import { buildWorld, mergeItemEdit } from '../logic/world.js'
 
 // Always start in light mode (reads better on a projector); the demo bar's toggle switches to dark.
 export function initialState(theme = 'light') {
@@ -106,7 +106,8 @@ function reducer(s, a) {
       const u = { ...a.update, by: s.persona, atSec: s.clock }
       let n = { ...s, itemUpdates: { ...s.itemUpdates, [a.id]: u } }
       n = addLog(n, s.persona, 'item_acted_on', `${a.id}: ${a.label}`)
-      return addToast(n, 'Saved. Alicia will see this in the meeting record.')
+      // Mark done shows on the item itself (✓ / Done), so no toast for it.
+      return a.update.kind === 'done' ? n : addToast(n, 'Saved. Alicia will see this in the meeting record.')
     }
     case 'CLEAR_ITEM_UPDATE': {
       // Undo of Mark done from the Heads-Up card: the item goes back to its seed state.
@@ -117,8 +118,13 @@ function reducer(s, a) {
     }
     case 'EDIT_ITEM': {
       // Audited correction to an action item (wording, owner, due date). Shown as Edited; G4 audit log.
-      const n = { ...s, itemEdits: { ...s.itemEdits, [a.id]: { ...a.changes, by: s.persona, on: DEMO_DATE, atSec: s.clock } } }
-      return addToast(addLog(n, s.persona, 'item_edited', `${a.id}: ${a.label}`), 'Saved as a tracked change. Attendees see who edited and the original.')
+      // Kept as the difference from the original: editing back to the original clears Edited.
+      const fields = mergeItemEdit(s.itemEdits[a.id], a.changes, SEED.instances.flatMap((i) => i.actionItems).find((x) => x.id === a.id))
+      const itemEdits = { ...s.itemEdits }
+      if (fields) itemEdits[a.id] = { ...fields, by: s.persona, on: DEMO_DATE, atSec: s.clock }
+      else delete itemEdits[a.id]
+      const n = addLog({ ...s, itemEdits }, s.persona, 'item_edited', `${a.id}: ${a.label}`)
+      return addToast(n, itemEdits[a.id] ? 'Saved as a tracked change. Attendees see who edited and the original.' : 'Back to the original. No longer marked Edited.')
     }
     case 'EDIT': {
       const n = { ...s, edits: { ...s.edits, [a.id]: { text: a.text, by: s.persona, on: DEMO_DATE, atSec: s.clock } } }

@@ -61,3 +61,14 @@ export function findItem(world, id) {
   }
   return null
 }
+
+/**
+ * An item's edit after new changes, as the fields that differ from the original seed item
+ * (text, owner, due), or null when every field is back to the original (no longer Edited).
+ */
+export function mergeItemEdit(prev = {}, changes = {}, original = {}) {
+  const { by, on, atSec, ...was } = prev
+  const fields = { ...was, ...changes }
+  for (const k of Object.keys(fields)) if (fields[k] === original[k]) delete fields[k]
+  return Object.keys(fields).length ? fields : null
+}

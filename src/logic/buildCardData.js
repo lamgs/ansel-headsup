@@ -24,7 +24,8 @@ const durationOf = (series) => Number(series.cadence?.match(/(\d+)\s*min/)?.[1] 
 
 /**
  * buildCardData(user, series, world, opts) → { eligible, reason, suppressed?, data? }
- *  opts: { startMs, joinUrl, reminderMinutes, retentionDays, today, maxRows (default 6; Infinity for every item) }
+ *  opts: { startMs, joinUrl, reminderMinutes, retentionDays, today, maxRows (default 6; Infinity for every item),
+ *          keepMarkedDone (Ansel's live card: earlier items you mark done stay on it, shown done, so you can undo) }
  * Rules (CONTRACT.md §3): everyone on the invite gets a card; holdout users get none (suppressed);
  * no card if the last meeting wasn't recorded. Muted series, no Slack and external guests also get none.
  * Earlier meetings: the viewer's own open items from up to LOOKBACK - 1 earlier recorded meetings they
@@ -66,10 +67,12 @@ export function buildCardData(user, series, world, opts = {}) {
   })
   const all = last.actionItems.map((a) => row(a, last))
   // Still open from earlier meetings and yours: newest meeting first, each in meeting order.
-  // An item marked done since the card went out (a.update) stays on it as done, so the row
-  // doesn't vanish when you tap Mark done and you can still undo it.
+  // keepMarkedDone (Ansel's card, which stays open while you act on it): an item you mark done
+  // stays on the card as done instead of vanishing, so you can still undo it. A newly sent Slack
+  // card leaves it off.
+  const open = (a) => a.status !== 'done' || (opts.keepMarkedDone && a.update?.kind === 'done')
   const carried = earlier.flatMap((inst) => inst.actionItems
-    .filter((a) => a.owner === user.id && (a.status !== 'done' || a.update?.kind === 'done'))
+    .filter((a) => a.owner === user.id && open(a))
     .map((a) => row(a, inst)))
   // The viewer's own items first (last meeting, then carried over), then everyone else's from the last meeting.
   const ordered = [...all.filter((i) => i.owner.id === user.id), ...carried, ...all.filter((i) => i.owner.id !== user.id)]
