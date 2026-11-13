@@ -190,7 +190,61 @@ export function createHeadsUp({ client, config, access, log = pilotLog }) {
     return lines.join('\n')
   }
 
+  let botIdentity
+  /** The app's own bot user and bot IDs, so clearing never touches anyone else's messages. */
+  async function self() {
+    if (!botIdentity) {
+      const r = await client.auth.test()
+      botIdentity = { userId: r.user_id, botId: r.bot_id }
+    }
+    return botIdentity
+  }
+
+  /** Delete every message this app posted in its DM with one Slack user. Needs the im:history scope. */
+  async function clearDm(slackUser) {
+    const userId = await resolveUser(slackUser)
+    const { userId: botUser, botId } = await self()
+    const { channel } = await client.conversations.open({ users: userId })
+    const ours = []
+    let cursor
+    do {
+      const page = await client.conversations.history({ channel: channel.id, limit: 200, cursor })
+      ours.push(...(page.messages ?? []).filter((m) => m.bot_id === botId || m.user === botUser))
+      cursor = page.response_metadata?.next_cursor || undefined
+    } while (cursor)
+    let deleted = 0
+    for (const m of ours) {
+      try {
+        await client.chat.delete({ channel: channel.id, ts: m.ts })
+        deleted++
+      } catch (e) {
+        if (e.data?.error !== 'message_not_found') throw e
+      }
+      live.delete(`${channel.id}:${m.ts}`)
+    }
+    log('dm_cleared', '-', `${deleted} messages · Slack DM ${userId}`)
+    return { deleted }
+  }
+
+  /** Clear the DM of each mapped person (deduplicated by Slack user). */
+  async function clearAll(users) {
+    const cleared = [], failed = []
+    const done = new Set()
+    for (const [persona, slackUser] of Object.entries(users)) {
+      try {
+        const userId = await resolveUser(slackUser)
+        if (done.has(userId)) continue
+        done.add(userId)
+        cleared.push({ persona, ...(await clearDm(userId)) })
+      } catch (e) {
+        failed.push({ persona, reason: e.data?.error ?? e.message })
+        console.error(`clear failed for ${persona}:`, e.data?.error ?? e.message)
+      }
+    }
+    return { cleared, failed }
+  }
+
   const reset = () => { for (const k of Object.keys(muted)) delete muted[k]; live.clear() }
 
-  return { evaluate, post, pingAll, resolveUser, refreshCountdowns, entryFor, handleAction, transcriptQuote, summaryText, explain, reset, live }
+  return { evaluate, post, pingAll, resolveUser, refreshCountdowns, entryFor, handleAction, transcriptQuote, summaryText, explain, reset, clearDm, clearAll, live }
 }

@@ -142,3 +142,33 @@ const denied = buildHome({ allowed: false, demoName: 'Gabriel', mappedNames: [],
 assert.ok(!JSON.stringify(denied).includes('ping_me') && JSON.stringify(denied).includes('not enabled'))
 assert.ok(home.blocks.length <= 100)
 console.log('ok  app home')
+
+// 6e. Clear: deletes only this app's messages in each DM (paging through history), skips users' own messages
+{
+  const history = {
+    D_UGABRIEL01: [[{ ts: '1', bot_id: 'BANSEL' }, { ts: '2', user: 'UGABRIEL01' }], [{ ts: '3', user: 'UBOT' }, { ts: '4', bot_id: 'BOTHER' }]],
+    D_UARYAN001: [[{ ts: '9', bot_id: 'BANSEL' }]],
+  }
+  const deleted = []
+  const fake = {
+    ...client,
+    auth: { test: async () => ({ user_id: 'UBOT', bot_id: 'BANSEL' }) },
+    conversations: {
+      ...client.conversations,
+      history: async ({ channel, cursor }) => {
+        const pages = history[channel] ?? [[]]
+        const i = Number(cursor ?? 0)
+        return { messages: pages[i], response_metadata: { next_cursor: i + 1 < pages.length ? String(i + 1) : '' } }
+      },
+    },
+    chat: { ...client.chat, delete: async ({ channel, ts }) => { deleted.push(`${channel}:${ts}`); return {} } },
+  }
+  const c = createHeadsUp({ client: fake, config, access, log })
+  assert.deepEqual(await c.clearDm('UGABRIEL01'), { deleted: 2 })
+  assert.deepEqual(deleted, ['D_UGABRIEL01:1', 'D_UGABRIEL01:3'], 'only the app\'s own messages, across pages')
+  deleted.length = 0
+  const all = await c.clearAll({ gabriel: 'UGABRIEL01', aryan: 'UARYAN001', _requester: 'UGABRIEL01' })
+  assert.deepEqual(all.cleared.map((r) => [r.persona, r.deleted]), [['gabriel', 2], ['aryan', 1]], 'each DM cleared once')
+  assert.deepEqual(all.failed, [])
+  console.log('ok  clear DMs')
+}

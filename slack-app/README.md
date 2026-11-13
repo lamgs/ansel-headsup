@@ -133,6 +133,8 @@ Access is deny-by-default. Only Slack user IDs or emails listed in `ALLOWED_SLAC
 | `/headsup next` | Upcoming recurring meetings from the calendar feed and when Heads-Up fires |
 | `/headsup ping` | Shows two demo buttons (visible only to you). **Ping me** sends the demo persona's card to you only, like `/headsup demo`. **Ping everyone** sends every persona in `SLACK_USERS` their own Heads-Up now, for a meeting starting in `REMINDER_MINUTES`. People with no card get nothing; you get a private summary of who was sent a card and who was skipped and why. |
 | `/headsup reset` | Clears mutes and fired triggers |
+| `/headsup clear` | Deletes every message the app posted in your DM with Ansel, for a clean demo. Your own messages in that DM are left alone. |
+| `/headsup clear all` | Same, for your DM and every teammate's DM in `SLACK_USERS`. You get a private summary with the total. Needs the `im:history` scope (in the manifest; reinstall the app after adding it). |
 
 Terminal alternative (no app process needed to post; buttons only respond while `npm start` runs):
 

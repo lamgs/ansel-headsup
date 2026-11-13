@@ -25,6 +25,7 @@ const HELP = [
   '`/headsup next`: your upcoming recurring meetings from your calendar feed and when Heads-Up fires',
   '`/headsup ping`: demo buttons. *Ping me* sends the demo card to you; *Ping everyone* sends each mapped teammate their own Heads-Up (people with no card get nothing)',
   '`/headsup reset`: clear mutes and fired triggers',
+  '`/headsup clear [all]`: delete every Heads-Up message in your DM with Ansel (`all`: in every mapped teammate\'s DM too), for a clean demo',
   `Personas: ${personas.join(', ')}`,
 ].join('\n')
 
@@ -59,6 +60,20 @@ app.command('/headsup', async ({ command, ack, respond }) => {
       return say(['*Your upcoming recurring meetings*', ...occ.map((o) => `• ${o.title}: ${fmt(o.startMs)}${who(o)} · ${o.sid ? `Heads-Up at ${fmt(o.fireAtMs)} (series ${o.sid})` : 'no Ansel series matches, skipped'}`)].join('\n'))
     }
     if (sub === 'ping') return respond({ response_type: 'ephemeral', text: 'Ping everyone', blocks: pingBlocks() })
+    if (sub === 'clear') {
+      pilotLog('clear', arg === 'all' ? 'all' : '-', `by ${command.user_id}`)
+      if (arg !== 'all') {
+        const { deleted } = await headsUp.clearDm(command.user_id)
+        return say(`Cleared ${deleted} message${deleted === 1 ? '' : 's'} from your DM with Ansel.`)
+      }
+      const users = { ...config.users, _requester: command.user_id }
+      const { cleared, failed } = await headsUp.clearAll(users)
+      const total = cleared.reduce((n, r) => n + r.deleted, 0)
+      return say([
+        `Cleared ${total} message${total === 1 ? '' : 's'} across ${cleared.length} DM${cleared.length === 1 ? '' : 's'}.`,
+        failed.length ? `*Failed:* ${failed.map((r) => `${r.persona === '_requester' ? 'you' : nameOf(r.persona)} (${r.reason})`).join(', ')}` : null,
+      ].filter(Boolean).join('\n'))
+    }
     if (sub === 'reset') { headsUp.reset(); scheduler.reset(); return say('Reset: mutes and fired triggers cleared.') }
     return say(HELP)
   } catch (e) {
