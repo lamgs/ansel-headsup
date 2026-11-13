@@ -264,13 +264,16 @@
     :host([embedded]) .r.q.q-stale { box-shadow: inset 3px 0 0 var(--soon); }
     :host([embedded]) .tag { font-size: 12px; }
     :host([embedded]) .stack .rows { gap: 0; }
-    :host([embedded]) .r { grid-template-columns: 4.4em minmax(0, 1fr) auto; column-gap: 12px; padding: 12px 10px 12px 14px; border-radius: 0; }
+    :host([embedded]) .r { grid-template-columns: 3em minmax(0, 1fr) auto; column-gap: 12px; padding: 12px 10px 12px 14px; border-radius: 0; }
     :host([embedded]) .r + .r { border-top: 1px solid var(--line); }
     :host([embedded]) .mine-stack .r + .r { border-top-color: color-mix(in srgb, var(--ansel) 14%, transparent); }
     :host([embedded]) .rail { display: none; }
-    :host([embedded]) .dcol { align-self: start; padding-top: 2px; }
-    :host([embedded]) .dcol .tag.date { display: block; margin: 0; text-align: center; }
-    :host([embedded]) .acts { grid-column: 3; align-self: start; justify-content: flex-end; flex-wrap: nowrap; gap: 2px; }
+    /* Date column and buttons are centred vertically in the row */
+    :host([embedded]) .dcol { align-self: center; }
+    :host([embedded]) .cal { display: block; text-align: center; line-height: 1.05; }
+    :host([embedded]) .cal .mo { display: block; font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--quiet); }
+    :host([embedded]) .cal .dy { display: block; font-size: 19px; font-weight: 700; color: var(--ink); font-variant-numeric: tabular-nums; }
+    :host([embedded]) .acts { grid-column: 3; align-self: center; justify-content: flex-end; flex-wrap: nowrap; gap: 2px; }
     :host([embedded]) .ask { grid-column: 1 / -1; }
     :host([embedded]) .r.mine { background: none; }
     :host([embedded]) .r.mine.is-done { background: var(--done-bg); }
@@ -643,11 +646,14 @@
         aria-label="Play transcript${esc(spokenDate)} at ${esc(spokenStamp(item.seconds))}: ${esc(item.text)}">▶ ${esc(date)}${esc(fmtStamp(item.seconds))}</button>`;
     }
 
-    // Embedded: the date of the item's meeting ("Nov 6") as a fixed-width tag in the row's first
+    // Embedded: the date of the item's meeting as a small calendar stack in the row's first
     // column, so the dates line up down the card. Standalone rows show the date on the ▶ button instead.
     _dateCol(item) {
       if (!this.hasAttribute('embedded')) return '';
-      const tag = item.dateLabel ? `<span class="tag date" title="From the ${esc(item.dateLabel)} meeting">${esc(item.dateLabel)}</span>` : '';
+      // A small calendar page: the month above the day ("NOV" over "6").
+      const [mo, day] = String(item.dateLabel || '').split(' ');
+      const tag = item.dateLabel ? `<span class="cal" title="From the ${esc(item.dateLabel)} meeting" aria-label="${esc(item.dateLabel)}">
+        <span class="mo" aria-hidden="true">${esc(mo)}</span><span class="dy" aria-hidden="true">${esc(day || '')}</span></span>` : '';
       return `<span class="dcol">${tag}</span>`;
     }
 
