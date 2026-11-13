@@ -7,7 +7,7 @@ import { Avatar, personName } from '../components/ui.jsx'
 const CHANNELS = {
   product: [
     ['alicia', 'Fri Nov 13 · 10:02 AM', 'Reminder: launch checklist doc is updated. Comments welcome before the sync.'],
-    ['alex', '10:15 AM', 'Pricing page copy v3 is in the shared folder.'],
+    ['alicia', '10:15 AM', 'Pricing page copy v3 is in the shared folder.'],
     ['varun', '11:40 AM', 'October actuals are posted in the finance folder.'],
   ],
   'eng-standup': [
@@ -16,7 +16,7 @@ const CHANNELS = {
   ],
   random: [
     ['varun', '12:05 PM', 'Lunch truck is outside again.'],
-    ['alex', '12:07 PM', 'The taco one?'],
+    ['gabriel', '12:07 PM', 'The taco one?'],
   ],
 }
 

@@ -77,7 +77,7 @@ console.log('ok  ICS parsing:', occ.length, 'occurrences')
 calls.length = 0; logs.length = 0
 const sched = createScheduler({
   headsUp: createHeadsUp({ client, config, access, log }), config, log,
-  users: { gabriel: 'UGABRIEL01', sam: 'U12345678' },
+  users: { gabriel: 'UGABRIEL01', leo: 'U12345678' },
   load: (o) => loadOccurrences({ ...o, text: ics }),
 })
 config.icsUrl = 'fake://ics'
@@ -85,7 +85,7 @@ await sched.tick(); await sched.tick()
 const events = logs.map(([e, p, d]) => `${e} ${p} ${d}`)
 console.log(events.join('\n'))
 assert.equal(calls.filter(([k]) => k === 'post').length, 1, 'Gabriel gets exactly one card')
-assert.ok(events.some((e) => e.startsWith('card_suppressed sam Weekly Product Sync: Holdout')))
+assert.ok(events.some((e) => e.startsWith('card_skipped leo Weekly Product Sync: External guest')))
 assert.ok(events.some((e) => e.includes('not a recurring meeting')))
 console.log('ok  scheduler')
 

@@ -6,29 +6,27 @@ export const SEED = {
     { id: 'alicia', name: 'Alicia', role: 'Product Manager (organizer)', org: 'acme', slack: true, holdout: false, reminderMinutes: 30 },
     { id: 'rishabh', name: 'Rishabh', role: 'Engineering Lead', org: 'acme', slack: true, holdout: false, reminderMinutes: 30 },
     { id: 'varun', name: 'Varun', role: 'Finance Partner', org: 'acme', slack: true, holdout: false, reminderMinutes: 30 },
-    { id: 'alex', name: 'Alex Kim', role: 'Content Designer', org: 'acme', slack: false, holdout: false, reminderMinutes: 30 },
     { id: 'aryan', name: 'Aryan', role: 'QA Engineer', org: 'acme', slack: true, holdout: false, reminderMinutes: 30 },
     // Synthetic personas for the demo's skip cases (see profiles.md)
-    { id: 'sam', name: 'Sam Ortiz', role: 'Engineer', org: 'acme', slack: true, holdout: true, reminderMinutes: 30 },
     { id: 'riley', name: 'Riley Park', role: 'Support Lead (new to series)', org: 'acme', slack: true, holdout: false, reminderMinutes: 30 },
     { id: 'leo', name: 'Leo Grant', role: 'Agency partner', org: 'external', slack: false, holdout: false, reminderMinutes: 30 },
   ],
   series: [
     {
       id: 'wps', title: 'Weekly Product Sync', organizer: 'alicia', cadence: 'Weekly, Fri 2:00 PM, 50 min',
-      invitees: ['alicia', 'gabriel', 'rishabh', 'varun', 'alex', 'aryan', 'sam', 'riley', 'leo'],
+      invitees: ['alicia', 'gabriel', 'rishabh', 'varun', 'aryan', 'riley', 'leo'],
       nextInstance: { date: '2026-11-13', start: '14:00' },
     },
     {
-      id: 'dr', title: 'Design Review', organizer: 'alex', cadence: 'Biweekly, Fri 4:00 PM',
-      invitees: ['alex', 'gabriel', 'alicia'],
+      id: 'dr', title: 'Design Review', organizer: 'alicia', cadence: 'Biweekly, Fri 4:00 PM',
+      invitees: ['alicia', 'gabriel'],
       nextInstance: { date: '2026-11-13', start: '16:00' },
       note: "Last instance (Oct 30) had 'Keep Ansel out' on, so there is no record and Heads-Up skips it",
     },
   ],
   instances: [
     {
-      id: 'wps-1023', series: 'wps', date: '2026-10-23', recorded: true, attendees: ['alicia', 'gabriel', 'rishabh', 'varun', 'alex', 'sam'],
+      id: 'wps-1023', series: 'wps', date: '2026-10-23', recorded: true, attendees: ['alicia', 'gabriel', 'rishabh', 'varun'],
       decisions: [{ id: 'd1', text: 'Q1 launch scope locked: payments + pricing page', t: '08:10', priority: 2 }],
       openQuestions: [],
       actionItems: [],
@@ -38,7 +36,7 @@ export const SEED = {
       ],
     },
     {
-      id: 'wps-1030', series: 'wps', date: '2026-10-30', recorded: true, attendees: ['alicia', 'gabriel', 'rishabh', 'alex', 'sam'],
+      id: 'wps-1030', series: 'wps', date: '2026-10-30', recorded: true, attendees: ['alicia', 'gabriel', 'rishabh'],
       decisions: [{ id: 'd2', text: 'Beta waitlist closes Nov 15', t: '05:40', priority: 2 }],
       openQuestions: [{ id: 'q1', text: 'Do we need legal review for new pricing?', t: '19:22', stakeholders: ['alicia', 'varun'], status: 'resolved', resolvedIn: 'wps-1106' }],
       actionItems: [{ id: 'a1', text: 'Pull conversion data from dashboard', owner: 'gabriel', due: '2026-11-03', t: '22:15', status: 'done' }],
@@ -48,7 +46,7 @@ export const SEED = {
       ],
     },
     {
-      id: 'wps-1106', series: 'wps', date: '2026-11-06', recorded: true, durationMin: 48, attendees: ['alicia', 'gabriel', 'rishabh', 'varun', 'alex', 'aryan', 'sam'],
+      id: 'wps-1106', series: 'wps', date: '2026-11-06', recorded: true, durationMin: 48, attendees: ['alicia', 'gabriel', 'rishabh', 'varun', 'aryan'],
       decisions: [
         {
           id: 'd3', text: 'Pricing page ships with v2', t: '41:18', priority: 3,
@@ -59,7 +57,7 @@ export const SEED = {
       openQuestions: [{ id: 'q2', text: 'Launch date: Mar 3 or Mar 10?', t: '27:05', stakeholders: ['gabriel', 'rishabh'], status: 'open' }],
       actionItems: [
         { id: 'a2', text: 'Update Q1 forecast with new conversion numbers', short: 'Forecast update', summary: 'Rerun the Q1 forecast with the new conversion numbers and add it to the shared deck.', owner: 'gabriel', due: '2026-11-12', t: '14:32', status: 'open' },
-        { id: 'a3', text: 'Send final pricing page copy to Rishabh', short: 'Pricing page copy', summary: 'Send Rishabh the final pricing page copy so it ships with v2.', owner: 'alex', due: '2026-11-11', t: '41:52', status: 'open' },
+        { id: 'a3', text: 'Send final pricing page copy to Rishabh', short: 'Pricing page copy', summary: 'Send Rishabh the final pricing page copy so it ships with v2.', owner: 'alicia', due: '2026-11-11', t: '41:52', status: 'open' },
         { id: 'a4', text: 'Estimate QA time for payment flow', short: 'QA estimate', summary: 'Estimate QA time for the payment flow so the launch date can be set.', owner: 'rishabh', due: '2026-11-12', t: '28:30', status: 'open' },
         { id: 'a5', text: 'Send the updated launch checklist before next sync', short: 'Launch checklist', summary: "Send the updated launch checklist before next week's sync.", owner: 'alicia', due: '2026-11-11', t: '47:20', status: 'open' },
         { id: 'a6', text: 'Update the pricing model with the final tiers', short: 'Pricing model update', summary: 'Update the pricing model with the final tiers now that legal is clear.', owner: 'varun', due: '2026-11-11', t: '34:30', status: 'open' },
