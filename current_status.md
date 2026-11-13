@@ -1,6 +1,6 @@
 # Current status: Ansel Heads-Up
 
-_Last updated: 2026-11-12_
+_Last updated: 2026-11-13_
 
 Personas now use the team's names (Gabriel, Alicia, Rishabh, Varun, Aryan); see [`profiles.md`](profiles.md) for each role.
 
@@ -14,6 +14,7 @@ This is not yet an always-on or production deployment. The current process runs 
 
 ## Completed
 
+- **Condensed Slack card live and confirmed in Slack (2026-11-13)**: one text block and one row of buttons (✓, Join Zoom, Open in Ansel, Mute series, Not useful); your item links to its transcript moment; several items of yours get checkboxes. Other people's items, Not right and the transcript are in Ansel. Previews and the real output: `card/slack-mockups/`. Zoom is the default demo join link.
 - **Slack card redesigned to match `card/` (contract 2.0)**: countdown with Join, every action item from last meeting with owners (yours first, `YOURS`), Mark done, Not right with reasons, Not useful with reasons, Mute with Undo, "Why am I seeing this?" and the trust footer; the same event names as `card/CONTRACT.md`. Card tests: `slack-app/test/card.mjs`.
 
 - The React prototype builds and its selection tests pass.
