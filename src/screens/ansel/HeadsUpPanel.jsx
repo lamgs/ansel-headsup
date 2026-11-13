@@ -80,7 +80,7 @@ export default function HeadsUpPanel({ series }) {
       switch (action) {
         case 'timestamp_tap':
           // Open the meeting the item was said in (carried-over items come from earlier meetings).
-          dispatch({ type: 'OPEN_ANSEL', nav: { instanceId: item?.meetingId || payload.meetingId || last, tab: 'transcript', highlight: item ? { t: item.t, n: Date.now() } : null, panelItem: payload.itemId } })
+          dispatch({ type: 'OPEN_ANSEL', nav: { instanceId: item?.meetingId || payload.meetingId || last, tab: 'transcript', highlight: item ? { t: item.t, n: Date.now() } : null, selectedItem: payload.itemId ?? null } })
           break
         case 'open_last_meeting':
           dispatch({ type: 'OPEN_ANSEL', nav: { instanceId: last, tab: 'summary', seriesId: series.id } })

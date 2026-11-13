@@ -15,13 +15,13 @@ export function useNip() {
 }
 
 /** Open the transcript at a line. Optionally select a summary item or theme. */
-export function jumpTo(dispatch, t, { item = null, theme = null, panelItem } = {}) {
+export function jumpTo(dispatch, t, { item = null, theme = null } = {}) {
   dispatch({
     type: 'ANSEL_NAV',
     nav: {
       tab: 'transcript', highlight: t ? { t, n: Date.now() } : null,
-      selectedItem: item, themeId: theme,
-      ...(panelItem !== undefined ? { panelItem } : {}),
+      // The transcript has no item panel (it repeated the Heads-Up card), so close it.
+      selectedItem: item, themeId: theme, panelItem: null,
     },
   })
 }
@@ -71,14 +71,14 @@ export function StatusPill({ a }) {
     : onTrack
       ? 'bg-sky-100 text-sky-800 dark:bg-sky-500/15 dark:text-sky-300'
       : 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300'
-  return <span className={`inline-flex items-center rounded px-1.5 py-0.5 text-[12px] font-medium ${cls}`}>{done ? 'Done' : onTrack ? 'On track' : a.update ? statusText(a) : 'Open'}</span>
+  return <span className={`inline-flex items-center rounded px-1.5 py-0.5 text-[13px] font-medium ${cls}`}>{done ? 'Done' : onTrack ? 'On track' : a.update ? statusText(a) : 'Open'}</span>
 }
 
 export function KindChip({ kind, onClick, active }) {
   const k = KIND[kind]
   return (
     <button onClick={onClick} title={`${k.label} in the summary`}
-      className={`inline-flex items-center gap-1 rounded border px-1.5 py-0.5 text-[12px] font-medium ${k.chip} ${active ? 'ring-2 ring-offset-1 ring-ansel/40 dark:ring-offset-slate-950' : ''}`}>
+      className={`inline-flex items-center gap-1 rounded border px-1.5 py-0.5 text-[13px] font-medium ${k.chip} ${active ? 'ring-2 ring-offset-1 ring-ansel/40 dark:ring-offset-slate-950' : ''}`}>
       <k.Icon size={11} aria-hidden />{k.label}
     </button>
   )
