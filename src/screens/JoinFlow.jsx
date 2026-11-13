@@ -46,7 +46,7 @@ export default function JoinFlow() {
 
 // Shown every time Join is pressed, before the call opens.
 function ConsentDialog({ series, dispatch }) {
-  const [agreed, setAgreed] = useState(false)
+  const [agreed, setAgreed] = useState(true)
   const close = () => dispatch({ type: 'JOIN_CLOSE' })
   return (
     <Modal onClose={close}>
@@ -67,12 +67,9 @@ function ConsentDialog({ series, dispatch }) {
           <input type="checkbox" className="mt-0.5" checked={agreed} onChange={(e) => setAgreed(e.target.checked)} />
           <span>I understand and consent to Ansel recording and transcribing this meeting.</span>
         </label>
-        <div className="mt-5 flex flex-wrap items-center justify-between gap-2">
-          <Btn variant="ghost" onClick={close}>Cancel</Btn>
-          <div className="flex gap-2">
-            <Btn variant="secondary" onClick={() => dispatch({ type: 'JOIN_CONFIRM', keptOut: true })}>Join without Ansel</Btn>
-            <Btn variant="primary" disabled={!agreed} onClick={() => dispatch({ type: 'JOIN_CONFIRM', keptOut: false })}>Join with Ansel</Btn>
-          </div>
+        <div className="mt-5 flex justify-end gap-2">
+          <Btn variant="secondary" onClick={close}>Leave</Btn>
+          <Btn variant="primary" disabled={!agreed} onClick={() => dispatch({ type: 'JOIN_CONFIRM', keptOut: false })}>Join with Ansel</Btn>
         </div>
       </div>
     </Modal>
