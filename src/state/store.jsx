@@ -187,10 +187,12 @@ export function StoreProvider({ children }) {
         dispatch({ type: 'OPEN_ANSEL', nav: { view: 'list', seriesId: parts[1] || 'wps' } })
         return
       }
-      const [root, instanceId, tab = 'summary', t, panelItem] = parts
+      const [root, instanceId, tab = 'summary', t, itemId] = parts
       if (root !== 'ansel' || !(instanceId === 'upcoming' || SEED.instances.some((i) => i.id === instanceId))) return
       dispatch({ type: 'AT_LEAST_CLOCK', sec: 13.5 * 3600 })
-      dispatch({ type: 'OPEN_ANSEL', nav: { instanceId, tab, highlight: t ? { t, n: Date.now() } : null, panelItem: panelItem || null } })
+      dispatch({ type: 'OPEN_ANSEL', nav: { instanceId, tab, highlight: t ? { t, n: Date.now() } : null,
+        // On the transcript the item is just highlighted; the item panel only opens on the Summary.
+        ...(tab === 'transcript' ? { selectedItem: itemId || null } : { panelItem: itemId || null }) } })
     }
     open()
     window.addEventListener('hashchange', open)

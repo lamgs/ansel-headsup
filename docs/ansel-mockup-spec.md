@@ -26,7 +26,7 @@ The mockup should look like the complete Ansel product from the Phase 1 case, so
 
 | From | Lands on | Behavior |
 |---|---|---|
-| Card **▶ 14:32** (own item) | `#ansel/wps-1106/transcript/14:32/a2` | Scrolls to 14:32, highlights it 3 s, opens the item panel for a2 |
+| Card **▶ 14:32** (own item) | `#ansel/wps-1106/transcript/14:32/a2` | Scrolls to 14:32, highlights it 3 s and rings the a2 line (no item panel on the transcript) |
 | Card **▶ 27:05 / 41:18** (open / decided) | `#ansel/wps-1106/transcript/<t>` | Scrolls and highlights; summary panel shows the item selected |
 | Card **Open last meeting** | `#ansel/wps-1106/summary` | Summary tab, top (unchanged) |
 | Card **`Edited`** badge | Summary tab, item focused | Unchanged; the summary line shows the original |
@@ -83,6 +83,14 @@ Layout sketch (the player is audio only):
 - Scope follows the screen: the open meeting if you can see it, otherwise "Meetings you attended". Suggested questions add canned answers with ▶ citations; clicking one opens the transcript at that line and minimizes the chat.
 - Answers only appear where the person can open the Nov 6 record (Aryan without the direct share sees none). "What do I owe" is offered to Gabriel only. The thread resets when the persona changes.
 - Transcript: the speaker's avatar and name sit on the same line as their first line of dialogue, in a fixed column; consecutive lines from the same speaker leave it blank.
+
+**Meetings page as three columns; demo readability (branch `rishabh/ansel-polish-10`)**
+- Three collapsible columns: the left menu (collapses to an icon rail), the meeting series, and the selected series' Heads-Up card. A collapsed column becomes a thin labelled strip; click it to bring the column back.
+- The instruction line and the card's "Heads-Up · …" heading and description are gone; the series row says which card is showing.
+- In an expanded series, meetings that open are indigo with a chevron; ones without a page stay grey.
+- Card (embedded only): ▶ is an icon with the meeting date and time on hover; Mark done and Edit are icons; your own rows are tinted and show your name like everyone else's ("· Varun (you)") instead of a YOURS tag on each; other people's rows have no Not right; Join is left-aligned; larger type. Action items are two stacked cards, Your action items and Team, with rows touching (hairline between them) and borderless icon buttons on the right.
+- Minimum text size in Ansel screens raised to 12px (most small text 13px, body 15px) for the demo screen.
+- Transcript: no action item side panel (it repeated the Heads-Up card). ▶ links and action chips highlight the line instead; the panel still opens from the Summary's Update button. Transcript text is larger (lines 16px, timestamps and labels 14px), and timestamps sit at the top of wrapped lines.
 
 **Slack links open Ansel as the recipient (branch `rishabh/ansel-polish-9`)**
 - Each Slack message is built for one person, so every link into the prototype carries `?as=<persona>` (Open in Ansel, timestamps, "N more from the team"). The prototype switches to that person before opening the page; links without it (older messages, typing the address) keep the current persona.

@@ -21,7 +21,7 @@ export const mmss = (sec) => `${String(Math.floor(sec / 60)).padStart(2, '0')}:$
 export function Avatar({ id, size = 'md', label }) {
   const name = id === 'ansel' ? 'Ansel' : personName(id)
   const initials = id === 'ansel' ? 'A' : name.split(' ').map((x) => x[0]).join('')
-  const sz = { xs: 'h-5 w-5 text-[9px]', sm: 'h-7 w-7 text-[11px]', md: 'h-9 w-9 text-xs', lg: 'h-16 w-16 text-xl' }[size]
+  const sz = { xs: 'h-5 w-5 text-[10px]', sm: 'h-7 w-7 text-[12px]', md: 'h-9 w-9 text-xs', lg: 'h-16 w-16 text-xl' }[size]
   return (
     <span title={label ?? name} className={`${PERSON_COLORS[id] || 'bg-slate-400'} ${sz} inline-flex shrink-0 items-center justify-center rounded-full font-semibold text-white ring-2 ring-white dark:ring-slate-900`}>
       {initials}

@@ -47,7 +47,7 @@ export default function EditItemDialog({ id }) {
     changes.due && `due ${shortDate(item.due)} → ${shortDate(changes.due)}`,
   ].filter(Boolean).join(', ')
   const save = () => { if (label) dispatch({ type: 'EDIT_ITEM', id, changes, label }); close() }
-  const field = 'w-full rounded-md border border-slate-300 bg-white px-2.5 py-1.5 text-sm dark:border-slate-600 dark:bg-slate-800'
+  const field = 'w-full rounded-md border border-slate-300 bg-white px-2.5 py-1.5 text-[15px] dark:border-slate-600 dark:bg-slate-800'
 
   return (
     <Modal onClose={close}>
@@ -55,33 +55,33 @@ export default function EditItemDialog({ id }) {
         <div className="flex items-start justify-between">
           <div>
             <h2 className="font-semibold">Edit action item</h2>
-            <p className="text-xs text-slate-500">{SEED.series.find((s) => s.id === inst.series)?.title} · {shortDate(inst.date)}</p>
+            <p className="text-[13px] text-slate-500">{SEED.series.find((s) => s.id === inst.series)?.title} · {shortDate(inst.date)}</p>
           </div>
           <button onClick={close} aria-label="Close" className="text-slate-400 hover:text-slate-700"><X size={16} /></button>
         </div>
         {!allowed ? (
-          <p className="mt-4 text-sm text-slate-600 dark:text-slate-300">Only {personName(item.owner)} (owner) or the organizer can edit this item. Use Not right on the Heads-Up card to flag it.</p>
+          <p className="mt-4 text-[15px] text-slate-600 dark:text-slate-300">Only {personName(item.owner)} (owner) or the organizer can edit this item. Use Not right on the Heads-Up card to flag it.</p>
         ) : (
           <>
-            <label className="mt-4 block text-xs font-medium text-slate-500" htmlFor="edit-text">Action item</label>
+            <label className="mt-4 block text-[13px] font-medium text-slate-500" htmlFor="edit-text">Action item</label>
             <input id="edit-text" autoFocus value={text} onChange={(e) => setText(e.target.value)} className={`mt-1 ${field}`} />
             <div className="mt-3 grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-medium text-slate-500" htmlFor="edit-owner">Owner</label>
+                <label className="block text-[13px] font-medium text-slate-500" htmlFor="edit-owner">Owner</label>
                 <select id="edit-owner" value={owner} onChange={(e) => setOwner(e.target.value)} className={`mt-1 ${field}`}>
                   {inst.attendees.map((p) => <option key={p} value={p}>{personName(p)}</option>)}
                 </select>
               </div>
               <div>
-                <label className="block text-xs font-medium text-slate-500" htmlFor="edit-due">Due</label>
+                <label className="block text-[13px] font-medium text-slate-500" htmlFor="edit-due">Due</label>
                 <input id="edit-due" type="date" value={due} onChange={(e) => setDue(e.target.value)} className={`mt-1 ${field}`} />
               </div>
             </div>
-            <p className="mt-4 flex items-start gap-2 rounded-md bg-slate-50 p-2.5 text-xs text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+            <p className="mt-4 flex items-start gap-2 rounded-md bg-slate-50 p-2.5 text-[13px] text-slate-600 dark:bg-slate-800 dark:text-slate-300">
               <History size={14} className="mt-0.5 shrink-0" aria-hidden />
               Saved as a tracked change: attendees see who edited it and the original, and it's recorded in the admin audit log.
             </p>
-            {item.itemEdit && <p className="mt-2 text-xs text-amber-700 dark:text-amber-400">{editNote(item)}</p>}
+            {item.itemEdit && <p className="mt-2 text-[13px] text-amber-700 dark:text-amber-400">{editNote(item)}</p>}
             <div className="mt-4 flex justify-end gap-2">
               <Btn variant="ghost" onClick={close}>Cancel</Btn>
               <Btn variant="primary" disabled={!label} onClick={save}>Save changes</Btn>
