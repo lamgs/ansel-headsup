@@ -264,11 +264,13 @@
     :host([embedded]) .r.q.q-stale { box-shadow: inset 3px 0 0 var(--soon); }
     :host([embedded]) .tag { font-size: 12px; }
     :host([embedded]) .stack .rows { gap: 0; }
-    :host([embedded]) .r { grid-template-columns: minmax(0, 1fr) auto; column-gap: 12px; padding: 12px 10px 12px 14px; border-radius: 0; }
+    :host([embedded]) .r { grid-template-columns: 4.4em minmax(0, 1fr) auto; column-gap: 12px; padding: 12px 10px 12px 14px; border-radius: 0; }
     :host([embedded]) .r + .r { border-top: 1px solid var(--line); }
     :host([embedded]) .mine-stack .r + .r { border-top-color: color-mix(in srgb, var(--ansel) 14%, transparent); }
     :host([embedded]) .rail { display: none; }
-    :host([embedded]) .acts { grid-column: 2; align-self: start; justify-content: flex-end; flex-wrap: nowrap; gap: 2px; }
+    :host([embedded]) .dcol { align-self: start; padding-top: 2px; }
+    :host([embedded]) .dcol .tag.date { display: block; margin: 0; text-align: center; }
+    :host([embedded]) .acts { grid-column: 3; align-self: start; justify-content: flex-end; flex-wrap: nowrap; gap: 2px; }
     :host([embedded]) .ask { grid-column: 1 / -1; }
     :host([embedded]) .r.mine { background: none; }
     :host([embedded]) .r.mine.is-done { background: var(--done-bg); }
@@ -641,11 +643,12 @@
         aria-label="Play transcript${esc(spokenDate)} at ${esc(spokenStamp(item.seconds))}: ${esc(item.text)}">▶ ${esc(date)}${esc(fmtStamp(item.seconds))}</button>`;
     }
 
-    // Embedded: a small tag with the date of the meeting the item comes from ("Nov 6"). Standalone
-    // rows show the date on the ▶ button instead.
-    _dateTag(item) {
-      if (!this.hasAttribute('embedded') || !item.dateLabel) return '';
-      return ` <span class="tag date" title="From the ${esc(item.dateLabel)} meeting">${esc(item.dateLabel)}</span>`;
+    // Embedded: the date of the item's meeting ("Nov 6") as a fixed-width tag in the row's first
+    // column, so the dates line up down the card. Standalone rows show the date on the ▶ button instead.
+    _dateCol(item) {
+      if (!this.hasAttribute('embedded')) return '';
+      const tag = item.dateLabel ? `<span class="tag date" title="From the ${esc(item.dateLabel)} meeting">${esc(item.dateLabel)}</span>` : '';
+      return `<span class="dcol">${tag}</span>`;
     }
 
     // One action item. Status (YOURS, Mark done / ✓ Done, the green row) shows only on the viewer's own items.
@@ -706,8 +709,8 @@
         </div>` : '';
 
       const cls = ['r', mine ? 'mine' : '', done ? 'is-done' : '', flag ? 'is-flagged' : ''].join(' ').replace(/\s+/g, ' ').trim();
-      return `<div class="${cls}" role="listitem"><span class="rail" aria-hidden="true"></span>
-        <div class="t"><span class="task">${esc(it.text)}</span>${this._dateTag(it)}${it.edited ? ` <span class="edited" title="${esc(it.edited)}">Edited</span>` : ''}${who}${summary}</div>
+      return `<div class="${cls}" role="listitem"><span class="rail" aria-hidden="true"></span>${this._dateCol(it)}
+        <div class="t"><span class="task">${esc(it.text)}</span>${it.edited ? ` <span class="edited" title="${esc(it.edited)}">Edited</span>` : ''}${who}${summary}</div>
         <div class="acts">${acts.join('')}</div>${ask}</div>`;
     }
 
@@ -725,7 +728,7 @@
         // Embedded: stacked cards. Your action items, then Open questions, then Team, which folds
         // closed to its heading (closed by default; card.expanded = true opens it).
         const rowsOf = (items, isMine) => `<div class="rows" role="list">${items.map((it) => this._rowHtml(it, isMine)).join('')}</div>`;
-        const yours = mine.length ? `<section class="stack mine-stack" aria-label="Your action items"><div class="stack-h">Your action items <span class="n">· ${mine.length}</span></div>
+        const yours = mine.length ? `<section class="stack mine-stack" aria-label="Your Action Items"><div class="stack-h">Your Action Items <span class="n">· ${mine.length}</span></div>
             ${rowsOf(mine, true)}</section>` : '';
         const open = !!this._ui.showAll;
         const team = others.length ? `<section class="stack team-stack${open ? ' open' : ''}" aria-label="Team">
@@ -752,18 +755,17 @@
 
     _questionRowHtml(q) {
       const people = (q.stakeholders || []).map((p) => p.name).filter(Boolean);
-      // Embedded rows already carry the meeting date tag, so the stale tag just says it's still open.
-      const staleText = this._dateTag(q) ? 'Still unresolved' : `Unresolved since ${esc(q.dateLabel || 'earlier')}`;
+      // Embedded: just the date column; standalone rows flag older and tagged questions in words.
+      const emb = this.hasAttribute('embedded');
       const tags = [
-        this._dateTag(q),
-        q.carriedOver ? `<span class="tag stale" title="Raised ${esc(q.dateLabel || 'earlier')} and not resolved since">${staleText}</span>` : '',
-        q.mine ? '<span class="tag you">You\'re tagged</span>' : '',
+        !emb && q.carriedOver ? `<span class="tag stale" title="Raised ${esc(q.dateLabel || 'earlier')} and not resolved since">Unresolved since ${esc(q.dateLabel || 'earlier')}</span>` : '',
+        !emb && q.mine ? '<span class="tag you">You\'re tagged</span>' : '',
         q.edited ? '<span class="edited">Edited</span>' : '',
       ].join('');
       const who = people.length ? `<span class="who">${q.context ? ' · ' : ''}${esc(people.join(', '))}</span>` : '';
       const sub = q.context || who ? `<span class="summary">${q.context ? esc(q.context) : ''}${who}</span>` : '';
       const cls = ['r', 'q', q.mine ? 'q-mine' : '', q.carriedOver ? 'q-stale' : ''].join(' ').replace(/\s+/g, ' ').trim();
-      return `<div class="${cls}" role="listitem"><span class="rail" aria-hidden="true"></span>
+      return `<div class="${cls}" role="listitem"><span class="rail" aria-hidden="true"></span>${this._dateCol(q)}
         <div class="t"><span class="task">${esc(q.text)}</span> ${tags}${sub}</div>
         <div class="acts">${this._playButton(q, 'openQuestions')}</div></div>`;
     }
@@ -774,7 +776,7 @@
       const stale = qs.filter((q) => q.carriedOver).length;
       const note = stale ? ` <span class="n">· ${stale} from earlier meetings</span>` : '';
       if (this.hasAttribute('embedded')) {
-        return `<section class="stack q-stack" aria-label="Open questions"><div class="stack-h">Open questions <span class="n">· ${qs.length}</span>${note}</div>
+        return `<section class="stack q-stack" aria-label="Open Questions"><div class="stack-h">Open Questions <span class="n">· ${qs.length}</span>${note}</div>
           <div class="rows" role="list">${qs.map((q) => this._questionRowHtml(q)).join('')}</div></section>`;
       }
       return `<div class="qs"><div class="qs-h">Open questions · ${qs.length}${stale ? ` (${stale} from earlier meetings)` : ''}</div>
@@ -789,10 +791,12 @@
         ${this._rowsHtml(d)}
         ${this.hasAttribute('embedded') ? '' : this._questionsHtml(d)}
         ${ui.notUseful ? this._notUsefulHtml() : ''}
-        <div class="bar">
-          <button data-act="open-last" data-key="open-last" class="btn">Open last meeting</button>
+        <div class="bar">${this.hasAttribute('embedded')
+          // Embedded (Ansel): the app already has the meeting open, so only Mute Series.
+          ? '<button data-act="mute" data-key="mute" class="btn">Mute Series</button>'
+          : `<button data-act="open-last" data-key="open-last" class="btn">Open last meeting</button>
           <button data-act="mute" data-key="mute" class="btn">Mute series</button>
-          ${ui.notUseful ? '' : '<button data-act="not-useful" data-key="not-useful" class="btn">Not useful</button>'}
+          ${ui.notUseful ? '' : '<button data-act="not-useful" data-key="not-useful" class="btn">Not useful</button>'}`}
         </div>
         <div class="context foot">${LOCK}<span>Only you can see this. Built from ${esc(d.lastMeeting.label || "last week's recording")},
           which everyone on the invite can open, with no new AI processing.</span></div>

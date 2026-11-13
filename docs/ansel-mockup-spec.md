@@ -97,7 +97,7 @@ Layout sketch (the player is audio only):
 - Demo-only shortcut: anyone with a forwarded link sees Ansel as that person. A real product would use the signed-in user.
 
 **Series list expands in place; no Action items tab (branch `rishabh/ansel-polish-8`)**
-- The card in Ansel gets every item: your action items, then open questions, then **Team**, which starts folded to its heading and opens in place, instead of "+N more in Ansel" linking out (the standalone pages and Slack keep the link). Hovering ▶ shows the meeting date and timestamp instantly.
+- The card in Ansel gets every item: your action items, then open questions, then **Team**, which starts folded to its heading and opens in place, instead of "+N more in Ansel" linking out (the standalone pages and Slack keep the link). Hovering ▶ shows the meeting date and timestamp instantly. Each row starts with its meeting's date in an aligned column; the footer has only **Mute Series**.
 - The meeting screen has **Transcript · Summary** only; a meeting's own items are in the Summary's action item table.
 - Old links to the Action items tab (Slack's "N more from the team", `#ansel/<meeting>/actions/`) open the Meetings page with that series' card expanded.
 
