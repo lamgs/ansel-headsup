@@ -34,8 +34,8 @@ const btn = (action_id, text, value, extra = {}) => ({ type: 'button', action_id
 const md = (text) => ({ type: 'mrkdwn', text })
 const ctxBlock = (text) => ({ type: 'context', elements: [md(text)] })
 
-// Bullets are indented with an em space (Slack trims ordinary leading spaces).
-const BULLET = '\u2003• '
+// Bullets are indented with an en space (Slack trims ordinary leading spaces).
+const BULLET = '\u2002• '
 export const MAX_LISTED = 3 // items of yours listed on the card; the rest are "+N more of yours in Ansel"
 
 /** Short transcript link (#t/<itemId>); the prototype opens that item's moment in its meeting. */
