@@ -9,6 +9,9 @@ export function initialState(theme = 'light') {
     theme,
     persona: 'varun',
     clock: CLOCK_START,
+    // The clock runs on real time from this anchor (sec at real ms), so it stays right in a background
+    // tab and when a Slack link sets it from the meeting's real start (?start=).
+    clockAnchor: { ms: Date.now(), sec: CLOCK_START },
     tab: 'slack',
     drawerOpen: false,
     itemUpdates: {},
@@ -71,12 +74,24 @@ function processTriggers(s) {
   return next
 }
 
+const setClock = (s, sec) => processTriggers({ ...s, clock: sec, clockAnchor: { ms: Date.now(), sec } })
+
 function reducer(s, a) {
   switch (a.type) {
-    case 'TICK': return processTriggers({ ...s, clock: s.clock + 1 })
-    case 'SET_CLOCK': return processTriggers({ ...s, clock: a.sec })
-    case 'AT_LEAST_CLOCK': return s.clock >= a.sec ? s : processTriggers({ ...s, clock: a.sec })
-    case 'ADD_CLOCK': return processTriggers({ ...s, clock: s.clock + a.sec })
+    case 'TICK': {
+      const sec = s.clockAnchor.sec + Math.floor(((a.now ?? Date.now()) - s.clockAnchor.ms) / 1000)
+      return sec === s.clock ? s : processTriggers({ ...s, clock: sec })
+    }
+    case 'SET_CLOCK': return setClock(s, a.sec)
+    case 'AT_LEAST_CLOCK': return s.clock >= a.sec ? s : setClock(s, a.sec)
+    case 'ADD_CLOCK': return setClock(s, s.clock + a.sec)
+    // From a Slack link's ?start=<epoch seconds>: put the demo clock as far before the series' start
+    // as the real meeting is from now, so the countdown matches the Slack card and survives reopening.
+    case 'SYNC_TO_START': {
+      const series = SEED.series.find((x) => x.id === a.sid) ?? SEED.series[0]
+      const sec = hhmmToSec(series.nextInstance.start) - Math.round((a.startMs - Date.now()) / 1000)
+      return setClock(s, Math.max(0, Math.min(86399, sec)))
+    }
     case 'RESET': return initialState(s.theme)
     case 'NOT_IN_PROTOTYPE':
       // One toast at a time for inactive controls: a new click replaces the old toast.
@@ -170,7 +185,7 @@ const Ctx = createContext(null)
 export function StoreProvider({ children }) {
   const [state, dispatch] = useReducer(reducer, undefined, () => initialState())
   useEffect(() => {
-    const t = setInterval(() => dispatch({ type: 'TICK' }), 1000)
+    const t = setInterval(() => dispatch({ type: 'TICK', now: Date.now() }), 1000)
     return () => clearInterval(t)
   }, [])
   // Deep links from the Slack app: #ansel/<instanceId>/<tab>/<mm:ss>/<itemId>, #headsup, or the short
@@ -179,9 +194,16 @@ export function StoreProvider({ children }) {
     const open = () => {
       // ?as=<persona> (added by the Slack app for each message's recipient) opens the prototype as that person.
       const [path, query = ''] = decodeURIComponent(location.hash.slice(1)).split('?')
-      const as = new URLSearchParams(query).get('as')
+      const params = new URLSearchParams(query)
+      const as = params.get('as')
       if (as && SEED.people.some((p) => p.id === as)) dispatch({ type: 'SET_PERSONA', id: as })
       const parts = path.split('/')
+      // ?start=<epoch seconds>: the real meeting start from the Slack card. The clock follows it;
+      // without it, links jump to at least 1:30 PM as before.
+      const startS = Number(params.get('start'))
+      const synced = Number.isFinite(startS) && startS > 0
+      const sid = (parts[0] === 'headsup' && parts[1]) || SEED.instances.find((i) => i.id === parts[1])?.series || 'wps'
+      const toClock = () => dispatch(synced ? { type: 'SYNC_TO_START', startMs: startS * 1000, sid } : { type: 'AT_LEAST_CLOCK', sec: 13.5 * 3600 })
       if (parts[0] === 't') {
         const inst = SEED.instances.find((i) => [...i.actionItems, ...i.decisions, ...i.openQuestions].some((x) => x.id === parts[1]))
         const item = inst && [...inst.actionItems, ...inst.decisions, ...inst.openQuestions].find((x) => x.id === parts[1])
@@ -189,13 +211,13 @@ export function StoreProvider({ children }) {
       }
       // #headsup opens the Meetings page with Weekly Product Sync's Heads-Up card selected.
       if (parts[0] === 'headsup') {
-        dispatch({ type: 'AT_LEAST_CLOCK', sec: 13.5 * 3600 })
+        toClock()
         dispatch({ type: 'OPEN_ANSEL', nav: { view: 'list', seriesId: parts[1] || 'wps' } })
         return
       }
       const [root, instanceId, tab = 'summary', t, itemId] = parts
       if (root !== 'ansel' || !(instanceId === 'upcoming' || SEED.instances.some((i) => i.id === instanceId))) return
-      dispatch({ type: 'AT_LEAST_CLOCK', sec: 13.5 * 3600 })
+      toClock()
       dispatch({ type: 'OPEN_ANSEL', nav: { instanceId, tab, highlight: t ? { t, n: Date.now() } : null,
         // On the transcript the item is just highlighted; the item panel only opens on the Summary.
         ...(tab === 'transcript' ? { selectedItem: itemId || null } : { panelItem: itemId || null }) } })

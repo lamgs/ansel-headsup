@@ -25,7 +25,6 @@ const client = {
   },
 }
 const P = 'https://proto.example/'
-const ACTIONS = `${P}#ansel/wps-1106/actions/?as=gabriel`
 const config = { prototypeUrl: P, demoJoinUrl: 'https://zoom.us/j/123', reminderMinutes: 30 }
 const logs = []
 const log = (...a) => logs.push(a)
@@ -33,6 +32,8 @@ const team = ['gabriel', 'alicia', 'rishabh', 'varun', 'aryan'].map((p) => `${p}
 const access = createAccessControl({ client, allowedUsers: team, log })
 const hu = createHeadsUp({ client, config, access, log })
 const start = Date.now() + 30 * 60000
+const S = Math.floor(start / 1000) // links carry the meeting's real start: &start=<epoch seconds>
+const ACTIONS = `${P}#ansel/wps-1106/actions/?as=gabriel&start=${S}`
 const elements = (m) => m.blocks.flatMap((b) => (b.type === 'actions' ? b.elements : b.accessory ? [b.accessory] : []))
 const labels = (m) => m.blocks.filter((b) => b.type === 'actions').map((b) => b.elements.map((e) => e.text?.text ?? e.type).join(' | '))
 const button = (m, id) => elements(m).find((e) => e.action_id === id)
@@ -49,7 +50,7 @@ for (const p of ['gabriel', 'alicia', 'rishabh', 'varun', 'aryan']) {
   assert.equal(r.posted, true, p)
   const c = calls.filter(([k]) => k === 'post').at(-1)[1]
   texts[p] = c.blocks[0].text.text
-  const own = (date) => `\\n\u2002• [^*]+ \\(<[^|]*#t\\/a\\d+\\?as=${p}\\|${date} · \\d+:\\d\\d>\\)`
+  const own = (date) => `\\n\u2002• [^*]+ \\(<[^|]*#t\\/a\\d+\\?as=${p}&start=\\d+\\|${date} · \\d+:\\d\\d>\\)`
   const re = `\\n\\*You own ${carried[p] ? 3 : 2} items\\* · <.*\\|8 more from the team> last week${own('Nov 6')}${own('Nov 6')}${carried[p] ? own(carried[p]) : ''}$`
   assert.match(texts[p], new RegExp(re), p)
 }
@@ -57,12 +58,12 @@ console.log(Object.entries(texts).map(([p, t]) => `${p}: ${t.split('\n').slice(2
 const card = calls.find(([k, m]) => k === 'post' && m.channel === 'D_UGABRIEL01')[1]
 assert.equal(card.blocks.length, 3)
 assert.deepEqual(card.blocks[2], { type: 'context', elements: [{ type: 'mrkdwn', text: 'Open in Ansel to make changes.' }] })
-assert.equal(card.blocks[0].text.text, `*30 min · Weekly Product Sync*\n*You own 3 items* · <${ACTIONS}|8 more from the team> last week\n\u2002• Forecast update (<${P}#t/a2?as=gabriel|Nov 6 · 14:32>)\n\u2002• Dashboard link (<${P}#t/a8?as=gabriel|Nov 6 · 45:50>)\n\u2002• Pricing FAQ (<${P}#t/a15?as=gabriel|Oct 30 · 24:10>)`)
+assert.equal(card.blocks[0].text.text, `*30 min · Weekly Product Sync*\n*You own 3 items* · <${ACTIONS}|8 more from the team> last week\n\u2002• Forecast update (<${P}#t/a2?as=gabriel&start=${S}|Nov 6 · 14:32>)\n\u2002• Dashboard link (<${P}#t/a8?as=gabriel&start=${S}|Nov 6 · 45:50>)\n\u2002• Pricing FAQ (<${P}#t/a15?as=gabriel&start=${S}|Oct 30 · 24:10>)`)
 assert.ok(!/Still Open|Decided/.test(JSON.stringify(card)), 'no Still Open / Decided on the Slack card')
 assert.equal(labels(card)[0], 'Join Zoom | Open in Ansel | Mute Series')
 assert.ok(!JSON.stringify(card).includes('Mark done') && !JSON.stringify(card).includes('static_select'))
 assert.deepEqual([button(card, 'hu_join').style, button(card, 'hu_join').url], ['primary', 'https://zoom.us/j/123'])
-assert.equal(button(card, 'hu_open_last').url, `${P}#headsup?as=gabriel`, 'Open in Ansel opens the full Heads-Up card, as the recipient')
+assert.equal(button(card, 'hu_open_last').url, `${P}#headsup?as=gabriel&start=${S}`, 'Open in Ansel opens the full Heads-Up card, as the recipient')
 assert.deepEqual(elements(card).filter((e) => e.style === 'primary').map((e) => e.action_id), ['hu_join', 'hu_open_last'], 'Join and Open in Ansel are green')
 console.log('ok  two items each: layout')
 
@@ -100,8 +101,8 @@ assert.deepEqual([holdout.eligible, holdout.reason, holdout.suppressed], [false,
 assert.equal(buildCardData({ ...w0.person('gabriel'), slack: false }, SEED.series[0], w0, { startMs: start }).eligible, false)
 // Links carry the recipient's persona, so the prototype opens as whoever clicks
 const forAlicia = buildCard({ persona: 'alicia', sid: 'wps', startMs: start, joinUrl: config.demoJoinUrl, data: hu.evaluate('alicia', 'wps', { startMs: start }).result.data, ui: { muted: false } }, { nowMs: Date.now(), prototypeUrl: P })
-assert.equal(button(forAlicia, 'hu_open_last').url, `${P}#headsup?as=alicia`)
-assert.ok(forAlicia.blocks[0].text.text.includes(`${P}#t/a3?as=alicia|`), 'timestamps carry the recipient')
+assert.equal(button(forAlicia, 'hu_open_last').url, `${P}#headsup?as=alicia&start=${S}`)
+assert.ok(forAlicia.blocks[0].text.text.includes(`${P}#t/a3?as=alicia&start=${S}|`), 'timestamps carry the recipient')
 assert.ok(!JSON.stringify(forAlicia.blocks).includes('as=gabriel'))
 console.log('ok  who gets a card')
 
@@ -126,7 +127,7 @@ const base = hu.evaluate('gabriel', 'wps', { startMs: start }).result.data
 const entryWith = (items, moreCount = 0) => ({ persona: 'gabriel', sid: 'wps', startMs: start, joinUrl: config.demoJoinUrl, data: { ...base, stillOpen: [], decided: [], actionItems: { items, moreCount } }, ui: { muted: false } })
 const others = base.actionItems.items.filter((i) => i.owner.id !== 'gabriel') // 3 shown; the other 5 are in moreCount
 let c = buildCard(entryWith([base.actionItems.items[0], ...others], 2), { nowMs: Date.now(), prototypeUrl: P })
-assert.equal(c.blocks[0].text.text, `*30 min · Weekly Product Sync*\n*You own 1 item* · <${ACTIONS}|5 more from the team> last week\n • Forecast update (<${P}#t/a2?as=gabriel|Nov 6 · 14:32>)`)
+assert.equal(c.blocks[0].text.text, `*30 min · Weekly Product Sync*\n*You own 1 item* · <${ACTIONS}|5 more from the team> last week\n • Forecast update (<${P}#t/a2?as=gabriel&start=${S}|Nov 6 · 14:32>)`)
 assert.equal(labels(c)[0], 'Join Zoom | Open in Ansel | Mute Series')
 c = buildCard(entryWith([{ ...base.actionItems.items[0], done: true }, ...others], 2), { nowMs: Date.now(), prototypeUrl: P })
 assert.match(c.blocks[0].text.text, /\*You own 1 item\* · <.*\n • ~Forecast update~ \(<.*\|Nov 6 · 14:32>\) · _Done_$/)
