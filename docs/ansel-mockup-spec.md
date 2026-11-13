@@ -84,6 +84,9 @@ Layout sketch (the player is audio only):
 - Answers only appear where the person can open the Nov 6 record (Aryan without the direct share sees none). "What do I owe" is offered to Gabriel only. The thread resets when the persona changes.
 - Transcript: the speaker's avatar and name sit on the same line as their first line of dialogue, in a fixed column; consecutive lines from the same speaker leave it blank.
 
+**Slack's Open in Ansel opens the card (branch `rishabh/open-in-ansel-card`)**
+- The real Slack message's **Open in Ansel** button now links to `#headsup` (the full Heads-Up card) instead of the Summary. From the card, **Open last meeting** goes on to the Summary; ▶ timestamps still open the transcript. This supersedes the "Open last meeting stays on the Summary" decision below for the Slack button.
+
 **Cast and roles (branch `rishabh/cast-roles`)**
 - Cast is the five team members: Gabriel (Intern), Alicia (CEO, organizer), Rishabh (CTO), Varun and Aryan (Software Engineers). Riley Park and Leo Grant are removed; Governance G3 uses unnamed placeholders for the new teammate (direct share) and the external guest.
 - Without Riley as a persona, only attendees can open a record in the prototype; the direct share shows in the Share dialog, the access badge and the G4 audit log.

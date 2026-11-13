@@ -188,7 +188,7 @@ Only the timestamps are links (each opens that moment in last meeting's transcri
 | Control | Behavior | Event |
 |---|---|---|
 | Join Zoom / Join now | Opens the meeting link; the green button; removed after the meeting ends | `join_tap` |
-| Open in Ansel | Opens last meeting's summary in the hosted prototype (default), or replies privately with the summary if `PROTOTYPE_URL=off` | `open_last_meeting` |
+| Open in Ansel | Opens the full Heads-Up card in the hosted prototype (`#headsup`; Slack can only show a basic version), which links on to last meeting's summary. Replies privately with the summary if `PROTOTYPE_URL=off` | `open_last_meeting` |
 | Mute series / Undo | Collapses the card to one line (Join stays) and stops future cards for the series | `mute_series` / `mute_undone` |
 | Not useful → reason / Undo | Asks "What was off?" (Already knew this, Wrong meeting, Bad timing) | `not_useful`, `not_useful_reason`, `not_useful_undone` |
 | Timestamp link, e.g. (14:32) | Opens the transcript at that item | not logged (Slack doesn't report link clicks) |

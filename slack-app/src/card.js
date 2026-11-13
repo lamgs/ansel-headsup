@@ -39,6 +39,9 @@ const BULLET = '\u2002• '
 export const MAX_LISTED = 3 // items of yours listed on the card; the rest are "+N more of yours in Ansel"
 
 /** Short transcript link (#t/<itemId>); the prototype opens that item's moment in its meeting. */
+/** The full Heads-Up card in Ansel (#headsup); Slack can only carry a basic version. */
+export const headsUpLink = (prototypeUrl) => (prototypeUrl ? `${prototypeUrl.replace(/#.*$/, '')}#headsup` : null)
+
 export const shortTranscriptLink = (prototypeUrl, itemId) => (prototypeUrl ? `${prototypeUrl.replace(/#.*$/, '')}#t/${itemId}` : null)
 
 /**
@@ -108,8 +111,9 @@ export function buildCard(entry, { nowMs = Date.now(), prototypeUrl = '' } = {})
 
   const row = []
   if (join) row.push(join)
-  const summaryUrl = deepLink(prototypeUrl, { instanceId: data.lastMeeting.meetingId, tab: 'summary' })
-  row.push(btn('hu_open_last', 'Open in Ansel', meta, summaryUrl ? { url: summaryUrl } : {}))
+  // Open in Ansel opens the full Heads-Up card; the card's Open last meeting leads on to the Summary.
+  const cardUrl = headsUpLink(prototypeUrl)
+  row.push(btn('hu_open_last', 'Open in Ansel', meta, cardUrl ? { url: cardUrl } : {}))
   row.push(btn('hu_mute', 'Mute series', meta))
   if (!ui.notUseful) row.push(btn('hu_nu', 'Not useful', meta))
   blocks.push({ type: 'actions', elements: row })
