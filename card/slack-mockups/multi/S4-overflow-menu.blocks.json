@@ -1,0 +1,88 @@
+{
+  "blocks": [
+    {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": "*30 min · Weekly Product Sync*\nYou own 3 items · <https://lamgs.github.io/ansel-headsup/#ansel/wps-1106/actions/|5 more from the team> last week"
+      },
+      "accessory": {
+        "type": "overflow",
+        "action_id": "hu_item_menu",
+        "options": [
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "Forecast update · 14:32",
+              "emoji": true
+            },
+            "value": "a2",
+            "url": "https://lamgs.github.io/ansel-headsup/#t/a2"
+          },
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "Customer interview notes · 22:15",
+              "emoji": true
+            },
+            "value": "x1",
+            "url": "https://lamgs.github.io/ansel-headsup/#t/x1"
+          },
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "Dashboard link · 9:40 · Done",
+              "emoji": true
+            },
+            "value": "x2",
+            "url": "https://lamgs.github.io/ansel-headsup/#t/x2"
+          }
+        ]
+      }
+    },
+    {
+      "type": "actions",
+      "elements": [
+        {
+          "type": "button",
+          "action_id": "hu_join",
+          "text": {
+            "type": "plain_text",
+            "text": "Join Zoom",
+            "emoji": true
+          },
+          "style": "primary",
+          "url": "https://zoom.us/j/0"
+        },
+        {
+          "type": "button",
+          "action_id": "hu_open_last",
+          "text": {
+            "type": "plain_text",
+            "text": "Open in Ansel",
+            "emoji": true
+          },
+          "url": "https://lamgs.github.io/ansel-headsup/#ansel/wps-1106/summary/"
+        },
+        {
+          "type": "button",
+          "action_id": "hu_mute",
+          "text": {
+            "type": "plain_text",
+            "text": "Mute series",
+            "emoji": true
+          }
+        },
+        {
+          "type": "button",
+          "action_id": "hu_nu",
+          "text": {
+            "type": "plain_text",
+            "text": "Not useful",
+            "emoji": true
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,7 +1,7 @@
 // Heads-Up service: build card data (contract 2.0, card/CONTRACT.md), post it to Slack, handle every card action.
 import { SEED, RETENTION_DAYS } from '../../src/data/seed.js'
 import { TRANSCRIPTS } from '../../src/data/transcripts.js'
-import { shortDate } from '../../src/logic/buildHeadsUp.js'
+import { shortDate, buildHeadsUp } from '../../src/logic/buildHeadsUp.js'
 import { buildCardData } from '../../src/logic/buildCardData.js'
 import { buildWorld } from '../../src/logic/world.js'
 import { buildCard, cardState } from './card.js'
@@ -33,6 +33,14 @@ export function createHeadsUp({ client, config, access, log = pilotLog }) {
     const series = seriesById(sid)
     if (!user || !series) throw new Error(`Unknown persona "${persona}" or series "${sid}"`)
     const result = buildCardData(user, series, world, { startMs, joinUrl: joinUrl || config.demoJoinUrl, reminderMinutes: config.reminderMinutes, retentionDays: RETENTION_DAYS })
+    if (result.data) {
+      // Still open / Decided: the prototype's picks (one open question you're a stakeholder on, or the latest
+      // meeting's; the latest meeting's top decision). Slack-only addition to the contract data.
+      const picks = buildHeadsUp(user, series, { date: series.nextInstance.date, sec: 0 }, world).items
+      const pick = (section) => picks.filter((i) => i.section === section).map(({ id, text, t }) => ({ id, text, t }))
+      result.data.stillOpen = pick('open')
+      result.data.decided = pick('decided')
+    }
     return { series, result }
   }
 

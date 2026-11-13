@@ -37,3 +37,5 @@ The images are approximations drawn outside Slack (stand-in font; spacing and bu
 **Current: back to the ✓ button**, with the timestamp after your item and only the timestamp linked: "You own **Forecast update** (14:32) · 5 more items from last week". Several items still get checkboxes with a timestamp link as the note. `live-card.png` is the real output.
 
 **Several items, alternatives to checkboxes** (previews, not built): `multi/S1-list-dropdown.*` (your items listed with linked timestamps, and a "✓ Mark done" dropdown of your open items) and `multi/S2-list-only.*` (the same list; marking done happens in Ansel). `live-card-several.png` is what the app sends today (checkboxes).
+
+**Dropdown instead of bullets** (previews, not built): `multi/S3-dropdown.*` takes the bullet list out and puts your items in a "Your 3 items" dropdown next to the sentence. Slack's dropdowns can't open links, so choosing an item would send it to the app, which would then post a link or open a panel. `multi/S4-overflow-menu.*` uses Slack's ⋯ menu instead: each item opens its transcript moment directly, but the menu shows no label. Each image shows the menu closed and then open.

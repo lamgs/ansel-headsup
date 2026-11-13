@@ -174,12 +174,16 @@ Layout (condensed, chosen in [`../card/slack-mockups/`](../card/slack-mockups/RE
 ```
 30 min · Weekly Product Sync
 You own 2 items · 8 more from the team last week
-• Forecast update (14:32)
-• Dashboard link (45:50)
+  • Forecast update (14:32)
+  • Dashboard link (45:50)
+Still Open
+  • Launch date: Mar 3 or Mar 10? (27:05)
+Decided
+  • Pricing page ships with v2 (41:18)
 [Join Zoom] [Open in Ansel] [Mute series] [Not useful]
 ```
 
-Only the timestamps are links (each opens that moment in last meeting's transcript, via the prototype's short `#t/<itemId>` link), and "8 more from the team" links to the meeting's Action items tab. With exactly one item of yours, the line reads "You own **Forecast update** (14:32) · 5 more items from last week". Marking items done happens in Ansel, not on the card; items already done there show struck through. Up to 3 of your items are listed, then "+N more of yours in Ansel". Everything else (other people's items, Not right) is in Ansel.
+Only the timestamps are links (each opens that moment in last meeting's transcript, via the prototype's short `#t/<itemId>` link), and "8 more from the team" links to the meeting's Action items tab. With exactly one item of yours, the line reads "You own **Forecast update** (14:32) · 5 more items from last week". Marking items done happens in Ansel, not on the card; items already done there show struck through. Up to 3 of your items are listed, then "+N more of yours in Ansel". Below them, *Still Open* shows one open question (one you're a stakeholder on, else the last meeting's) and *Decided* the last meeting's top decision, picked as in the prototype, each with a linked timestamp; a heading is left out when it has nothing to show. Everything else (other people's items, Not right) is in Ansel.
 
 | Control | Behavior | Event |
 |---|---|---|
