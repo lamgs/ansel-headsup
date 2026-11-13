@@ -1,6 +1,6 @@
 // Offline checks for the Slack Heads-Up card (condensed layout, card/slack-mockups):
 //   *30 min · Weekly Product Sync*
-//   You own 2 items · <8 more from the team> last week      ("8 more…" links to the Action items tab)
+//   You own *2* items · <8 more from the team> last week      ("8 more…" links to the Action items tab)
 //   • Forecast update (<14:32>)                             (only the timestamp is a link)
 //   [Join Zoom] [Open in Ansel] [Mute series] [Not useful]
 // With one item of yours: "You own Forecast update (14:32) · 5 more items from last week". Marking done is in Ansel.
@@ -45,12 +45,12 @@ for (const p of ['gabriel', 'alicia', 'rishabh', 'varun', 'aryan']) {
   assert.equal(r.posted, true, p)
   const c = calls.filter(([k]) => k === 'post').at(-1)[1]
   texts[p] = c.blocks[0].text.text
-  assert.match(texts[p], /\nYou own 2 items · <.*\|8 more from the team> last week\n• \*.+\* \(<.*#t\/a\d+\|\d+:\d\d>\)\n• \*.+\* \(<.*#t\/a\d+\|\d+:\d\d>\)\n\*Still open\*\n• .+\n\*Decided\*\n• .+$/, p)
+  assert.match(texts[p], /\nYou own \*2\* items · <.*\|8 more from the team> last week\n• [^*]+ \(<.*#t\/a\d+\|\d+:\d\d>\)\n• [^*]+ \(<.*#t\/a\d+\|\d+:\d\d>\)\n\*Still Open\*\n• .+\n\*Decided\*\n• .+$/, p)
 }
 console.log(Object.entries(texts).map(([p, t]) => `${p}: ${t.split('\n').slice(2, 4).join(' / ').replace(/<[^|]+\|/g, '<')}`).join('\n'))
 const card = calls.find(([k, m]) => k === 'post' && m.channel === 'D_UGABRIEL01')[1]
 assert.equal(card.blocks.length, 2)
-assert.equal(card.blocks[0].text.text, `*30 min · Weekly Product Sync*\nYou own 2 items · <${ACTIONS}|8 more from the team> last week\n• *Forecast update* (<${P}#t/a2|14:32>)\n• *Dashboard link* (<${P}#t/a8|45:50>)\n*Still open*\n• Launch date: Mar 3 or Mar 10? (<${P}#t/q2|27:05>)\n*Decided*\n• Pricing page ships with v2 (<${P}#t/d3|41:18>) · _Edited_`)
+assert.equal(card.blocks[0].text.text, `*30 min · Weekly Product Sync*\nYou own *2* items · <${ACTIONS}|8 more from the team> last week\n• Forecast update (<${P}#t/a2|14:32>)\n• Dashboard link (<${P}#t/a8|45:50>)\n*Still Open*\n• Launch date: Mar 3 or Mar 10? (<${P}#t/q2|27:05>)\n*Decided*\n• Pricing page ships with v2 (<${P}#t/d3|41:18>)`)
 assert.equal(labels(card)[0], 'Join Zoom | Open in Ansel | Mute series | Not useful')
 assert.ok(!JSON.stringify(card).includes('Mark done') && !JSON.stringify(card).includes('static_select'))
 assert.deepEqual([button(card, 'hu_join').style, button(card, 'hu_join').url], ['primary', 'https://zoom.us/j/123'])
@@ -100,14 +100,14 @@ assert.equal(c.blocks[0].text.text, `*30 min · Weekly Product Sync*\nYou own *F
 assert.equal(labels(c)[0], 'Join Zoom | Open in Ansel | Mute series | Not useful')
 c = buildCard(entryWith([{ ...base.actionItems.items[0], done: true }, ...others], 1), { nowMs: Date.now(), prototypeUrl: P })
 assert.match(c.blocks[0].text.text, /You own ~Forecast update~ \(<.*\|14:32>\) · _Done_ · </)
-assert.ok(!c.blocks[0].text.text.includes('Still open'), 'no Still open / Decided headings when there is nothing to show')
+assert.ok(!c.blocks[0].text.text.includes('Still Open'), 'no Still open / Decided headings when there is nothing to show')
 console.log('ok  one item')
 
 // 6. More than MAX_LISTED items of yours: the first three, then "+N more of yours in Ansel"; the dropdown lists the three
 const owned = (id, text, seconds) => ({ id, text, owner: { id: 'gabriel', name: 'Gabriel' }, seconds, t: '' })
 c = buildCard(entryWith([owned('a2', 'Forecast update', 872), owned('x1', 'Interview notes', 1335), owned('x2', 'Dashboard link', 2750), owned('x3', 'Pipeline review', 100), ...others]), { nowMs: Date.now(), prototypeUrl: P })
-assert.match(c.blocks[0].text.text, /You own 4 items · <.*\|4 more from the team> last week\n(• .*\n){3}• <.*\|\+1 more of yours in Ansel>$/)
-assert.equal(c.blocks[0].text.text.split('\n').filter((l) => l.startsWith('• *')).length, MAX_LISTED)
+assert.match(c.blocks[0].text.text, /You own \*4\* items · <.*\|4 more from the team> last week\n(• .*\n){3}• <.*\|\+1 more of yours in Ansel>$/)
+assert.equal(c.blocks[0].text.text.split('\n').filter((l) => l.startsWith('• ') && !l.includes('more of yours')).length, MAX_LISTED)
 console.log('ok  more than three items')
 
 // 7. Countdown states and links off
@@ -118,7 +118,7 @@ c = buildCard(at2(now + 4 * 60000), { nowMs: now, prototypeUrl: P }); assert.mat
 c = buildCard(at2(now - 60000), { nowMs: now, prototypeUrl: P }); assert.match(c.blocks[0].text.text, /^\*Live · Weekly Product Sync\*/); assert.equal(button(c, 'hu_join').text.text, 'Join now')
 c = buildCard(at2(now - 51 * 60000), { nowMs: now, prototypeUrl: P }); assert.match(c.blocks[0].text.text, /^\*Ended · Weekly Product Sync\*[\s\S]*_Meeting ended · new summary in about 6 min_$/); assert.equal(button(c, 'hu_join'), undefined)
 c = buildCard(at2(now + 20 * 60000), { nowMs: now, prototypeUrl: '' })
-assert.equal(c.blocks[0].text.text, '*20 min · Weekly Product Sync*\nYou own 2 items · 8 more from the team last week\n• *Forecast update* (14:32)\n• *Dashboard link* (45:50)\n*Still open*\n• Launch date: Mar 3 or Mar 10? (27:05)\n*Decided*\n• Pricing page ships with v2 (41:18) · _Edited_', 'plain text when links are off')
+assert.equal(c.blocks[0].text.text, '*20 min · Weekly Product Sync*\nYou own *2* items · 8 more from the team last week\n• Forecast update (14:32)\n• Dashboard link (45:50)\n*Still Open*\n• Launch date: Mar 3 or Mar 10? (27:05)\n*Decided*\n• Pricing page ships with v2 (41:18)', 'plain text when links are off')
 assert.equal(button(c, 'hu_open_last').url, undefined)
 assert.equal(fmtStamp(872), '14:32')
 console.log('ok  countdown states + links off')

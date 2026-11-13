@@ -37,7 +37,7 @@ export function createHeadsUp({ client, config, access, log = pilotLog }) {
       // Still open / Decided: the prototype's picks (one open question you're a stakeholder on, or the latest
       // meeting's; the latest meeting's top decision). Slack-only addition to the contract data.
       const picks = buildHeadsUp(user, series, { date: series.nextInstance.date, sec: 0 }, world).items
-      const pick = (section) => picks.filter((i) => i.section === section).map(({ id, text, t, edited }) => ({ id, text, t, edited }))
+      const pick = (section) => picks.filter((i) => i.section === section).map(({ id, text, t }) => ({ id, text, t }))
       result.data.stillOpen = pick('open')
       result.data.decided = pick('decided')
     }

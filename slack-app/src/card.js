@@ -6,7 +6,7 @@
 // Several items of yours: "You own 2 items · 8 more from the team last week", then one line per item
 // ("• Forecast update (14:32)"). Timestamps use the prototype's short #t/<itemId> link; "8 more…" links to the
 // meeting's Action items tab. Marking items done happens in Ansel, not on the card.
-// Then "Still open" (one open question) and "Decided" (one decision) as bullets with the same timestamp links.
+// Then "Still Open" (one open question) and "Decided" (one decision) as bullets with the same timestamp links.
 
 export const NOT_USEFUL_REASONS = [['already_knew', 'Already knew this'], ['wrong_meeting', 'Wrong meeting'], ['bad_timing', 'Bad timing']]
 const SOON_MS = 5 * 60000
@@ -75,23 +75,23 @@ export function buildCard(entry, { nowMs = Date.now(), prototypeUrl = '' } = {})
   // "5 more items" links to the meeting's Action items tab in Ansel, where those items are listed.
   const teamUrl = deepLink(prototypeUrl, { instanceId: data.lastMeeting.meetingId, tab: 'actions' })
   const team = (text) => (teamUrl ? `<${teamUrl}|${text}>` : text)
-  const named = (it) => `${isDone(it) ? `~${it.text}~` : `*${it.text}*`} (${stampLink(it)})${isDone(it) ? ' · _Done_' : ''}`
+  const named = (it, bold = true) => `${isDone(it) ? `~${it.text}~` : bold ? `*${it.text}*` : it.text} (${stampLink(it)})${isDone(it) ? ' · _Done_' : ''}`
 
   let line
   if (mine.length === 0) line = `${team(plural(othersCount, 'action item'))} from last week, none assigned to you`
   else if (mine.length === 1) line = `You own ${named(mine[0])}${othersCount ? ` · ${team(`${othersCount} more item${othersCount === 1 ? '' : 's'}`)} from last week` : ''}`
   else {
     const shown = mine.slice(0, MAX_LISTED)
-    line = [`You own ${mine.length} items${othersCount ? ` · ${team(`${othersCount} more from the team`)} last week` : ''}`,
-      ...shown.map((it) => `• ${named(it)}`),
+    line = [`You own *${mine.length}* items${othersCount ? ` · ${team(`${othersCount} more from the team`)} last week` : ''}`,
+      ...shown.map((it) => `• ${named(it, false)}`),
       ...(mine.length > shown.length ? [`• ${team(`+${mine.length - shown.length} more of yours in Ansel`)}`] : [])].join('\n')
   }
   // Still open / Decided, in the same bullet format: "• Launch date: Mar 3 or Mar 10? (27:05)"
   const note = (it) => {
     const url = shortTranscriptLink(prototypeUrl, it.id)
-    return `• ${it.text} (${url ? `<${url}|${it.t.replace(/^0/, '')}>` : it.t.replace(/^0/, '')})${it.edited ? ' · _Edited_' : ''}`
+    return `• ${it.text} (${url ? `<${url}|${it.t.replace(/^0/, '')}>` : it.t.replace(/^0/, '')})`
   }
-  if (data.stillOpen?.length) line += `\n*Still open*\n${data.stillOpen.map(note).join('\n')}`
+  if (data.stillOpen?.length) line += `\n*Still Open*\n${data.stillOpen.map(note).join('\n')}`
   if (data.decided?.length) line += `\n*Decided*\n${data.decided.map(note).join('\n')}`
   if (state === 'ended') line += '\n_Meeting ended · new summary in about 6 min_'
 
