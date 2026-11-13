@@ -1,10 +1,12 @@
 // Slack Block Kit version of the Heads-Up card, contract 2.0 data (card/CONTRACT.md), in the team's chosen
 // condensed layout (card/slack-mockups/condensed, B3 + M2): one text block and one row of buttons.
 //   *30 min · Weekly Product Sync*
-//   You own <Forecast update> · 5 more items from last week          (one item of yours: a ✓ button)
-//   You own 3 items · 4 more from the team last week + a checkbox per item (several items of yours)
-//   [✓] [Join Zoom] [Open in Ansel] [Mute series] [Not useful]
-// Item names link to their moment in last meeting's transcript in the hosted prototype.
+//   You own 2 items · 4 more from the team last week
+//   ☐ Forecast update        (a checkbox per item of yours, up to 3; ticked = done)
+//     14:32 ↗                (small note: link to that moment in last meeting's transcript)
+//   [Join Zoom] [Open in Ansel] [Mute series] [Not useful]
+// Slack caps checkbox labels and notes at 75 characters, link address included, so the note uses the
+// prototype's short #t/<itemId> link.
 
 export const NOT_USEFUL_REASONS = [['already_knew', 'Already knew this'], ['wrong_meeting', 'Wrong meeting'], ['bad_timing', 'Bad timing']]
 const SOON_MS = 5 * 60000
@@ -33,6 +35,10 @@ const md = (text) => ({ type: 'mrkdwn', text })
 const ctxBlock = (text) => ({ type: 'context', elements: [md(text)] })
 
 export const MAX_CHECKBOXES = 3
+export const OPTION_LIMIT = 75 // Slack's limit for a checkbox label or note
+
+/** Short transcript link (#t/<itemId>); the prototype opens that item's moment in its meeting. */
+export const shortTranscriptLink = (prototypeUrl, itemId) => (prototypeUrl ? `${prototypeUrl.replace(/#.*$/, '')}#t/${itemId}` : null)
 
 /**
  * entry: { persona, sid, startMs, joinUrl, postMs, data (contract 2.0), ui: { muted, notUseful, done } }
@@ -62,25 +68,25 @@ export function buildCard(entry, { nowMs = Date.now(), prototypeUrl = '' } = {})
   const mine = items.filter((i) => i.owner.id === me)
   const othersCount = items.length - mine.length + (data.actionItems.moreCount || 0)
   const isDone = (it) => ui.done[it.id] ?? !!it.done
-  const name = (it) => {
-    const url = deepLink(prototypeUrl, { instanceId: data.lastMeeting.meetingId, t: it.t, itemId: it.id })
-    return url ? `<${url}|${it.text}>` : it.text
-  }
   const plural = (n, word) => `${n} ${word}${n === 1 ? '' : 's'}`
+  const fit = (text) => (text.length <= OPTION_LIMIT ? text : `${text.slice(0, OPTION_LIMIT - 1)}…`)
 
   let line
   if (mine.length === 0) line = `${plural(othersCount, 'action item')} from last week, none assigned to you`
-  else if (mine.length === 1) {
-    const it = mine[0]
-    line = `You own ${isDone(it) ? `~${name(it)}~ · _Done_` : `*${name(it)}*`}${othersCount ? ` · ${othersCount} more item${othersCount === 1 ? '' : 's'} from last week` : ''}`
-  } else line = `You own ${mine.length} items${othersCount ? ` · ${othersCount} more from the team last week` : ''}`
+  else line = `You own ${plural(mine.length, 'item')}${othersCount ? ` · ${othersCount} more from the team last week` : ''}`
   if (state === 'ended') line += '\n_Meeting ended · new summary in about 6 min_'
 
   const blocks = [{ type: 'section', text: md(`*${hero} · ${m.title}*\n${line}`) }]
 
-  if (mine.length > 1) {
+  if (mine.length) {
     const shown = mine.slice(0, MAX_CHECKBOXES)
-    const option = (it) => ({ text: md(isDone(it) ? `~${name(it)}~` : `*${name(it)}*`), value: it.id })
+    const option = (it) => {
+      const name = it.text.slice(0, OPTION_LIMIT - 4)
+      const url = shortTranscriptLink(prototypeUrl, it.id)
+      const stamp = fmtStamp(it.seconds)
+      const note = url && `<${url}|${stamp} ↗>`.length <= OPTION_LIMIT ? `<${url}|${stamp} ↗>` : stamp
+      return { text: md(isDone(it) ? `~${name}~` : `*${name}*`), description: md(fit(note)), value: it.id }
+    }
     const checked = shown.filter(isDone).map(option)
     blocks.push({ type: 'actions', elements: [{ type: 'checkboxes', action_id: 'hu_check', options: shown.map(option), ...(checked.length ? { initial_options: checked } : {}) }] })
     if (mine.length > shown.length) {
@@ -98,12 +104,6 @@ export function buildCard(entry, { nowMs = Date.now(), prototypeUrl = '' } = {})
   }
 
   const row = []
-  if (mine.length === 1) {
-    const it = mine[0]
-    row.push(isDone(it)
-      ? btn(`hu_done_undo:${it.id}`, '✓', meta, { style: 'primary', accessibility_label: `Done: ${it.text}. Tap to undo`.slice(0, 75) })
-      : btn(`hu_done:${it.id}`, '✓', meta, { accessibility_label: `Mark done: ${it.text}`.slice(0, 75) }))
-  }
   if (join) row.push(join)
   const summaryUrl = deepLink(prototypeUrl, { instanceId: data.lastMeeting.meetingId, tab: 'summary' })
   row.push(btn('hu_open_last', 'Open in Ansel', meta, summaryUrl ? { url: summaryUrl } : {}))

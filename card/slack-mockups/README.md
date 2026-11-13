@@ -29,3 +29,5 @@ The images are approximations drawn outside Slack (stand-in font; spacing and bu
 **Chosen: C** (checkboxes with a grey note). Link-style previews in `links/`: `L1-timestamp` (the time is the link), `L2-quote-link` (the quote is the link), `L3-transcript-link` ("Transcript 14:32 ↗" at the end), `L4-buttons` (the time as a button, which needs one row per item plus a separate checkbox list), `L5-checkbox-and-button` (one row per item: a one-option checkbox, then the time button; exact placement is up to Slack, check in Block Kit Builder).
 
 **Slack's 75-character limit on checkbox labels and notes** (which includes a link's address) means a transcript link can't go inside a checkbox. `links/L6-fits-limits.*` and `links/L6-one-item.*` show option 3 within the limit: the quote under each checkbox, and the "Transcript 14:32 ↗" links on one small line below.
+
+**Built: option 3 without the quote.** A checkbox per item of yours, with a timestamp link (`#t/<itemId>`) as its note; `live-card.png` and `live-card-several.png` are the real output.
