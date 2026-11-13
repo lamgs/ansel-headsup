@@ -2,13 +2,11 @@
 // condensed layout (card/slack-mockups/condensed, B3 + M2): one text block and one row of buttons.
 //   *30 min · Weekly Product Sync*
 //   You own Forecast update (14:32) · 5 more items from last week     (one item of yours; 14:32 is the link)
-//   [Join Zoom] [Open in Ansel] [Mute Series] [Not Useful]
+//   [Join Zoom] [Open in Ansel] [Mute Series]
 // Several items of yours: "You own 2 items · 8 more from the team last week", then one line per item
 // ("• Forecast update (14:32)"). Timestamps use the prototype's short #t/<itemId> link; "8 more…" links to the
 // meeting's Action items tab. Marking items done happens in Ansel, not on the card.
 // Then "Still Open" (one open question) and "Decided" (one decision) as bullets with the same timestamp links.
-// Not Useful greys the card out (the same text in a context block, which Slack shows small and grey) with
-// "Marked Not Useful" and an Undo; there's no follow-up question.
 
 const SOON_MS = 5 * 60000
 
@@ -46,7 +44,7 @@ export const headsUpLink = (prototypeUrl) => (prototypeUrl ? `${prototypeUrl.rep
 export const shortTranscriptLink = (prototypeUrl, itemId) => (prototypeUrl ? `${prototypeUrl.replace(/#.*$/, '')}#t/${itemId}` : null)
 
 /**
- * entry: { persona, sid, startMs, joinUrl, postMs, data (contract 2.1), ui: { muted, notUseful } }
+ * entry: { persona, sid, startMs, joinUrl, postMs, data (contract 2.1), ui: { muted } }
  * Every button carries the meta needed to rebuild the card after a restart.
  */
 export function buildCard(entry, { nowMs = Date.now(), prototypeUrl = '' } = {}) {
@@ -107,16 +105,6 @@ export function buildCard(entry, { nowMs = Date.now(), prototypeUrl = '' } = {})
 
   const body = `*${hero} · ${m.title}*\n${line}`
 
-  // Not Useful: Slack can't grey out a message, so the card's text moves into a context block (small, grey)
-  // and the row shrinks to Join and Undo.
-  if (ui.notUseful) {
-    return { text: `${fallback} (marked not useful)`, blocks: [
-      ctxBlock(body),
-      ctxBlock(':no_entry_sign: Marked *Not Useful* · thanks, this helps tune Heads-Up'),
-      { type: 'actions', elements: [join, btn('hu_nu_undo', 'Undo', meta)].filter(Boolean) },
-    ] }
-  }
-
   const blocks = [{ type: 'section', text: md(body) }]
 
   const row = []
@@ -125,7 +113,6 @@ export function buildCard(entry, { nowMs = Date.now(), prototypeUrl = '' } = {})
   const cardUrl = headsUpLink(prototypeUrl)
   row.push(btn('hu_open_last', 'Open in Ansel', meta, cardUrl ? { url: cardUrl } : {}))
   row.push(btn('hu_mute', 'Mute Series', meta))
-  row.push(btn('hu_nu', 'Not Useful', meta))
   blocks.push({ type: 'actions', elements: row })
   return { text: fallback, blocks }
 }
