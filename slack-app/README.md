@@ -5,7 +5,7 @@ A real Slack app that posts the Heads-Up card as a DM from "Ansel". It can be tr
 1. **Calendar trigger:** polls a Google or Outlook calendar ICS feed and posts at *meeting start − 30 min* for **recurring** meetings whose title matches a seeded Ansel series.
 2. **Manual demo trigger:** `/headsup demo` in Slack (or `npm run trigger` from a terminal) posts the card right away, for a meeting "starting in 30 min".
 
-Personas (who gets which card and why) are described in [`../profiles.md`](../profiles.md). The Slack card is a condensed Heads-Up (layout and previews in [`../card/slack-mockups/`](../card/slack-mockups/README.md)): the countdown, your action items from last meeting plus any still open from earlier meetings, each with a dated link to its transcript moment, a link to the rest of the team's items, and Join / Open in Ansel / Mute Series / Not Useful. Marking items done happens in Ansel. The card data is built from the shared seed by [`../src/logic/buildCardData.js`](../src/logic/buildCardData.js) (contract 2.1, [`../card/CONTRACT.md`](../card/CONTRACT.md)). The calendar supplies the trigger time, the meeting title (matched to a series) and the join link. Socket Mode means no public URL is needed.
+Personas (who gets which card and why) are described in [`../profiles.md`](../profiles.md). The Slack card is a condensed Heads-Up (layout and previews in [`../card/slack-mockups/`](../card/slack-mockups/README.md)): the countdown, your action items from last meeting plus any still open from earlier meetings, each with a dated link to its transcript moment, a link to the rest of the team's items, and Join / Open in Ansel / Mute Series, with a small note to Open in Ansel to make changes. Marking items done happens in Ansel. The card data is built from the shared seed by [`../src/logic/buildCardData.js`](../src/logic/buildCardData.js) (contract 2.1, [`../card/CONTRACT.md`](../card/CONTRACT.md)). The calendar supplies the trigger time, the meeting title (matched to a series) and the join link. Socket Mode means no public URL is needed.
 
 ## Token and ownership model
 
@@ -171,30 +171,26 @@ Create a recurring event titled **Weekly Product Sync**, with a Meet, Teams or Z
 
 The card matches [`../card/heads-up-card.js`](../card/heads-up-card.js) and logs the same event names as [`../card/CONTRACT.md`](../card/CONTRACT.md) §4 (to the console, as `[pilot]` lines; ★ marks value actions). Every change updates the card in place and has an Undo.
 
-Layout (condensed, chosen in [`../card/slack-mockups/`](../card/slack-mockups/README.md): `condensed/B3-minimal.png` and `condensed/M2-checkboxes.png`): one text block and one row of buttons.
+Layout (condensed, chosen in [`../card/slack-mockups/`](../card/slack-mockups/README.md): `condensed/B3-minimal.png` and `condensed/M2-checkboxes.png`): one text block, one row of buttons and a small grey note.
 
 ```
 30 min · Weekly Product Sync
-You own 2 items · 8 more from the team last week
+*You own 2 items* · 8 more from the team last week
   • Forecast update (14:32)
   • Dashboard link (45:50)
-Still Open
-  • Launch date: Mar 3 or Mar 10? (27:05)
-Decided
-  • Pricing page ships with v2 (41:18)
-[Join Zoom] [Open in Ansel] [Mute Series] [Not Useful]
+[Join Zoom] [Open in Ansel] [Mute Series]
+Open in Ansel to make changes.                (small grey text)
 ```
 
 Every link into the prototype carries the recipient's persona (`…#headsup?as=alicia`, `…#t/a5?as=alicia`), so Ansel opens as whoever clicks: each message is built for one person. Demo only: a real product would use the signed-in user. Messages posted before this change have no `?as=` and open as the prototype's default persona (Varun).
 
-Only the timestamps are links (each opens that moment in its meeting's transcript, via the prototype's short `#t/<itemId>` link), and each names the meeting's date: "Forecast update (Nov 6 · 14:32)". "8 more from the team" links to the meeting's `…/actions/` address, which Ansel now opens as the Heads-Up card on the Meetings page with every item shown (there's no Action items tab any more). Your items that are still open from earlier meetings (up to 3 earlier recorded meetings you attended) come after last meeting's, with their own date, e.g. "Pricing FAQ (Oct 30 · 24:10)"; done items and other people's older items don't carry over. With exactly one item of yours, the line reads "You own **Forecast update** (Nov 6 · 14:32) · 5 more items from last week". Marking items done happens in Ansel, not on the card; items already done there show struck through. Up to 3 of your items are listed, then "+N more of yours in Ansel". Below them, *Still Open* shows one open question (one you're a stakeholder on, else the last meeting's) and *Decided* the last meeting's top decision, picked as in the prototype, each with a linked timestamp; a heading is left out when it has nothing to show. Everything else (other people's items, Not right) is in Ansel.
+Only the timestamps are links (each opens that moment in its meeting's transcript, via the prototype's short `#t/<itemId>` link), and each names the meeting's date: "Forecast update (Nov 6 · 14:32)". "8 more from the team" links to the meeting's `…/actions/` address, which Ansel now opens as the Heads-Up card on the Meetings page with every item shown (there's no Action items tab any more). Your items that are still open from earlier meetings (up to 3 earlier recorded meetings you attended) come after last meeting's, with their own date, e.g. "Pricing FAQ (Oct 30 · 24:10)"; done items and other people's older items don't carry over. With exactly one item of yours, the line reads "You own **Forecast update** (Nov 6 · 14:32) · 5 more items from last week". Marking items done happens in Ansel, not on the card; items already done there show struck through. Up to 3 of your items are listed, then "+N more of yours in Ansel". Still Open and Decided aren't on the Slack card. Everything else (other people's items, Not right, open questions, decisions, feedback) is in Ansel.
 
 | Control | Behavior | Event |
 |---|---|---|
 | Join Zoom / Join now | Opens the meeting link; the green button; removed after the meeting ends | `join_tap` |
 | Open in Ansel | Opens the full Heads-Up card in the hosted prototype (`#headsup`; Slack can only show a basic version), which links on to last meeting's summary. Replies privately with the summary if `PROTOTYPE_URL=off` | `open_last_meeting` |
 | Mute Series / Undo | Collapses the card to one line (Join stays) and stops future cards for the series | `mute_series` / `mute_undone` |
-| Not Useful / Undo | Greys the card out (its text drops to small grey context text, with "Marked Not Useful"); Join and Undo stay. No follow-up question | `not_useful`, `not_useful_undone` |
 | Timestamp link, e.g. (14:32) | Opens the transcript at that item | not logged (Slack doesn't report link clicks) |
 
 Slack buttons come in three styles only (default, green, red), so Open in Ansel uses the default style.
