@@ -1,0 +1,75 @@
+{
+  "blocks": [
+    {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": "*30 min · Weekly Product Sync*\nYou own 3 items · 5 more from the team last week\n• *Forecast update* (<https://lamgs.github.io/ansel-headsup/#t/a2|14:32>)\n• *Customer interview notes* (<https://lamgs.github.io/ansel-headsup/#t/x1|22:15>)\n• ~Dashboard link~ (<https://lamgs.github.io/ansel-headsup/#t/x2|9:40>) · _Done_"
+      }
+    },
+    {
+      "type": "actions",
+      "elements": [
+        {
+          "type": "static_select",
+          "action_id": "hu_done_pick",
+          "placeholder": {
+            "type": "plain_text",
+            "text": "✓ Mark done"
+          },
+          "options": [
+            {
+              "text": {
+                "type": "plain_text",
+                "text": "Forecast update"
+              },
+              "value": "a2"
+            },
+            {
+              "text": {
+                "type": "plain_text",
+                "text": "Customer interview notes"
+              },
+              "value": "x1"
+            }
+          ]
+        },
+        {
+          "type": "button",
+          "action_id": "hu_join",
+          "text": {
+            "type": "plain_text",
+            "text": "Join Zoom"
+          },
+          "style": "primary",
+          "url": "https://zoom.us/j/0"
+        },
+        {
+          "type": "button",
+          "action_id": "hu_open_last",
+          "text": {
+            "type": "plain_text",
+            "text": "Open in Ansel"
+          },
+          "url": "https://lamgs.github.io/ansel-headsup/"
+        },
+        {
+          "type": "button",
+          "action_id": "hu_mute",
+          "text": {
+            "type": "plain_text",
+            "text": "Mute series"
+          }
+        },
+        {
+          "type": "button",
+          "action_id": "hu_nu",
+          "text": {
+            "type": "plain_text",
+            "text": "Not useful"
+          }
+        }
+      ]
+    }
+  ]
+}
