@@ -2,6 +2,7 @@ import React, { createContext, useContext, useEffect, useMemo, useReducer } from
 import { SEED, SEED_COMMENTS, DEMO_DATE, CLOCK_START } from '../data/seed.js'
 import { buildHeadsUp, triggerSec, hhmmToSec } from '../logic/buildHeadsUp.js'
 import { buildWorld } from '../logic/world.js'
+import { API, readKey, keyPersona, fetchItemUpdates } from './sync.js'
 
 // Always start in light mode (reads better on a projector); the demo bar's toggle switches to dark.
 export function initialState(theme = 'light') {
@@ -26,6 +27,8 @@ export function initialState(theme = 'light') {
     slackChannel: 'product',
     ansel: { page: 'meetings', view: 'detail', instanceId: 'wps-1106', tab: 'summary', highlight: null, panelItem: null, focusId: null, selectedItem: null, themeId: null, shareOpen: false, chat: 'closed', chatThread: [] },
     join: null, // null | { step: 'notice' | 'call', keptOut, joinedAt }
+    syncKey: '', // signed persona key from a Slack card link (sync.js); '' = changes stay in this tab
+    sync: API ? 'connecting' : 'off', // 'off' | 'connecting' | 'online' | 'offline'
   }
 }
 
@@ -76,7 +79,20 @@ function reducer(s, a) {
     case 'SET_CLOCK': return processTriggers({ ...s, clock: a.sec })
     case 'AT_LEAST_CLOCK': return s.clock >= a.sec ? s : processTriggers({ ...s, clock: a.sec })
     case 'ADD_CLOCK': return processTriggers({ ...s, clock: s.clock + a.sec })
-    case 'RESET': return initialState(s.theme)
+    case 'RESET': return { ...initialState(s.theme), syncKey: s.syncKey, sync: s.sync }
+    case 'SET_SYNC_KEY': return { ...s, syncKey: a.key }
+    case 'SYNC_STATUS': return s.sync === a.status ? s : { ...s, sync: a.status }
+    case 'SERVER_ITEMS': {
+      // The Slack service is the source of truth for synced items; local-only changes (personas without a key) stay.
+      const local = Object.fromEntries(Object.entries(s.itemUpdates).filter(([, u]) => !u.synced))
+      const server = Object.fromEntries(Object.entries(a.itemUpdates).map(([id, u]) => [id, { ...u, synced: true }]))
+      return { ...s, sync: 'online', itemUpdates: { ...local, ...server } }
+    }
+    case 'UNDO_ITEM': {
+      const itemUpdates = { ...s.itemUpdates }
+      delete itemUpdates[a.id]
+      return addLog({ ...s, itemUpdates }, s.persona, 'item_reopened', a.id)
+    }
     case 'NOT_IN_PROTOTYPE':
       // One toast at a time for inactive controls: a new click replaces the old toast.
       return addToast({ ...s, toasts: s.toasts.filter((t) => t.kind !== 'nip') },a.what ? `${a.what} · not in this prototype` : 'Not in this prototype', { kind: 'nip' })
@@ -99,7 +115,7 @@ function reducer(s, a) {
       const u = { ...a.update, by: s.persona, atSec: s.clock }
       let n = { ...s, itemUpdates: { ...s.itemUpdates, [a.id]: u } }
       n = addLog(n, s.persona, 'item_acted_on', `${a.id}: ${a.label}`)
-      return addToast(n, 'Saved. Alicia will see this in the meeting record.')
+      return a.toast === false ? n : addToast(n, a.toast ?? 'Saved. Alicia will see this in the meeting record.')
     }
     case 'EDIT': {
       const n = { ...s, edits: { ...s.edits, [a.id]: { text: a.text, by: s.persona, on: DEMO_DATE, atSec: s.clock } } }
@@ -166,6 +182,22 @@ export function StoreProvider({ children }) {
     open()
     window.addEventListener('hashchange', open)
     return () => window.removeEventListener('hashchange', open)
+  }, [])
+  // Ansel → Slack sync: pick up the card's key, then keep item statuses in step with the Slack service.
+  useEffect(() => {
+    const key = readKey()
+    if (key) {
+      dispatch({ type: 'SET_SYNC_KEY', key })
+      if (SEED.people.some((p) => p.id === keyPersona(key))) dispatch({ type: 'SET_PERSONA', id: keyPersona(key) })
+    }
+    if (!API) return
+    const pull = () => fetchItemUpdates()
+      .then((r) => dispatch({ type: 'SERVER_ITEMS', itemUpdates: r.itemUpdates }))
+      .catch(() => dispatch({ type: 'SYNC_STATUS', status: 'offline' }))
+    pull()
+    const t = setInterval(pull, 15000)
+    window.addEventListener('focus', pull)
+    return () => { clearInterval(t); window.removeEventListener('focus', pull) }
   }, [])
   useEffect(() => {
     document.documentElement.classList.toggle('dark', state.theme === 'dark')

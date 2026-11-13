@@ -5,7 +5,8 @@
 //   [Join Zoom] [Open in Ansel] [Mute series] [Not useful]
 // Several items of yours: "You own 2 items · 8 more from the team last week", then one line per item
 // ("• Forecast update (14:32)"). Timestamps use the prototype's short #t/<itemId> link; "8 more…" links to the
-// meeting's Action items tab. Marking items done happens in Ansel, not on the card.
+// meeting's Action items tab. Marking items done happens in Ansel, not on the card: Ansel sends the change to this
+// service (api.js), which redraws the card, so a done item shows struck through here within a second.
 
 export const NOT_USEFUL_REASONS = [['already_knew', 'Already knew this'], ['wrong_meeting', 'Wrong meeting'], ['bad_timing', 'Bad timing']]
 const SOON_MS = 5 * 60000
@@ -15,10 +16,19 @@ const slackTime = (ms) => `<!date^${Math.floor(ms / 1000)}^{time}|${fmtTime(ms)}
 /** 872 → "14:32" (no leading zero, like the web card) */
 export const fmtStamp = (seconds) => { const s = Math.max(0, Math.floor(seconds)); const h = Math.floor(s / 3600); const m = Math.floor((s % 3600) / 60); const pad = (n) => String(n).padStart(2, '0'); return h ? `${h}:${pad(m)}:${pad(s % 60)}` : `${m}:${pad(s % 60)}` }
 
+/** The prototype's address without its #route, plus ?k=<signed persona key> so Ansel can sync status back to this card. */
+export function baseUrl(prototypeUrl, linkKey = '') {
+  const base = prototypeUrl.replace(/#.*$/, '')
+  if (!linkKey) return base
+  const u = new URL(base)
+  u.searchParams.set('k', linkKey)
+  return u.toString()
+}
+
 /** Deep link into the hosted prototype, e.g. #ansel/wps-1106/transcript/14:32/a2 */
-export function deepLink(prototypeUrl, { instanceId, tab = 'transcript', t = '', itemId = '' }) {
+export function deepLink(prototypeUrl, { instanceId, tab = 'transcript', t = '', itemId = '' }, linkKey = '') {
   if (!prototypeUrl) return null
-  return `${prototypeUrl.replace(/#.*$/, '')}#ansel/${instanceId}/${tab}/${t}${itemId ? `/${itemId}` : ''}`
+  return `${baseUrl(prototypeUrl, linkKey)}#ansel/${instanceId}/${tab}/${t}${itemId ? `/${itemId}` : ''}`
 }
 
 /** posted → starting-soon → started → ended (CONTRACT.md §4 state_changed) */
@@ -36,13 +46,13 @@ const ctxBlock = (text) => ({ type: 'context', elements: [md(text)] })
 export const MAX_LISTED = 3 // items of yours listed on the card; the rest are "+N more of yours in Ansel"
 
 /** Short transcript link (#t/<itemId>); the prototype opens that item's moment in its meeting. */
-export const shortTranscriptLink = (prototypeUrl, itemId) => (prototypeUrl ? `${prototypeUrl.replace(/#.*$/, '')}#t/${itemId}` : null)
+export const shortTranscriptLink = (prototypeUrl, itemId, linkKey = '') => (prototypeUrl ? `${baseUrl(prototypeUrl, linkKey)}#t/${itemId}` : null)
 
 /**
  * entry: { persona, sid, startMs, joinUrl, postMs, data (contract 2.0), ui: { muted, notUseful } }
  * Every button carries the meta needed to rebuild the card after a restart.
  */
-export function buildCard(entry, { nowMs = Date.now(), prototypeUrl = '' } = {}) {
+export function buildCard(entry, { nowMs = Date.now(), prototypeUrl = '', linkKey = '' } = {}) {
   const { data, ui } = entry
   const m = data.meeting
   const meta = JSON.stringify({ p: entry.persona, s: entry.sid, st: entry.startMs, j: entry.joinUrl })
@@ -68,11 +78,11 @@ export function buildCard(entry, { nowMs = Date.now(), prototypeUrl = '' } = {})
   const isDone = (it) => !!it.done // done status comes from Ansel
   const plural = (n, word) => `${n} ${word}${n === 1 ? '' : 's'}`
   const stampLink = (it) => {
-    const url = shortTranscriptLink(prototypeUrl, it.id)
+    const url = shortTranscriptLink(prototypeUrl, it.id, linkKey)
     return url ? `<${url}|${fmtStamp(it.seconds)}>` : fmtStamp(it.seconds)
   }
   // "5 more items" links to the meeting's Action items tab in Ansel, where those items are listed.
-  const teamUrl = deepLink(prototypeUrl, { instanceId: data.lastMeeting.meetingId, tab: 'actions' })
+  const teamUrl = deepLink(prototypeUrl, { instanceId: data.lastMeeting.meetingId, tab: 'actions' }, linkKey)
   const team = (text) => (teamUrl ? `<${teamUrl}|${text}>` : text)
   const named = (it) => `${isDone(it) ? `~${it.text}~` : `*${it.text}*`} (${stampLink(it)})${isDone(it) ? ' · _Done_' : ''}`
 
@@ -98,7 +108,7 @@ export function buildCard(entry, { nowMs = Date.now(), prototypeUrl = '' } = {})
 
   const row = []
   if (join) row.push(join)
-  const summaryUrl = deepLink(prototypeUrl, { instanceId: data.lastMeeting.meetingId, tab: 'summary' })
+  const summaryUrl = deepLink(prototypeUrl, { instanceId: data.lastMeeting.meetingId, tab: 'summary' }, linkKey)
   row.push(btn('hu_open_last', 'Open in Ansel', meta, summaryUrl ? { url: summaryUrl } : {}))
   row.push(btn('hu_mute', 'Mute series', meta))
   if (!ui.notUseful) row.push(btn('hu_nu', 'Not useful', meta))

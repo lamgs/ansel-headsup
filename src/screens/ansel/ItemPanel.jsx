@@ -7,6 +7,7 @@ import { longDate } from '../../logic/buildHeadsUp.js'
 import { findItem } from '../../logic/world.js'
 import { Btn, Ts, firstName, personName } from '../../components/ui.jsx'
 import { jumpTo, statusText } from './shared.jsx'
+import { API, canSync, pushItemUpdate, undoItemUpdate } from '../../state/sync.js'
 
 export default function ItemPanel({ id }) {
   const { state, dispatch, world } = useStore()
@@ -19,7 +20,30 @@ export default function ItemPanel({ id }) {
   const { item: a, inst } = found
   const origOwner = SEED.instances.flatMap((i) => i.actionItems).find((x) => x.id === id).owner
   const mine = origOwner === state.persona
-  const save = (update, label) => { dispatch({ type: 'UPDATE_ITEM', id, update, label }); setMode(null) }
+  const synced = canSync(state.syncKey, state.persona)
+  const fail = (e, what) => {
+    if (e.itemUpdates) dispatch({ type: 'SERVER_ITEMS', itemUpdates: e.itemUpdates })
+    dispatch({ type: 'TOAST', text: `${what}, but your Slack card wasn't updated: ${e.message}` })
+  }
+  // Optimistic: the change shows at once; when the Slack service confirms, its copy replaces the local one.
+  const save = (update, label) => {
+    setMode(null)
+    dispatch({ type: 'UPDATE_ITEM', id, update, label, toast: synced ? false : undefined })
+    if (!synced) return
+    pushItemUpdate(state.syncKey, id, update)
+      .then((r) => { dispatch({ type: 'SERVER_ITEMS', itemUpdates: r.itemUpdates }); dispatch({ type: 'TOAST', text: 'Saved. Your Heads-Up card in Slack shows it too.' }) })
+      .catch((e) => fail(e, 'Saved here'))
+  }
+  const undo = () => {
+    dispatch({ type: 'UNDO_ITEM', id })
+    if (!a.update?.synced || !synced) return
+    undoItemUpdate(state.syncKey, id)
+      .then((r) => { dispatch({ type: 'SERVER_ITEMS', itemUpdates: r.itemUpdates }); dispatch({ type: 'TOAST', text: 'Undone. Your Slack card is back to open.' }) })
+      .catch((e) => fail(e, 'Undone here'))
+  }
+  const syncNote = !API || !mine ? null
+    : synced ? 'Changes here also update your Heads-Up card in Slack.'
+    : 'To update your Slack card too, open Ansel from a link on your Heads-Up card.'
   const others = inst.attendees.filter((p) => p !== state.persona)
   const status = a.update ? statusText(a) : a.status === 'done' ? 'Done' : 'Open (may already be done)'
 
@@ -48,6 +72,7 @@ export default function ItemPanel({ id }) {
             </div>
           )}
           <Btn className="w-full justify-center" onClick={() => setMode(mode === 'reassign' ? null : 'reassign')}>Reassign…</Btn>
+          {syncNote && <p className="text-xs text-slate-500">{syncNote}</p>}
           {mode === 'reassign' && (
             <div className="space-y-2">
               <select value={owner} onChange={(e) => setOwner(e.target.value)} className="w-full rounded border border-slate-300 bg-white px-2 py-1 text-sm dark:border-slate-600 dark:bg-slate-800">
@@ -60,7 +85,10 @@ export default function ItemPanel({ id }) {
           )}
         </div>
       ) : (
-        <p className="mt-4 text-xs text-slate-500">{mine ? 'Status confirmed. It shows in the meeting record.' : 'Only the owner can update this item.'}</p>
+        <div className="mt-4 space-y-2">
+          <p className="text-xs text-slate-500">{mine ? `Status confirmed. It shows in the meeting record${a.update?.synced ? ' and on your Heads-Up card in Slack' : ''}.` : 'Only the owner can update this item.'}</p>
+          {mine && a.update && <Btn className="w-full justify-center" onClick={undo}>Undo</Btn>}
+        </div>
       )}
     </aside>
   )

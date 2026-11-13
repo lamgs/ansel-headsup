@@ -5,6 +5,8 @@ import { shortDate } from '../../src/logic/buildHeadsUp.js'
 import { buildCardData } from '../../src/logic/buildCardData.js'
 import { buildWorld } from '../../src/logic/world.js'
 import { buildCard, cardState } from './card.js'
+import { createStateStore } from './state.js'
+import { signPersona, validateReopen, validateUpdate } from './items.js'
 
 export function pilotLog(event, persona, detail = '') {
   const t = new Date().toLocaleTimeString('en-US', { hour12: false })
@@ -16,8 +18,9 @@ export function parseUserMap(s = '') {
   return Object.fromEntries(s.split(',').map((p) => p.split('=').map((x) => x.trim())).filter(([a, b]) => a && b))
 }
 
-export function createHeadsUp({ client, config, access, log = pilotLog }) {
-  const muted = {} // `${persona}:${sid}` → true
+export function createHeadsUp({ client, config, access, log = pilotLog, store = createStateStore() }) {
+  // Durable (state.js): mutes `${persona}:${sid}` → true, item status updates from Ansel, live cards.
+  const state = () => store.get()
   const live = new Map() // `${channel}:${ts}` → card entry
   const userIds = {}
 
@@ -26,9 +29,9 @@ export function createHeadsUp({ client, config, access, log = pilotLog }) {
 
   /** → { series, result: { eligible, reason, suppressed?, data? } } */
   function evaluate(persona, sid, { ignoreMute = false, startMs, joinUrl } = {}) {
-    const m = { ...muted }
+    const m = { ...state().muted }
     if (ignoreMute) delete m[`${persona}:${sid}`]
-    const world = buildWorld({ muted: m })
+    const world = buildWorld({ muted: m, itemUpdates: state().itemUpdates })
     const user = world.person(persona)
     const series = seriesById(sid)
     if (!user || !series) throw new Error(`Unknown persona "${persona}" or series "${sid}"`)
@@ -43,8 +46,32 @@ export function createHeadsUp({ client, config, access, log = pilotLog }) {
   }
 
   const freshUi = () => ({ muted: false, notUseful: null })
-  const render = (entry) => buildCard(entry, { nowMs: Date.now(), prototypeUrl: config.prototypeUrl })
+  // Links into Ansel carry a signed key for the card's persona, so Mark done there can update this card.
+  const render = (entry) => buildCard(entry, { nowMs: Date.now(), prototypeUrl: config.prototypeUrl, linkKey: signPersona(config.syncSecret, entry.persona) })
   const update = (entry) => client.chat.update({ channel: entry.channel, ts: entry.ts, ...render(entry) })
+
+  /** Remember live cards across restarts, so status changes from Ansel still reach them. */
+  const saveCards = () => store.change((d) => {
+    d.cards = [...live.values()].map(({ channel, ts, persona, sid, startMs, joinUrl, postMs, ui }) => ({ channel, ts, persona, sid, startMs, joinUrl, postMs, ui }))
+  })
+
+  /** Re-read the card's data (item statuses may have changed in Ansel). Keeps the old data if the card is no longer eligible. */
+  function refreshData(entry) {
+    const { result } = evaluate(entry.persona, entry.sid, { ignoreMute: true, startMs: entry.startMs, joinUrl: entry.joinUrl })
+    if (result.data) entry.data = result.data
+    return entry
+  }
+
+  for (const c of state().cards) {
+    try {
+      const entry = refreshData({ ...c, ui: c.ui ?? freshUi() })
+      if (!entry.data) continue
+      entry.lastState = cardState(Date.now(), entry.startMs, entry.data.meeting.durationMinutes)
+      if (entry.lastState !== 'ended') live.set(`${c.channel}:${c.ts}`, entry)
+    } catch (e) {
+      console.warn('saved card dropped:', e.message)
+    }
+  }
 
   /** Evaluate and, if eligible, post the card as a DM. Returns { posted, series, result }. */
   async function post({ persona, sid, slackUser, startMs, joinUrl }) {
@@ -65,6 +92,7 @@ export function createHeadsUp({ client, config, access, log = pilotLog }) {
     const res = await client.chat.postMessage({ channel: channel.id, ...render(entry) })
     entry.ts = res.ts
     live.set(`${channel.id}:${res.ts}`, entry)
+    saveCards()
     log('card_shown', persona, `${series.title} · ${result.data.actionItems.items.length} action items · Slack DM ${userId}`)
     return { posted: true, series, result }
   }
@@ -87,12 +115,49 @@ export function createHeadsUp({ client, config, access, log = pilotLog }) {
   /** Keep the countdown current and log state changes. Called by the scheduler every poll. */
   async function refreshCountdowns() {
     const now = Date.now()
+    let ended = false
     for (const [key, entry] of live) {
-      const state = cardState(now, entry.startMs, entry.data.meeting.durationMinutes)
-      if (state !== entry.lastState) { log('state_changed', entry.persona, `${entry.lastState} → ${state}`); entry.lastState = state }
+      const s = cardState(now, entry.startMs, entry.data.meeting.durationMinutes)
+      if (s !== entry.lastState) { log('state_changed', entry.persona, `${entry.lastState} → ${s}`); entry.lastState = s }
       await update(entry).catch((e) => console.warn('update failed', e.data?.error ?? e.message))
-      if (state === 'ended') live.delete(key)
+      if (s === 'ended') { live.delete(key); ended = true }
     }
+    if (ended) saveCards()
+  }
+
+  /** Redraw every live card with the current item statuses. */
+  async function refreshCards() {
+    let n = 0
+    for (const entry of live.values()) {
+      refreshData(entry)
+      try { await update(entry); n++ } catch (e) { console.warn('update failed', e.data?.error ?? e.message) }
+    }
+    return n
+  }
+
+  const itemUpdates = () => ({ ...state().itemUpdates })
+
+  /**
+   * A status change from Ansel (Mark done, On track, New date, Reassign), by `persona` (from the signed key).
+   * Saves it, then redraws the live Slack cards. → { ok, status?, error?, itemUpdates, cardsUpdated }
+   */
+  async function updateItem(id, persona, body) {
+    const v = validateUpdate(state().itemUpdates, { id, persona, body })
+    if (!v.ok) return { ...v, itemUpdates: itemUpdates() }
+    store.change((d) => { d.itemUpdates[id] = v.update })
+    log('item_updated', persona, `${id}: ${v.update.kind}${v.update.due ? ` ${v.update.due}` : ''}${v.update.owner ? ` → ${v.update.owner}` : ''} (from Ansel)`)
+    const cardsUpdated = await refreshCards()
+    return { ok: true, update: v.update, itemUpdates: itemUpdates(), cardsUpdated }
+  }
+
+  /** Undo an item's status change from Ansel. */
+  async function reopenItem(id, persona) {
+    const v = validateReopen(state().itemUpdates, { id, persona })
+    if (!v.ok) return { ...v, itemUpdates: itemUpdates() }
+    store.change((d) => { delete d.itemUpdates[id] })
+    log('item_reopened', persona, `${id} (from Ansel)`)
+    const cardsUpdated = await refreshCards()
+    return { ok: true, itemUpdates: itemUpdates(), cardsUpdated }
   }
 
   /** Find (or rebuild after a restart) the state for the message an action came from. */
@@ -110,6 +175,7 @@ export function createHeadsUp({ client, config, access, log = pilotLog }) {
     const entry = { channel: body.channel.id, ts: body.message.ts, persona: meta.p, sid: meta.s, startMs: meta.st, joinUrl: meta.j, data: result.data, ui: freshUi() }
     entry.lastState = cardState(Date.now(), entry.startMs, entry.data.meeting.durationMinutes)
     live.set(key, entry)
+    saveCards()
     return entry
   }
 
@@ -131,13 +197,14 @@ export function createHeadsUp({ client, config, access, log = pilotLog }) {
       case 'open_last':
         ev('open_last_meeting', entry.data.lastMeeting.meetingId)
         return action.url ? null : summaryText(entry.data.lastMeeting.meetingId)
-      case 'mute': ui.muted = true; muted[`${persona}:${entry.sid}`] = true; ev('mute_series', title); break
-      case 'mute_undo': ui.muted = false; delete muted[`${persona}:${entry.sid}`]; ev('mute_undone', title); break
+      case 'mute': ui.muted = true; store.change((d) => { d.muted[`${persona}:${entry.sid}`] = true }); ev('mute_series', title); break
+      case 'mute_undo': ui.muted = false; store.change((d) => { delete d.muted[`${persona}:${entry.sid}`] }); ev('mute_undone', title); break
       case 'nu': ui.notUseful = { reason: null }; ev('not_useful', title); break
       case 'nu_reason': ui.notUseful = { reason: a1 }; ev('not_useful_reason', a1); break
       case 'nu_undo': ui.notUseful = null; ev('not_useful_undone', title); break
       default: return null
     }
+    saveCards()
     await update(entry)
     return null
   }
@@ -151,7 +218,7 @@ export function createHeadsUp({ client, config, access, log = pilotLog }) {
   }
 
   function summaryText(instanceId) {
-    const inst = buildWorld({}).instance(instanceId)
+    const inst = buildWorld({ itemUpdates: state().itemUpdates }).instance(instanceId)
     const lines = [`*Weekly Product Sync · ${shortDate(inst.date)} · summary*`, '*Decisions*']
     for (const d of inst.decisions) lines.push(`• ${d.trackedChange ? `~${d.trackedChange.original}~ ` : ''}${d.text}  \`${d.t}\``)
     lines.push('*Open questions*')
@@ -174,7 +241,8 @@ export function createHeadsUp({ client, config, access, log = pilotLog }) {
     return lines.join('\n')
   }
 
-  const reset = () => { for (const k of Object.keys(muted)) delete muted[k]; live.clear() }
+  /** Clears mutes, item statuses from Ansel and the live-card list (for re-running the demo). */
+  const reset = () => { live.clear(); store.reset() }
 
-  return { evaluate, post, pingAll, resolveUser, refreshCountdowns, entryFor, handleAction, transcriptQuote, summaryText, explain, reset, live }
+  return { evaluate, post, pingAll, resolveUser, refreshCountdowns, refreshCards, updateItem, reopenItem, itemUpdates, entryFor, handleAction, transcriptQuote, summaryText, explain, reset, live }
 }

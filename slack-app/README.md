@@ -179,7 +179,7 @@ You own 2 items · 8 more from the team last week
 [Join Zoom] [Open in Ansel] [Mute series] [Not useful]
 ```
 
-Only the timestamps are links (each opens that moment in last meeting's transcript, via the prototype's short `#t/<itemId>` link), and "8 more from the team" links to the meeting's Action items tab. With exactly one item of yours, the line reads "You own **Forecast update** (14:32) · 5 more items from last week". Marking items done happens in Ansel, not on the card; items already done there show struck through. Up to 3 of your items are listed, then "+N more of yours in Ansel". Everything else (other people's items, Not right) is in Ansel.
+Only the timestamps are links (each opens that moment in last meeting's transcript, via the prototype's short `#t/<itemId>` link), and "8 more from the team" links to the meeting's Action items tab. With exactly one item of yours, the line reads "You own **Forecast update** (14:32) · 5 more items from last week". Marking items done happens in Ansel, not on the card; items done there show struck through (with [status sync](#ansel--slack-status-sync) on, the card updates within a second). Up to 3 of your items are listed, then "+N more of yours in Ansel". Everything else (other people's items, Not right) is in Ansel.
 
 | Control | Behavior | Event |
 |---|---|---|
@@ -195,10 +195,43 @@ Also logged: `card_shown`, `card_suppressed` (holdout), `card_skipped` (with the
 
 The ▶ and **Open last meeting** buttons link to the hosted prototype at https://lamgs.github.io/ansel-headsup/ by default (published from `main` by GitHub Pages; see the root README). Set `PROTOTYPE_URL` to point somewhere else, or `PROTOTYPE_URL=off` to have the buttons reply in Slack instead. Links look like `…/#ansel/wps-1106/transcript/14:32/a2`.
 
+## Ansel → Slack status sync
+
+When someone marks an item done in Ansel (the hosted prototype), the service saves it and redraws every live Heads-Up card, so the item shows ~struck through~ · _Done_ in Slack. On track, New date, Reassign and Undo sync the same way (Reassign moves the item to its new owner's card). Statuses are also pulled back into Ansel every 15 s and on window focus, so two browsers stay in step.
+
+```
+Ansel (GitHub Pages) ──HTTPS──▶ Caddy on the VM ──▶ service /api/items ──▶ chat.update on each live card
+```
+
+- **API** ([`src/api.js`](src/api.js)): `GET /api/items` (current statuses), `POST /api/items/<id>` with `{ kind: done | on_track | new_date | reassign, due?, owner?, note? }`, `DELETE /api/items/<id>` (undo), `GET /api/health`. Same rules as Ansel's item panel: only the item's owner can change it, and not after it's done or reassigned.
+- **Who can write:** the prototype is a public static site, so it can't hold a secret. Instead every link on a card (timestamps, "N more", Open in Ansel) carries `?k=<persona>.<signature>`, an HMAC of that card's persona with `SYNC_SECRET`. Ansel keeps it in the browser's localStorage, switches to that persona and sends it with each change. Without a key (Ansel opened directly, or another persona picked in the demo bar), changes stay in that browser tab as before. Browsers can call the API only from `API_ALLOWED_ORIGINS`.
+- **Durable state:** item statuses, mutes and the list of live cards are saved to `state.json` (on the VM: `/var/lib/ansel-headsup/state.json`), so a restart keeps them and still updates cards posted before it. `/headsup reset` clears them.
+
+### Turn it on (Google Cloud VM)
+
+1. In the Cloud console, open the VM → **Edit** → **Firewalls**: tick **Allow HTTP traffic** and **Allow HTTPS traffic** → **Save**. (Port 80 is needed for the Let's Encrypt certificate.) The VM's external IP should stay the same: if it's ephemeral, don't stop the VM, or reserve it as a static IP.
+2. Add to `/opt/ansel-headsup/slack-app/.env`:
+   ```dotenv
+   SYNC_SECRET=<output of: openssl rand -hex 32>
+   PUBLIC_HOSTNAME=auto
+   ```
+   `auto` uses `<external-ip-with-dashes>.sslip.io` (a free DNS name that points at the IP). Use your own domain instead if you have one.
+3. Run `sudo /opt/ansel-headsup/slack-app/deploy/setup-vm.sh`. It installs Caddy, which gets a certificate and forwards only `/api/*` to the service on `127.0.0.1:8787`. It prints the API address; check it:
+   ```bash
+   curl https://<host>/api/health
+   ```
+4. In GitHub: **Settings → Secrets and variables → Actions → Variables → New repository variable**: `HEADSUP_API_URL` = `https://<host>`. Then re-run the Pages workflow (Actions → Deploy prototype to GitHub Pages → Run workflow).
+5. Send a new card (`/headsup demo`): links on cards posted before `SYNC_SECRET` was set have no key. Click a timestamp, **Mark done** in the item panel; the toast says *Your Heads-Up card in Slack shows it too* and the card updates.
+
+On Railway, set `SYNC_SECRET`, generate a public domain for the service (it listens on `$PORT`) and use that as `HEADSUP_API_URL`. Locally, `npm start` with `SYNC_SECRET` set and `VITE_HEADSUP_API=http://localhost:8787 npm run dev` in the repo root.
+
+Rotating `SYNC_SECRET` invalidates every key already in a card link or a browser; send new cards afterwards.
+
 ## Limits
 
 - The service needs one continuously running process: the Google VM, Railway or a local `npm start`, never more than one.
-- State lives in memory: restarting clears mutes. Status updates made in the prototype (Mark done) don't sync back to Slack, because there's no shared backend.
+- Fired-trigger history is in memory: a restart within `REMINDER_MINUTES` of a meeting can post its card again. Without `SYNC_SECRET`, Mark done in the prototype stays in the browser and doesn't reach Slack.
+- The signed link key identifies the card's persona, not a signed-in person: anyone the link is forwarded to can change that persona's items. Fine for seeded demo data; production would need real sign-in.
 - Content is seeded, so there are no real transcripts. For production, swap ICS polling for Google Calendar push notifications or Microsoft Graph change notifications, and use the event's recurring-series ID instead of matching titles.
 
-`npm test` runs offline checks (card blocks, ICS parsing in Google and Outlook styles, the scheduler, and actions) against a fake Slack client.
+`npm test` runs offline checks (card blocks, ICS parsing in Google and Outlook styles, the scheduler, actions, and the Ansel sync API with signed keys and saved state) against a fake Slack client.

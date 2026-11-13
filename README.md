@@ -3,7 +3,7 @@ BoothHacks Entry: Repository for the Kilts Center Case Competition for Chicago B
 
 This repository contains two parts:
 
-- A clickable, front-end-only **Heads-Up** prototype for Ansel (React + Vite). It has no backend, network calls, or AI calls; all state lives in memory.
+- A clickable **Heads-Up** prototype for Ansel (React + Vite). No AI calls; demo state lives in memory. The one network call is optional: with `VITE_HEADSUP_API` set at build time, item status changes (Mark done etc.) are sent to the Slack service so the Slack card updates ([status sync](slack-app/README.md#ansel--slack-status-sync)).
 - A real Slack app in [`slack-app/`](slack-app/README.md) that runs over Socket Mode and posts private Heads-Up DMs.
 
 See [`current_status.md`](current_status.md) for the current pilot stage and remaining work.
@@ -45,6 +45,7 @@ The real Slack card's ▶ and **Open last meeting** buttons link here by default
 | `src/logic/buildHeadsUp.js` | `buildHeadsUp(user, series, now, world)`: the pure selection function |
 | `src/logic/world.js` | Merges in-memory edits, status updates, mutes and settings over the seed |
 | `src/state/store.jsx` | Reducer, simulated clock, trigger processing, event log |
+| `src/state/sync.js` | Ansel → Slack status sync client (signed card key, `/api/items`) |
 | `src/screens/*` | Slack (mock), Heads-Up card, Ansel app, join flow, Setup & governance, Pilot log |
 | `src/screens/ansel/*` | Ansel app mockup: meeting record (Transcript, Summary, Action items, Ask Ansel), side panel, inactive pages. Spec: [`docs/ansel-mockup-spec.md`](docs/ansel-mockup-spec.md) |
 | `src/components/*` | Demo bar, behind-the-scenes drawer, UI primitives |

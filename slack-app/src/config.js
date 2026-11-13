@@ -31,7 +31,21 @@ export function loadConfig(env = process.env) {
     pollSeconds: Number(env.POLL_SECONDS || 60),
     prototypeUrl: prototypeUrlFrom(env.PROTOTYPE_URL),
     demoJoinUrl: env.DEMO_JOIN_URL || 'https://zoom.us/',
+    // Ansel → Slack status sync (api.js). Off unless SYNC_SECRET is set.
+    syncSecret: env.SYNC_SECRET || '',
+    apiPort: Number(env.API_PORT || env.PORT || 8787),
+    apiHost: env.API_HOST || '127.0.0.1',
+    apiAllowedOrigins: parseOrigins(env.API_ALLOWED_ORIGINS),
+    // systemd's StateDirectory= sets STATE_DIRECTORY; without either, state is memory only.
+    stateFile: env.STATE_FILE || (env.STATE_DIRECTORY ? `${env.STATE_DIRECTORY.split(':')[0]}/state.json` : ''),
   }
+}
+
+/** Browser origins allowed to call the sync API: the hosted prototype and local dev servers by default. */
+export const DEFAULT_ORIGINS = ['https://lamgs.github.io', 'http://localhost:5173', 'http://localhost:4173']
+export function parseOrigins(value) {
+  const list = (value ?? '').split(',').map((x) => x.trim().replace(/\/$/, '')).filter(Boolean)
+  return list.length ? list : DEFAULT_ORIGINS
 }
 
 /** CALENDAR_ICS_URL_GABRIEL=https://… → { gabriel: 'https://…' }. One variable per person keeps each link a separate secret. */

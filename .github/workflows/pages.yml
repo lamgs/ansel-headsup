@@ -33,7 +33,11 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm test
+      # HEADSUP_API_URL (repo variable, e.g. https://34-1-2-3.sslip.io): the Slack service's sync API, so
+      # Mark done in the prototype updates the Slack card. Unset = changes stay in the browser.
       - run: npm run build
+        env:
+          VITE_HEADSUP_API: ${{ vars.HEADSUP_API_URL }}
       - if: github.event_name != 'pull_request'
         uses: actions/upload-pages-artifact@v4
         with:

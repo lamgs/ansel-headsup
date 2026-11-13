@@ -14,6 +14,8 @@ This is not yet an always-on or production deployment. The current process runs 
 
 ## Completed
 
+- **Ansel → Slack status sync (built 2026-11-13, not yet turned on on the VM)**: Mark done (and On track, New date, Reassign, Undo) in the hosted Ansel prototype goes to a small HTTPS API in the Slack service, which saves it and redraws the live Slack cards (done items show struck through). Card links carry a signed per-persona key; item statuses, mutes and live cards now survive restarts (`/var/lib/ansel-headsup/state.json`). To turn on: [`slack-app/README.md`](slack-app/README.md#ansel--slack-status-sync) (firewall, `SYNC_SECRET`, `PUBLIC_HOSTNAME`, the `HEADSUP_API_URL` repo variable).
+
 - **Condensed Slack card live and confirmed in Slack (2026-11-13)**: one text block and one row of buttons (✓, Join Zoom, Open in Ansel, Mute series, Not useful); your item links to its transcript moment; several items of yours get checkboxes. Other people's items, Not right and the transcript are in Ansel. Previews and the real output: `card/slack-mockups/`. Zoom is the default demo join link.
 - **Slack card redesigned to match `card/` (contract 2.0)**: countdown with Join, every action item from last meeting with owners (yours first, `YOURS`), Mark done, Not right with reasons, Not useful with reasons, Mute with Undo, "Why am I seeing this?" and the trust footer; the same event names as `card/CONTRACT.md`. Card tests: `slack-app/test/card.mjs`.
 
@@ -59,8 +61,26 @@ This pilot is acceptable for a demo, not for real user data. Say so explicitly w
 
 - Per-person calendar links (`CALENDAR_ICS_URL_<PERSONA>`); the live app is currently manual-trigger only.
 - A hosted `PROTOTYPE_URL` for transcript deep links.
-- Durable state. Mutes and fired-trigger history reset when the process restarts.
+- Status sync on the VM: needs the HTTP/HTTPS firewall boxes, `SYNC_SECRET` + `PUBLIC_HOSTNAME` in `.env`, a `setup-vm.sh` re-run and the `HEADSUP_API_URL` repo variable.
+- Fired-trigger history is still in memory (mutes, item statuses and live cards are now saved).
 - Real Ansel meeting/transcript data; card content is still seeded for the demo.
+
+## Handoff: finish status sync where npm can reach the registry
+
+Built on branch `claude/great-euler-l9ogy9` in a session whose network policy blocked `registry.npmjs.org`, so dependencies couldn't be installed there.
+
+**Verified in that session:** `slack-app/test/card.mjs` and the new `slack-app/test/sync.mjs` pass (signed keys, validation, the HTTP API, card redraws, saved state, config). The root `npm test` passes. A local run of the real API with a fake Slack client, called by the prototype's real `src/state/sync.js`, posted done → the card redrew struck through → undo → the card went back to open. The changed JSX files parse (Bun).
+
+**Not run yet (do these in the new environment):**
+
+1. Install and run everything:
+   ```bash
+   npm ci && npm test && npm run build
+   cd slack-app && npm ci && npm test   # includes test/check.mjs, which needs node-ical
+   ```
+2. Browser check of the prototype (never run): start the service locally with `SYNC_SECRET` set (`npm start` in `slack-app/`; the log line should read `Ansel sync: API on 127.0.0.1:8787`), then `VITE_HEADSUP_API=http://localhost:8787 npm run dev` in the repo root. Send `/headsup demo`, open a timestamp link from the card (with `localhost:5173` as `PROTOTYPE_URL`, or edit the link's host by hand), click **Mark done** in the item panel and confirm the toast *Your Heads-Up card in Slack shows it too*, the Slack card shows the item struck through, and **Undo** reverts both.
+3. Turn it on on the VM: the steps in [`slack-app/README.md`](slack-app/README.md#ansel--slack-status-sync) (tick Allow HTTP/HTTPS traffic, add `SYNC_SECRET` and `PUBLIC_HOSTNAME=auto` to `.env`, re-run `setup-vm.sh` after merging to `main`, set the `HEADSUP_API_URL` repo variable, re-run the Pages workflow). `setup-vm.sh`'s new Caddy step has not run on a real VM yet; check `curl https://<host>/api/health`.
+4. Send new cards afterwards: cards posted before `SYNC_SECRET` was set have no key in their links.
 
 ## Next stage
 

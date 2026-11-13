@@ -6,6 +6,8 @@ import { createAccessControl } from './access.js'
 import { createHeadsUp, pilotLog } from './headsup.js'
 import { createScheduler } from './scheduler.js'
 import { buildHome } from './home.js'
+import { createStateStore } from './state.js'
+import { createApi } from './api.js'
 
 const { App, LogLevel } = bolt
 const config = loadConfig()
@@ -13,7 +15,9 @@ requireTokens(config)
 
 const app = new App({ token: config.botToken, appToken: config.appToken, socketMode: true, logLevel: LogLevel.WARN })
 const access = createAccessControl({ client: app.client, allowedUsers: config.allowedUsers })
-const headsUp = createHeadsUp({ client: app.client, config, access })
+const store = createStateStore(config.stateFile)
+const headsUp = createHeadsUp({ client: app.client, config, access, store })
+const api = config.syncSecret ? createApi({ headsUp, config, log: pilotLog }) : null
 const scheduler = createScheduler({ headsUp, config, users: config.users })
 const personas = SEED.people.map((p) => p.id)
 const fmt = (ms) => new Date(ms).toLocaleString('en-US', { weekday: 'short', hour: 'numeric', minute: '2-digit' })
@@ -24,7 +28,7 @@ const HELP = [
   '`/headsup check [persona]`: why a persona gets a card or is skipped (the behind-the-scenes drawer)',
   '`/headsup next`: your upcoming recurring meetings from your calendar feed and when Heads-Up fires',
   '`/headsup ping`: demo buttons. *Ping me* sends the demo card to you; *Ping everyone* sends each mapped teammate their own Heads-Up (people with no card get nothing)',
-  '`/headsup reset`: clear mutes and fired triggers',
+  '`/headsup reset`: clear mutes, fired triggers and item statuses synced from Ansel',
   `Personas: ${personas.join(', ')}`,
 ].join('\n')
 
@@ -59,7 +63,7 @@ app.command('/headsup', async ({ command, ack, respond }) => {
       return say(['*Your upcoming recurring meetings*', ...occ.map((o) => `• ${o.title}: ${fmt(o.startMs)}${who(o)} · ${o.sid ? `Heads-Up at ${fmt(o.fireAtMs)} (series ${o.sid})` : 'no Ansel series matches, skipped'}`)].join('\n'))
     }
     if (sub === 'ping') return respond({ response_type: 'ephemeral', text: 'Ping everyone', blocks: pingBlocks() })
-    if (sub === 'reset') { headsUp.reset(); scheduler.reset(); return say('Reset: mutes and fired triggers cleared.') }
+    if (sub === 'reset') { headsUp.reset(); scheduler.reset(); return say('Reset: mutes, fired triggers and item statuses from Ansel cleared.') }
     return say(HELP)
   } catch (e) {
     console.error(e)
@@ -191,12 +195,14 @@ app.action(/^hu_/, async ({ ack, body, action, respond }) => {
 
 await app.start()
 scheduler.start()
+const apiPort = api ? await api.listen() : null
 
 // Hosts (Railway, Docker) send SIGTERM on redeploy: stop polling and close the Slack socket so the
 // old and new deployments don't both post cards.
 for (const signal of ['SIGTERM', 'SIGINT']) {
   process.once(signal, async () => {
     scheduler.stop()
+    await api?.close().catch(() => {})
     await app.stop().catch(() => {})
     process.exit(0)
   })
@@ -205,4 +211,5 @@ console.log(`Ansel Heads-Up is running (Socket Mode).
   Calendar: ${scheduler.feedCount() ? `${scheduler.feedCount()} ICS feed(s) for ${scheduler.calendarPersonas().join(', ')}, polled every ${config.pollSeconds}s` : 'none (manual trigger only)'}
   Reminder: ${config.reminderMinutes} min before · Personas mapped: ${Object.keys(config.users).join(', ') || 'none'}
   Allowed Slack users: ${config.allowedUsers.length}
+  Ansel sync: ${api ? `API on ${config.apiHost}:${apiPort} for ${config.apiAllowedOrigins.join(', ')}` : 'off (set SYNC_SECRET to let Mark done in Ansel update the card)'} · State: ${config.stateFile || 'memory only'}
   Manual trigger: /headsup demo   ·   or: npm run trigger -- --to <slack user id or email>`)
