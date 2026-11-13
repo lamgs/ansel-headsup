@@ -85,7 +85,7 @@ Layout sketch (the player is audio only):
 - Transcript: the speaker's avatar and name sit on the same line as their first line of dialogue, in a fixed column; consecutive lines from the same speaker leave it blank.
 
 **Slack message demo polish (branch `rishabh/ansel-polish-12`)**
-- The Slack card opens with a header block ("⏰ 30 min · Weekly Product Sync"; 🔴 when live) and a grey attendee line: invitee faces, start time, platform and head count. "📌" marks *You own N items*. Buttons and links are unchanged.
+- The Slack card opens with a header block ("30 min · Weekly Product Sync", then "Live", then "Ended") and a grey attendee line: invitee faces, start time, platform and head count. Buttons and links are unchanged.
 - Faces are PNGs in `public/slack/avatars/`, served from GitHub Pages; the app icon is `public/slack/ansel-icon.png`. If Slack can't fetch the faces, the service resends the card without them.
 
 **Meetings page as three columns; demo readability (branch `rishabh/ansel-polish-10`)**
