@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useStore } from '../state/store.jsx'
-import { SEED } from '../data/seed.js'
+import { SEED, DEMO_ZOOM_URL } from '../data/seed.js'
 import { Avatar, Btn, Modal, personName, fmtClock } from '../components/ui.jsx'
 
 export default function JoinFlow() {
@@ -69,7 +69,11 @@ function ConsentDialog({ series, dispatch }) {
         </label>
         <div className="mt-5 flex justify-end gap-2">
           <Btn variant="secondary" onClick={close}>Leave</Btn>
-          <Btn variant="primary" disabled={!agreed} onClick={() => dispatch({ type: 'JOIN_CONFIRM', keptOut: false })}>Join with Ansel</Btn>
+          <Btn variant="primary" disabled={!agreed} onClick={() => {
+            // Open the team's real Zoom room in a new tab; the prototype still shows the mock call and logs the join.
+            window.open(DEMO_ZOOM_URL, '_blank', 'noopener')
+            dispatch({ type: 'JOIN_CONFIRM', keptOut: false })
+          }}>Join with Ansel</Btn>
         </div>
       </div>
     </Modal>

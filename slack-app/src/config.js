@@ -1,6 +1,7 @@
 import { existsSync } from 'node:fs'
 import { parseUserMap } from './headsup.js'
 import { parseAllowedUsers } from './access.js'
+import { DEMO_ZOOM_URL } from '../../src/data/seed.js'
 
 // Load slack-app/.env if present (Node 20.12+). Real environment variables win.
 const envPath = new URL('../.env', import.meta.url)
@@ -30,7 +31,7 @@ export function loadConfig(env = process.env) {
     reminderMinutes: Number(env.REMINDER_MINUTES || 30),
     pollSeconds: Number(env.POLL_SECONDS || 60),
     prototypeUrl: prototypeUrlFrom(env.PROTOTYPE_URL),
-    demoJoinUrl: env.DEMO_JOIN_URL || 'https://zoom.us/',
+    demoJoinUrl: env.DEMO_JOIN_URL || DEMO_ZOOM_URL,
   }
 }
 

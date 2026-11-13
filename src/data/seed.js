@@ -99,5 +99,8 @@ export const SEED_COMMENTS = {
 
 // Demo constants
 export const DEMO_DATE = '2026-11-13'
+// The team's real Zoom room for the demo: Join in the prototype opens it, and it's the Slack app's
+// default join link (DEMO_JOIN_URL on the VM overrides that).
+export const DEMO_ZOOM_URL = 'https://uchicago.zoom.us/j/95361409872?pwd=bj7i5RdPqku7zGGrUiRPaSbEaJOzBO.1'
 export const CLOCK_START = 13 * 3600 + 25 * 60 // 1:25 PM
 export const RETENTION_DAYS = 365 // workspace retention policy; nothing in the seed is expired
